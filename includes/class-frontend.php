@@ -139,6 +139,12 @@ class WC_Role_Pricing_Frontend {
     public function validate_add_to_cart($passed, $product_id, $quantity) {
         $rules = get_post_meta($product_id, '_role_pricing_rules', true);
         if (empty($rules)) {
+            $globalRules = get_option('wc_role_pricing_global_rules', []);
+            if (empty($globalRules)) {
+                return $passed;
+            } else {
+                $rules = $globalRules;
+            }
             return $passed;
         }
 

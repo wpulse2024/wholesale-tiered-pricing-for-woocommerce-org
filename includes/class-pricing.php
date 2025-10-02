@@ -22,6 +22,12 @@ class WC_Role_Pricing_Engine {
         $rules = get_post_meta($product_id, '_role_pricing_rules', true);
         
         if (empty($rules)) {
+            $globalRules = get_option('wc_role_pricing_global_rules', []);
+            if (empty($globalRules)) {
+                return $price;
+            } else {
+                $rules = $globalRules;
+            }
             return $price;
         }
 
@@ -83,7 +89,6 @@ class WC_Role_Pricing_Engine {
         if (is_admin() && !defined('DOING_AJAX')) {
             return;
         }
-
         foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
             $product = $cart_item['data'];
             $product_id = $product->get_id();
@@ -91,7 +96,12 @@ class WC_Role_Pricing_Engine {
             $rules = get_post_meta($product_id, '_role_pricing_rules', true);
             
             if (empty($rules)) {
-                continue;
+                $globalRules = get_option('wc_role_pricing_global_rules', []);
+                if (empty($globalRules)) {
+                    continue;
+                } else {
+                    $rules = $globalRules;
+                }
             }
 
             $current_user_role = $this->get_current_user_role();
@@ -127,12 +137,19 @@ class WC_Role_Pricing_Engine {
         return $price_html;
     }
 
+    public static function getPrice($price, $discount_type, $base_price ) {
+        if ($discount_type === 'percentage') {
+            return $base_price - ($base_price * $price / 100);
+        } else { // fixed
+            return $price;
+        }
+    }
+
     private function calculate_price($base_price, $rule, $quantity) {
         if (!empty($rule['tiered_pricing'])) {
             $applicable_tier = $this->find_applicable_tier($rule['tiered_pricing'], $quantity);
-            
             if ($applicable_tier && !empty($applicable_tier['price'])) {
-                return floatval($applicable_tier['price']);
+                return floatval(static::getPrice($applicable_tier['price'], $applicable_tier['discount_type'], $base_price));
             }
         }
 
@@ -156,7 +173,6 @@ class WC_Role_Pricing_Engine {
     private function find_applicable_tier($tiers, $quantity) {
         $applicable_tier = null;
         $highest_min_qty = 0;
-        
         foreach ($tiers as $tier) {
             if (empty($tier['min_qty']) || empty($tier['price'])) {
                 continue;
