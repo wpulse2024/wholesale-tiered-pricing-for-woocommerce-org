@@ -18,6 +18,7 @@ add_action('woocommerce_settings_tabs_tiered_pricing', function() {
     include_once WC_ROLE_PRICING_PLUGIN_PATH . 'templates/admin/global-settings.php';
     $userRoles = $wp_roles->roles;
     wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce-admin', WC_ROLE_PRICING_PLUGIN_URL . 'assets/global-settings.js', array('jquery'), WC_ROLE_PRICING_VERSION, true);
+    wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-admin', WC_ROLE_PRICING_PLUGIN_URL . 'assets/global-setting.css', array(), WC_ROLE_PRICING_VERSION);
     wp_localize_script('wholesale-tiered-pricing-for-woocommerce-admin', 'wholesaleTieredPricingVars', array(
         'userRoles' => $userRoles
     ));
