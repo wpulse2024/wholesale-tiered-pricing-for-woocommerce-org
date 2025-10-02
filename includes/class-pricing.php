@@ -140,7 +140,9 @@ class WC_Role_Pricing_Engine {
     public static function getPrice($price, $discount_type, $base_price ) {
         if ($discount_type === 'percentage') {
             return $base_price - ($base_price * $price / 100);
-        } else { // fixed
+        } else if ($discount_type === 'fixed') {
+            return $base_price - $price;
+        } else {
             return $price;
         }
     }

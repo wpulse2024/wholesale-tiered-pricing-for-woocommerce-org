@@ -32,17 +32,21 @@
                         continue;
                     }
 
-                    $discount_type = $tier['discount_type'] ?? 'fixed';
+                    $discount_type = $tier['discount_type'] ?? '';
                     $tier_price = floatval($tier['price']);
 
                     if ($discount_type === 'fixed') {
-                        $price = $tier_price;
+                        $price = $regular_price - $tier_price;
                         $savings = $regular_price - $price;
                         $savings_percent = $regular_price > 0 ? ($savings / $regular_price) * 100 : 0;
-                    } else { // percentage
+                    } else if($discount_type === 'percentage') {
                         $price = $regular_price - ($regular_price * $tier_price / 100);
                         $savings = $regular_price - $price;
                         $savings_percent = $tier_price;
+                    } else {
+                        $price = $tier_price;
+                        $savings = $regular_price - $tier_price;
+                        $savings_percent = $regular_price > 0 ? ($savings / $regular_price) * 100 : 0;
                     }
                 ?>
                 <tr>
@@ -51,12 +55,8 @@
                         <div class="items-text"><?php esc_html_e('items', 'wholesale-tiered-pricing-for-woocommerce'); ?></div>
                     </td>
                     <td class="price-unit">
-                        <?php if ($discount_type === 'fixed'): ?>
-                            <strong><?php echo wc_price($price); ?></strong>
-                        <?php else: ?>
-                            <del><?php echo wc_price($regular_price); ?></del>
-                            <ins><?php echo wc_price($price); ?></ins>
-                        <?php endif; ?>
+                        <del><?php echo wc_price($regular_price); ?></del>
+                        <ins><?php echo wc_price($price); ?></ins>
                     </td>
                     <td class="savings-info">
                         <?php if ($savings > 0): ?>
