@@ -20,6 +20,30 @@ class WC_Role_Pricing_Ajax {
         add_action('wp_ajax_nopriv_wc_role_pricing_get_pricing_rules', array($this, 'get_pricing_rules'));
         add_action('wp_ajax_wc_role_pricing_save_pricing_rules', array($this, 'save_pricing_rules'));
         add_action('wp_ajax_nopriv_wc_role_pricing_save_pricing_rules', array($this, 'save_pricing_rules'));
+        add_action('wp_ajax_wc_role_pricing_get_product_settings', array($this, 'get_product_settings'));
+        add_action('wp_ajax_nopriv_wc_role_pricing_get_product_settings', array($this, 'get_product_settings'));
+        add_action('wp_ajax_wc_role_pricing_save_product_settings', array($this, 'save_product_settings'));
+        add_action('wp_ajax_nopriv_wc_role_pricing_save_product_settings', array($this, 'save_product_settings'));
+    }
+    public function get_product_settings() {
+        $nonce = $_POST['nonce'];
+        if (!wp_verify_nonce($nonce, 'wc_role_pricing_get_pricing_rules')) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+        }
+
+        $settings = get_option('wc_role_global_product_settings', []);
+        $settings = json_decode($settings, true);
+        wp_send_json_success($settings);
+    }
+    public function save_product_settings() {
+        $nonce = $_POST['nonce'];
+        if (!wp_verify_nonce($nonce, 'wc_role_pricing_get_pricing_rules')) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+        }
+
+        $settings = stripslashes($_POST['settings']);
+        update_option('wc_role_global_product_settings', $settings);
+        wp_send_json_success(array('message' => 'Product settings saved successfully'));
     }
 
     public function get_pricing_rules() {

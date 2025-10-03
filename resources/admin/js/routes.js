@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import Settings from './pages/Settings.vue';
 import Pricing from './pages/Pricing.vue';
+import Product from './pages/Product.vue';
 
 // Create router
 const router = createRouter({
@@ -8,6 +9,7 @@ const router = createRouter({
     routes: [
         { path: '/', component: Pricing },
         { path: '/settings', component: Settings },
+        { path: '/product', component: Product },
     ]
 });
 

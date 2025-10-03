@@ -12,13 +12,13 @@
                     <h3 class="rule-title">{{ getRoleLabel(rule.role) }} - Rule #{{ index + 1 }}</h3>
                     <div class="header-actions">
                         <button type="button" class="btn-icon btn-danger" @click.stop="removeRule(index)">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                                 <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" />
                             </svg>
                         </button>
-                        <svg class="chevron" :class="{ 'rotate': activeRules.includes(rule.id) }" width="20" height="20"
-                            viewBox="0 0 20 20" fill="none">
+                        <svg style="margin-top: -3px;" class="chevron" :class="{ 'rotate': activeRules.includes(rule.id) }" width="16" height="16"
+                            viewBox="0 0 16 16" fill="none">
                             <path d="M6 8L10 12L14 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" />
                         </svg>
@@ -57,8 +57,11 @@
                         <!-- Tiered Pricing Section -->
                         <div class="tiers-section">
                             <div class="tiers-header">
-                                <h4>Tiered Pricing</h4>
-                                <button type="button" class="btn btn-primary btn-sm" @click="addTier(index)">
+                                <div class="tiers-title">
+                                    <h4 style="margin-bottom: 6px;">Tiered Pricing</h4>
+                                    <p class="description">Set pricing tiers for different quantities</p>
+                                </div>
+                                <button type="button" class="btn btn-sm" @click="addTier(index)">
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                         <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2"
                                             stroke-linecap="round" />
@@ -91,7 +94,7 @@
 
                                     <button type="button" class="btn-icon btn-danger-icon"
                                         @click="removeTier(index, tierIndex)">
-                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                        <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                                             <path
                                                 d="M7 4V3C7 2.44772 7.44772 2 8 2H12C12.5523 2 13 2.44772 13 3V4M5 4H15M14 4V16C14 16.5523 13.5523 17 13 17H7C6.44772 17 6 16.5523 6 16V4H14Z"
                                                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
@@ -196,7 +199,7 @@ export default {
 
         addRule() {
             const newRule = {
-                id: this.ruleIdCounter++,
+                id: this.pricingRules.length,
                 role: 'customer',
                 step_qty: 1,
                 min_qty: 1,
@@ -269,343 +272,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-* {
-    box-sizing: border-box;
-}
-
-.tiered-pricing-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 32px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.page-header {
-    margin-bottom: 32px;
-}
-
-.page-header h1 {
-    font-size: 32px;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0 0 8px 0;
-}
-
-.description {
-    color: #6b7280;
-    font-size: 16px;
-    margin: 0;
-}
-
-/* Rule Cards */
-.rules-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.rule-card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.rule-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    background: #fff;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.rule-header:hover {
-    background: #f9fafb;
-}
-
-.rule-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0;
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.chevron {
-    transition: transform 0.3s;
-    color: #6b7280;
-}
-
-.chevron.rotate {
-    transform: rotate(180deg);
-}
-
-.rule-body {
-    padding: 24px;
-    border-top: 1px solid #e5e7eb;
-}
-
-/* Form Styles */
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: #374151;
-    margin-bottom: 6px;
-}
-
-.form-control,
-.form-control-sm {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: border-color 0.2s;
-}
-
-.form-control:focus,
-.form-control-sm:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.form-control-sm {
-    padding: 8px 10px;
-    font-size: 13px;
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-}
-
-/* Tiers Section */
-.tiers-section {
-    margin-top: 24px;
-    padding-top: 24px;
-    border-top: 1px solid #e5e7eb;
-}
-
-.tiers-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-.tiers-header h4 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1f2937;
-    margin: 0;
-}
-
-.tiers-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.tier-item {
-    display: flex;
-    align-items: flex-end;
-    gap: 12px;
-    padding: 16px;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-}
-
-.tier-field {
-    flex: 1;
-}
-
-.tier-field label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: #374151;
-    margin-bottom: 6px;
-}
-
-.tier-type {
-    flex: 1.5;
-}
-
-/* Buttons */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.btn-primary {
-    background: #3b82f6;
-    color: #fff;
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-}
-
-.btn-success {
-    background: #10b981;
-    color: #fff;
-}
-
-.btn-success:hover:not(:disabled) {
-    background: #059669;
-}
-
-.btn-sm {
-    padding: 8px 16px;
-    font-size: 13px;
-}
-
-.btn-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border: none;
-    border-radius: 6px;
-    background: transparent;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: #6b7280;
-}
-
-.btn-icon:hover {
-    background: #f3f4f6;
-}
-
-.btn-danger {
-    color: #ef4444;
-}
-
-.btn-danger:hover {
-    background: #fee2e2;
-}
-
-.btn-danger-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border: none;
-    border-radius: 6px;
-    background: #fee2e2;
-    color: #ef4444;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-danger-icon:hover {
-    background: #fecaca;
-}
-
-/* Empty States */
-.empty-state {
-    text-align: center;
-    padding: 24px;
-    color: #9ca3af;
-    font-size: 14px;
-}
-
-.empty-state-main {
-    text-align: center;
-    padding: 64px 24px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    margin-bottom: 24px;
-}
-
-.empty-state-main h3 {
-    font-size: 20px;
-    color: #374151;
-    margin: 16px 0 8px 0;
-}
-
-.empty-state-main p {
-    color: #6b7280;
-    margin: 0 0 24px 0;
-}
-
-/* Bottom Actions */
-.bottom-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-}
-
-/* Animations */
-.slide-enter-active,
-.slide-leave-active {
-    transition: all 0.3s ease;
-    max-height: 1000px;
-}
-
-.slide-enter-from,
-.slide-leave-to {
-    max-height: 0;
-    opacity: 0;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .tiered-pricing-wrapper {
-        padding: 16px;
-    }
-
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-
-    .tier-item {
-        flex-wrap: wrap;
-    }
-
-    .bottom-actions {
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .bottom-actions button {
-        width: 100%;
-    }
-}
-</style>
