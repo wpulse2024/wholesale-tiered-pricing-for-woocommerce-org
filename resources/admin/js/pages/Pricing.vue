@@ -1,12 +1,12 @@
 <template>
-    <div class="tiered-pricing-wrapper">
+    <div class="tiered-pricing-wrapper" v-loading="loading">
         <div class="page-header">
             <h1>Tiered Pricing Rules</h1>
             <p class="description">Configure pricing rules and discounts for different user roles</p>
         </div>
 
         <!-- Pricing Rules -->
-        <div class="rules-container">
+        <div v-if="pricingRules.length > 0" class="rules-container">
             <div v-for="(rule, index) in pricingRules" :key="rule.id" class="rule-card">
                 <div class="rule-header" @click="toggleRule(rule.id)">
                     <h3 class="rule-title">{{ getRoleLabel(rule.role) }} - Rule #{{ index + 1 }}</h3>
@@ -113,7 +113,7 @@
         </div>
 
         <!-- Empty State -->
-        <div v-if="pricingRules.length === 0" class="empty-state-main">
+        <div v-else-if="!loading" class="empty-state-main">
             <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
                 <circle cx="40" cy="40" r="40" fill="#F3F4F6" />
                 <path d="M40 24V56M24 40H56" stroke="#9CA3AF" stroke-width="4" stroke-linecap="round" />
@@ -157,7 +157,8 @@ export default {
             userRoles: window.wholesaleTieredPricingVars?.userRoles,
             saving: false,
             ruleIdCounter: 1,
-            tierIdCounter: 1
+            tierIdCounter: 1,
+            loading: true
         }
     },
 
@@ -170,7 +171,7 @@ export default {
     methods: {
         async loadRules() {
             try {
-                console.log('loading rules')
+                this.loading = true
                 const response = await fetch(ajaxurl, {
                     method: 'POST',
                     headers: {
@@ -183,7 +184,9 @@ export default {
                 })
                 const data = await response.json()
                 this.pricingRules = data?.data
+                this.loading = false
             } catch (error) {
+                this.loading = false
                 console.error('Error loading rules:', error)
             }
         },
