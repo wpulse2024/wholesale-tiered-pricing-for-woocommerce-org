@@ -43,7 +43,7 @@ class WC_Role_Pricing_Admin
     public function add_product_data_panel()
     {
         global $post;
-?>
+    ?>
         <div id="role_pricing_data" class="panel woocommerce_options_panel">
             <div class="options_group">
                 <h3><?php esc_html_e('Role-Based Pricing Rules', 'wholesale-tiered-pricing-for-woocommerce'); ?></h3>

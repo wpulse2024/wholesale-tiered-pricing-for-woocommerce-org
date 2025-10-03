@@ -1,0 +1,122 @@
+/* Frontend Styles for Role-Based Pricing */
+
+.wholesale-tiered-pricing-for-woocommerce-table {
+    margin: 20px 0;
+    border-radius: 8px;
+}
+
+.wholesale-tiered-pricing-for-woocommerce-table h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.pricing-table th,
+.pricing-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #e1e1e1;
+}
+
+.pricing-table th {
+    background-color: #333;
+    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+.pricing-table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.pricing-table tbody tr:hover {
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+.pricing-table tr:last-child td {
+    border-bottom: none;
+}
+
+.pricing-table .savings {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.role-pricing-savings {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 4px 10px;
+    background-color: #27ae60;
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.wholesale-tiered-pricing-for-woocommerce-notice {
+    background-color: #e7f3fe;
+    border-left: 4px solid #2196F3;
+    padding: 12px 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+}
+
+.wholesale-tiered-pricing-for-woocommerce-notice ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.wholesale-tiered-pricing-for-woocommerce-notice li {
+    padding: 5px 0;
+    color: #333;
+}
+
+.wholesale-tiered-pricing-for-woocommerce-notice li:before {
+    content: "ℹ ";
+    margin-right: 8px;
+    color: #2196F3;
+    font-weight: bold;
+}
+
+.quantity .qty {
+    width: 150px;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+@media (max-width: 768px) {
+    .pricing-table {
+        font-size: 14px;
+    }
+    
+    .pricing-table th,
+    .pricing-table td {
+        padding: 10px 8px;
+    }
+    
+    .wholesale-tiered-pricing-for-woocommerce-table {
+        padding: 15px;
+    }
+    
+    .wholesale-tiered-pricing-for-woocommerce-table h3 {
+        font-size: 18px;
+    }
+}

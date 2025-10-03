@@ -16,6 +16,32 @@ class WC_Role_Pricing_Ajax {
         add_action('wp_ajax_nopriv_get_variation_pricing_rules', array($this, 'get_variation_pricing_rules'));
         add_action('wp_ajax_validate_quantity_rules', array($this, 'validate_quantity_rules'));
         add_action('wp_ajax_nopriv_validate_quantity_rules', array($this, 'validate_quantity_rules'));
+        add_action('wp_ajax_wc_role_pricing_get_pricing_rules', array($this, 'get_pricing_rules'));
+        add_action('wp_ajax_nopriv_wc_role_pricing_get_pricing_rules', array($this, 'get_pricing_rules'));
+        add_action('wp_ajax_wc_role_pricing_save_pricing_rules', array($this, 'save_pricing_rules'));
+        add_action('wp_ajax_nopriv_wc_role_pricing_save_pricing_rules', array($this, 'save_pricing_rules'));
+    }
+
+    public function get_pricing_rules() {
+
+        $nonce = $_POST['nonce'];
+        if (!wp_verify_nonce($nonce, 'wc_role_pricing_get_pricing_rules')) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+        }
+
+        $rules = get_option('wc_role_pricing_global_rules', []);
+        wp_send_json_success($rules);
+    }
+
+    public function save_pricing_rules() {
+        $nonce = $_POST['nonce'];
+        if (!wp_verify_nonce($nonce, 'wc_role_pricing_get_pricing_rules')) {
+            wp_send_json_error(array('message' => 'Invalid nonce'));
+        }
+
+        $rules = json_decode(stripslashes($_POST['rules']), true);
+        update_option('wc_role_pricing_global_rules', $rules);
+        wp_send_json_success(array('message' => 'Pricing rules saved successfully'));
     }
 
     /**
