@@ -9,7 +9,7 @@
 
         <el-menu-item index="/product">
             <el-icon>
-                <Collection />
+                <Goods />
             </el-icon>
             <span>Products</span>
         </el-menu-item>
@@ -21,7 +21,7 @@
             <span>Settings</span>
         </el-menu-item>
 
-        <el-menu-item index="/comments">
+        <el-menu-item index="/documentation">
             <el-icon>
                 <Document />
             </el-icon>
@@ -35,7 +35,7 @@ import {
     Setting,
     Money,
     Document,
-    Collection
+    Goods
 
 } from '@element-plus/icons-vue'
 
@@ -45,7 +45,7 @@ export default {
         Setting,
         Money,
         Document,
-        Collection
+        Goods
     },
     data() {
         return {

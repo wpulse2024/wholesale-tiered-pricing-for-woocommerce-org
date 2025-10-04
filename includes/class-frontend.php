@@ -26,24 +26,21 @@ class WC_Role_Pricing_Frontend {
 
     public function display_pricing_table() {
         global $product;
-
+        $helper = new WC_Role_Pricing_Helper();
+        if (!$helper->validation($product->get_id())) {
+            return;
+        }
+        if (!$helper->enableToShowsTable($product->get_id())) {
+            return;
+        }
         $rules = get_post_meta($product->get_id(), '_role_pricing_rules', true);
         $globalRules = get_option('wc_role_pricing_global_rules', []);
-        $enableGlobalRules = get_option('wc_role_pricing_enable_global_rules', 'yes');
+
         if (empty($rules)) {
-            if ($enableGlobalRules === 'no') {
-                return;
-            }
             if (empty($globalRules)) {
                 return;
             }
             $rules = $globalRules;
-        }
-
-        $show_table = get_post_meta($product->get_id(), '_show_pricing_table', true);
-
-        if ($show_table !== 'yes' && empty($rules)) {
-            return;
         }
 
         $current_user_role = $this->get_current_user_role();
@@ -58,9 +55,10 @@ class WC_Role_Pricing_Frontend {
         if (empty($applicable_rules)) {
             return;
         }
-        include_once(WC_ROLE_PRICING_PLUGIN_PATH . 'templates/pricing-table-view.php');
-        // include_once(WC_ROLE_PRICING_PLUGIN_PATH . 'templates/pricing-table-view-compact-list.php');
-        // include_once(WC_ROLE_PRICING_PLUGIN_PATH . 'templates/minimal-template.php');
+
+        $templatePath = $helper->getTemplatePath();
+   
+        include_once($templatePath);
     }
 
     public function modify_quantity_args($args, $product) {

@@ -1,5 +1,7 @@
 <div class="wholesale-tiered-pricing-for-woocommerce-compact">
     <?php 
+    $helper = new WC_Role_Pricing_Helper();
+    $regular_price = $product->get_regular_price();
     wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-grid', WC_ROLE_PRICING_PLUGIN_URL . 'includes/compact-list-template.css', array(), WC_ROLE_PRICING_VERSION);
     foreach ($applicable_rules as $rule) {
         if (!empty($rule['tiered_pricing'])):
@@ -18,14 +20,16 @@
                 <?php
                 foreach ($rule['tiered_pricing'] as $tier):
                     if (!empty($tier['min_qty']) && !empty($tier['price'])):
-                        $savings = $regular_price - floatval($tier['price']);
-                        $savings_percent = $regular_price > 0 ? ($savings / $regular_price) * 100 : 0;
+                        $discount = $helper->calculationDiscount($regular_price, $tier);
+                        $savings = $discount['savings'];
+                        $savings_percent = $discount['savings_percent'];
+                        $price = $discount['price'];
                 ?>
                 <li class="pricing-tier">
-                    <span class="tier-qty"><?php echo esc_html(intval($tier['min_qty'])); ?>+</span>
-                    <span class="tier-price"><?php echo esc_html(wc_price($tier['price'])); ?></span>
+                    <span class="tier-qty"><?php echo esc_attr(intval($tier['min_qty'])); ?>+</span>
+                    <span class="tier-price"><?php echo wc_price($tier['price']); ?></span>
                     <?php if ($savings > 0): ?>
-                        <span class="tier-save woocommerce-Price-amount"><?php echo esc_html(round($savings_percent)); ?>% <?php esc_html__('off', 'wholesale-tiered-pricing-for-woocommerce'); ?></span>
+                        <span class="tier-save woocommerce-Price-amount"><?php echo esc_html(round($savings_percent)); ?>% <?php echo esc_html__('off', 'wholesale-tiered-pricing-for-woocommerce'); ?></span>
                     <?php endif; ?>
                 </li>
                 <?php endif; endforeach; ?>

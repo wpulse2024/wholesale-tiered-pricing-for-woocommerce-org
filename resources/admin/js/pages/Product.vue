@@ -4,9 +4,16 @@
             <h1>Product Inclusion & Exclusion</h1>
             <p class="description">Configure which products or categories the pricing rules apply to</p>
         </div>
-
+        <div class="page-header">
+            <h1>Apply to</h1>
+            <p class="description">Choose whether to include or exclude products from the pricing rules</p>
+            <el-radio-group v-model="applyType">
+                <el-radio label="include">Include</el-radio>
+                <el-radio label="exclude">Exclude</el-radio>
+            </el-radio-group>
+        </div>
         <!-- Included Products Section -->
-        <div class="section-card">
+        <div class="section-card" v-if="applyType === 'include'">
             <div class="section-header">
                 <h2>
                     Included Products
@@ -64,10 +71,10 @@
         </div>
 
         <!-- Exclusions Section -->
-        <div class="section-card">
+        <div class="section-card" v-if="applyType === 'exclude'">
             <div class="section-header">
                 <h2>
-                    Exclusions
+                    Excluded Products
                 </h2>
                 <p class="description">Select which products or categories should be excluded from the pricing rules.</p>
             </div>
@@ -137,6 +144,7 @@ export default {
             // Exclude
             excludeCategories: [],
             excludeProducts: [],
+            applyType: 'include',
 
             saving: false,
             searchTimeout: null,
@@ -171,6 +179,7 @@ export default {
                     this.includeProducts = data.data.include_products || []
                     this.excludeCategories = data.data.exclude_categories || []
                     this.excludeProducts = data.data.exclude_products || []
+                    this.applyType = data.data.apply_type || 'include'
                 }
             } catch (error) {
                 console.error('Error loading settings:', error)
@@ -183,6 +192,7 @@ export default {
                 this.includeProducts = []
                 this.excludeCategories = []
                 this.excludeProducts = []
+                this.applyType = 'include'
             }
         },
 
@@ -202,7 +212,8 @@ export default {
                             include_categories: this.includeCategories,
                             include_products: this.includeProducts,
                             exclude_categories: this.excludeCategories,
-                            exclude_products: this.excludeProducts
+                            exclude_products: this.excludeProducts,
+                            apply_type: this.applyType
                         })
                     })
                 })

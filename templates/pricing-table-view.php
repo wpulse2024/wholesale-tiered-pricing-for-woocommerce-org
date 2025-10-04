@@ -8,7 +8,7 @@
     );
 
     $regular_price = floatval($product->get_regular_price());
-
+    $helper = new WC_Role_Pricing_Helper();
     foreach ($applicable_rules as $rule) :
         if (empty($rule['tiered_pricing'])) {
             continue;
@@ -31,23 +31,10 @@
                     if (empty($tier['min_qty']) || empty($tier['price'])) {
                         continue;
                     }
-
-                    $discount_type = $tier['discount_type'] ?? '';
-                    $tier_price = floatval($tier['price']);
-
-                    if ($discount_type === 'fixed') {
-                        $price = $regular_price - $tier_price;
-                        $savings = $regular_price - $price;
-                        $savings_percent = $regular_price > 0 ? ($savings / $regular_price) * 100 : 0;
-                    } else if($discount_type === 'percentage') {
-                        $price = $regular_price - ($regular_price * $tier_price / 100);
-                        $savings = $regular_price - $price;
-                        $savings_percent = $tier_price;
-                    } else {
-                        $price = $tier_price;
-                        $savings = $regular_price - $tier_price;
-                        $savings_percent = $regular_price > 0 ? ($savings / $regular_price) * 100 : 0;
-                    }
+                    $discount = $helper->calculationDiscount($regular_price, $tier);
+                    $price = $discount['price'];
+                    $savings = $discount['savings'];
+                    $savings_percent = $discount['savings_percent'];
                 ?>
                 <tr>
                     <td class="quantity-badge">

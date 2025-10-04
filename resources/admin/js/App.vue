@@ -25,9 +25,8 @@ export default {
     min-height: 100vh;
     flex-wrap: wrap;
     gap: 20px;
-    width: 90%;
-    margin: 0 auto;
-    max-width: 1200px;
+    margin: 0 20px;
+    max-width: 100%;
 }
 
 .wtpfw_admin_settings_sidebar {
@@ -38,5 +37,6 @@ export default {
     flex: 1;
     background: #fff;
     border-radius: 12px;
+    width: calc(100% - 260px);
 }
 </style>

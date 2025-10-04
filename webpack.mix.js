@@ -9,6 +9,7 @@ mix.js('resources/admin/js/app.js', 'assets/admin/app.js')
    .js('resources/frontend.js', 'assets/frontend.js')
    .sass('resources/scss/frontend.scss', 'assets/frontend.css')
    .sass('resources/scss/admin.scss', 'assets/admin.css')
+   .sass('resources/scss/minimal-template.scss', 'assets/minimal-template.css')
    .js('resources/admin.js', 'assets/admin.js')
 //    .copy('resources/images', 'assets/images')
    .sourceMaps();

@@ -92,6 +92,16 @@
                 </div>
             </div>
 
+            <!--Columns titles -->
+            <div class="setting-item">
+                <label class="setting-label">Columns titles</label>
+                <div class="setting-content">
+                    <el-input style="margin-bottom: 8px;" v-model="settings.quantityLabel" placeholder="Quantity" class="compact-input" />
+                    <el-input style="margin-bottom: 8px;" v-model="settings.discountLabel" placeholder="Discount" class="compact-input" />
+                    <el-input v-model="settings.priceLabel" placeholder="Price" class="compact-input" />
+                </div>
+            </div>
+
             <!-- Show Discount Column -->
             <div class="setting-item">
                 <label class="setting-label">Show discount column</label>
@@ -141,7 +151,10 @@ export default {
                 showQuantityColumn: true,
                 showDiscountColumn: true,
                 responsiveTable: true,
-                activePricingColor: '#ff9a00'
+                activePricingColor: '#ff9a00',
+                quantityLabel: 'Quantity',
+                discountLabel: 'Discount',
+                priceLabel: 'Price'
             },
             templates: [
                 { value: 'table', label: 'Table' },
@@ -196,7 +209,11 @@ export default {
                     position: 'above_add_to_cart',
                     showQuantityColumn: true,
                     showDiscountColumn: true,
-                    responsiveTable: true
+                    responsiveTable: true,
+                    activePricingColor: '#ff9a00',
+                    quantityLabel: 'Quantity',
+                    discountLabel: 'Discount',
+                    priceLabel: 'Price'
                 }
                 this.$message.success('Settings reset to defaults')
             }).catch(() => { })

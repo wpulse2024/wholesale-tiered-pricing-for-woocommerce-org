@@ -74,6 +74,7 @@ class WC_Role_Based_Pricing
         require_once WC_ROLE_PRICING_PLUGIN_PATH . 'includes/class-pricing.php';
         require_once WC_ROLE_PRICING_PLUGIN_PATH . 'includes/class-ajax.php';
         require_once WC_ROLE_PRICING_PLUGIN_PATH . 'includes/class-global-settings.php';
+        require_once WC_ROLE_PRICING_PLUGIN_PATH . 'includes/helper/class-helper.php';
     }
 
     private function hooks()

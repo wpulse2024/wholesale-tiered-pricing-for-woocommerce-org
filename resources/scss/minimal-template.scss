@@ -78,6 +78,7 @@
 .premium-tier.featured-tier {
     background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
     box-shadow: 0 6px 25px rgba(251, 191, 36, 0.35);
+    margin-top: 10px;
 }
 
 .premium-tier.featured-tier .tier-content {
@@ -86,7 +87,7 @@
 
 .featured-badge {
     position: absolute;
-    top: -6px;
+    top: -12px;
     right: 8px;
     background: #dc2626;
     color: #fff;
