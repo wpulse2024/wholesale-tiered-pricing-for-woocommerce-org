@@ -10,6 +10,7 @@ mix.js('resources/admin/js/app.js', 'assets/admin/app.js')
    .sass('resources/scss/frontend.scss', 'assets/frontend.css')
    .sass('resources/scss/admin.scss', 'assets/admin.css')
    .sass('resources/scss/minimal-template.scss', 'assets/minimal-template.css')
+   .sass('resources/scss/template/options-table.scss', 'assets/options-table.css')
    .js('resources/admin.js', 'assets/admin.js')
 //    .copy('resources/images', 'assets/images')
    .sourceMaps();

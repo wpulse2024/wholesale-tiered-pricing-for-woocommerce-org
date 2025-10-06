@@ -98,6 +98,10 @@ jQuery(document).ready(function($) {
                 <input type="number" name="role_pricing_rules[${parentIndex}][tiered_pricing][${tierIndex}][price]" 
                        placeholder="Price" step="0.01" min="0" style="width: 150px;" />
                 <button type="button" class="button remove-tier-rule">Remove</button>
+                <select name="role_pricing_rules[${parentIndex}][tiered_pricing][${tierIndex}][discount_type]">
+                    <option value="fixed">Fixed</option>
+                    <option value="percentage">Percentage</option>
+                </select>
             </div>
         `;
         

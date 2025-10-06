@@ -128,7 +128,7 @@ class WC_Role_Pricing_Admin
                 <h4><?php esc_html_e('Tiered Pricing', 'wholesale-tiered-pricing-for-woocommerce'); ?></h4>
                 <div class="tiered-pricing-rules">
                     <?php
-                    $tiered_rules = isset($rule['tiered_pricing']) ? esc_attr($rule['tiered_pricing']) : array();
+                    $tiered_rules = isset($rule['tiered_pricing']) ? $rule['tiered_pricing'] : array();
                     foreach ($tiered_rules as $tier_index => $tier_rule) {
                         $this->render_tier_rule($index, $tier_index, $tier_rule);
                     }
@@ -154,6 +154,10 @@ class WC_Role_Pricing_Admin
                 placeholder="<?php esc_html_e('Price', 'wholesale-tiered-pricing-for-woocommerce'); ?>"
                 value="<?php echo isset($tier_rule['price']) ? esc_attr($tier_rule['price']) : ''; ?>"
                 step="0.01" min="0" style="width: 150px;" />
+            <select name="role_pricing_rules[<?php echo esc_attr($parent_index); ?>][tiered_pricing][<?php echo esc_attr($tier_index); ?>][discount_type]">
+                <option value="fixed" <?php selected(isset($tier_rule['discount_type']) ? $tier_rule['discount_type'] : '', 'fixed'); ?>>Fixed</option>
+                <option value="percentage" <?php selected(isset($tier_rule['discount_type']) ? $tier_rule['discount_type'] : '', 'percentage'); ?>>Percentage</option>
+            </select>
             <button type="button" class="button remove-tier-rule"><?php esc_html_e('Remove', 'wholesale-tiered-pricing-for-woocommerce'); ?></button>
         </div>
 <?php

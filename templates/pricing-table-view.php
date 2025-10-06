@@ -9,6 +9,11 @@
 
     $regular_price = floatval($product->get_regular_price());
     $helper = new WC_Role_Pricing_Helper();
+    $generalSettings = $helper->getGeneralSettings();
+    $activePricingColor = !empty($generalSettings['activePricingColor']) ? $generalSettings['activePricingColor'] : '#7f54b3';
+    $quantityLabel = !empty($generalSettings['quantityLabel']) ? $generalSettings['quantityLabel'] : 'Quantity';
+    $discountLabel = !empty($generalSettings['discountLabel']) ? $generalSettings['discountLabel'] : 'Price Per Unit';
+    $priceLabel = !empty($generalSettings['priceLabel']) ? $generalSettings['priceLabel'] : 'You Save';
     foreach ($applicable_rules as $rule) :
         if (empty($rule['tiered_pricing'])) {
             continue;
@@ -18,12 +23,12 @@
             return intval($a['min_qty']) - intval($b['min_qty']);
         });
     ?>
-        <table class="pricing-table">
+        <table class="pricing-table" style="--wtp-primary-color: <?php echo esc_attr($activePricingColor); ?>;">
             <thead>
                 <tr>
-                    <th><?php echo esc_html__('Quantity', 'wholesale-tiered-pricing-for-woocommerce'); ?></th>
-                    <th><?php echo esc_html__('Price Per Unit', 'wholesale-tiered-pricing-for-woocommerce'); ?></th>
-                    <th><?php echo esc_html__('You Save', 'wholesale-tiered-pricing-for-woocommerce'); ?></th>
+                    <th><?php echo esc_html($quantityLabel); ?></th>
+                    <th><?php echo esc_html( $discountLabel); ?></th>
+                    <th><?php echo esc_html($priceLabel); ?></th>
                 </tr>
             </thead>
             <tbody>

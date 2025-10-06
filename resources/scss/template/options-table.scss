@@ -1,0 +1,160 @@
+
+.wc-role-pricing-radio {
+    margin: 20px 0;
+}
+
+.radio-pricing-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.radio-tier {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    background: #fff;
+}
+
+.radio-tier:hover {
+    border-color: #999;
+    background: #f9f9f9;
+}
+
+.radio-tier.active {
+    border-color: var(--wtp-primary-color, #7f54b3);
+    background: color-mix(in srgb, var(--wtp-primary-color, #7f54b3) 10%, white);
+}
+
+.tier-radio-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.radio-custom {
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.radio-tier:hover .radio-custom {
+    border-color: #999;
+}
+
+.radio-tier.active .radio-custom {
+    border-color: var(--wtp-primary-color, #7f54b3);
+}
+
+.radio-tier.active .radio-custom::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: var(--wtp-primary-color, #7f54b3);
+    border-radius: 50%;
+}
+
+.tier-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tier-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+.radio-tier.active .tier-label {
+    color: var(--wtp-primary-color, #7f54b3);
+}
+
+.tier-total {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.total-label {
+    font-weight: 600;
+    color: #666;
+}
+
+.total-regular {
+    color: #999;
+    text-decoration: line-through;
+    font-size: 13px;
+}
+
+.total-sale {
+    color: var(--wtp-primary-color, #7f54b3);
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.tier-pricing {
+    flex: 0 0 auto;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.tier-regular-price {
+    font-size: 14px;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.tier-sale-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+}
+
+.radio-tier.active .tier-sale-price {
+    color: #7f54b3;
+}
+
+@media (max-width: 768px) {
+    .radio-tier {
+        padding: 12px;
+        gap: 10px;
+    }
+    
+    .tier-label {
+        font-size: 14px;
+    }
+    
+    .tier-sale-price {
+        font-size: 18px;
+    }
+    
+    .tier-total {
+        font-size: 13px;
+    }
+    
+    .total-sale {
+        font-size: 15px;
+    }
+}

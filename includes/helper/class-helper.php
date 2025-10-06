@@ -82,11 +82,13 @@ class WC_Role_Pricing_Helper
     public function getTemplatePath() {
         $globalSettings = $this->getGeneralSettings();
         $template = !empty($globalSettings['defaultTemplate']) ? $globalSettings['defaultTemplate'] : 'table';
-        var_dump($template);
+    
         $templates = apply_filters('wc_role_pricing_templates', [
             'table' => WC_ROLE_PRICING_PLUGIN_PATH . 'templates/pricing-table-view.php',
             'compact_list' => WC_ROLE_PRICING_PLUGIN_PATH . 'templates/pricing-table-view-compact-list.php',
             'minimal_table' => WC_ROLE_PRICING_PLUGIN_PATH . 'templates/minimal-template.php',
+            'plain_text' => WC_ROLE_PRICING_PLUGIN_PATH . 'templates/plain-text-template.php',
+            'options' => WC_ROLE_PRICING_PLUGIN_PATH . 'templates/options-table.php',
         ]);
         return $templates[$template];
     }

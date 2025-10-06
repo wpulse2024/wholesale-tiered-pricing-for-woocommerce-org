@@ -31,12 +31,12 @@ add_action( 'before_woocommerce_init', function() {
     }
 });
 
-add_action('admin_head', function () {
-    $screen = get_current_screen();
-    if ($screen && $screen->id === 'woocommerce_page_wc-settings') {
-        echo '<style>.woocommerce-save-button {display:none !important;}</style>';
-    }
-});
+// add_action('admin_head', function () {
+//     $screen = get_current_screen();
+//     if ($screen && $screen->id === 'woocommerce_page_wc-settings') {
+//         echo '<style>.woocommerce-save-button {display:none !important;}</style>';
+//     }
+// });
 
 class WC_Role_Based_Pricing
 {
