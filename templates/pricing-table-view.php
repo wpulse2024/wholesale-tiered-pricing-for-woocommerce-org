@@ -47,15 +47,15 @@
                         <div class="items-text"><?php esc_html_e('items', 'wholesale-tiered-pricing-for-woocommerce'); ?></div>
                     </td>
                     <td class="price-unit">
-                        <del><?php echo wc_price($regular_price); ?></del>
-                        <ins><?php echo wc_price($price); ?></ins>
+                        <del><?php echo wp_kses_post(wc_price($regular_price)); ?></del>
+                        <ins><?php echo wp_kses_post(wc_price($price)); ?></ins>
                     </td>
                     <td class="savings-info">
                         <?php if ($savings > 0): ?>
                             <span class="savings-badge">
                                 <?php echo esc_html__('Save', 'wholesale-tiered-pricing-for-woocommerce') . ' ' . esc_html(round($savings_percent)) . '%'; ?>
                             </span>
-                            <div class="savings-detail">(<?php echo wc_price($savings); ?> off)</div>
+                            <div class="savings-detail">(<?php echo wp_kses_post(wc_price($savings)); ?> off)</div>
                         <?php else: ?>
                             &mdash;
                         <?php endif; ?>

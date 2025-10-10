@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) exit;
 // 1. Add Tiered Pricing Tab
 // -----------------------------
 add_filter('woocommerce_settings_tabs_array', function($tabs) {
-    $tabs['tiered_pricing'] = __('Tiered Pricing', 'text-domain');
+    $tabs['tiered_pricing'] = __('Tiered Pricing', 'wholesale-tiered-pricing-for-woocommerce');
     return $tabs;
 }, 50);
 

@@ -5,7 +5,7 @@
  * Description: Set role-based prices and quantity rules in WooCommerce. Show tiered pricing tables for wholesale, B2B, and bulk discounts.
  * Version: 1.0.0
  * Author: WPulse
- * Author URI: https://www.akmelias.com/
+ * Author URI: https://profiles.wordpress.org/wpulse/
  * Text Domain: wholesale-tiered-pricing-for-woocommerce
  * Domain Path: /languages
  * License: GPLv2 or later

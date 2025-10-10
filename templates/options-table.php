@@ -1,6 +1,6 @@
-<div class="wc-role-pricing-radio">
+<div class="wholesale-tiered-pricing-for-woocommerce-radio">
     <?php 
-    wp_enqueue_style('wc-role-pricing-radio-select', WC_ROLE_PRICING_PLUGIN_URL . 'assets/options-table.css', array(), WC_ROLE_PRICING_VERSION);
+    wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-radio-select', WC_ROLE_PRICING_PLUGIN_URL . 'assets/options-table.css', array(), WC_ROLE_PRICING_VERSION);
     
     $regular_price = $product->get_regular_price();
     $helper = new WC_Role_Pricing_Helper();
@@ -41,20 +41,20 @@
                     <span class="tier-label">
                         <?php 
                         if ($next_tier_qty) {
-                            echo sprintf(esc_html__('Buy %d - %d pieces', 'wc-role-pricing'), $min_qty, $next_tier_qty);
+                            echo esc_html(sprintf(esc_html('Buy %d - %d pieces', 'wholesale-tiered-pricing-for-woocommerce'), $min_qty, $next_tier_qty));
                         } else {
-                            echo sprintf(esc_html__('Buy %d+ pieces', 'wc-role-pricing'), $min_qty);
+                            echo esc_html(sprintf(esc_html('Buy %d+ pieces', 'wholesale-tiered-pricing-for-woocommerce'), $min_qty));
                         }
                         
                         if ($savings > 0) {
-                            echo ' ' . sprintf(esc_html__('and save %d%%', 'wc-role-pricing'), round($savings_percent));
+                            echo esc_html(' ' . sprintf(esc_html('and save %d%%', 'wholesale-tiered-pricing-for-woocommerce'), round($savings_percent)));
                         }
                         ?>
                     </span>
                     
                     <?php if ($is_last_tier): ?>
                         <div class="tier-total">
-                            <span class="total-label"><?php echo esc_html__('Total:', 'wc-role-pricing'); ?></span>
+                            <span class="total-label"><?php echo esc_html__('Total:', 'wholesale-tiered-pricing-for-woocommerce'); ?></span>
                             <span class="total-regular" data-regular-total=""></span>
                             <span class="total-sale" data-sale-total=""></span>
                         </div>
@@ -63,9 +63,9 @@
                 
                 <div class="tier-pricing">
                     <?php if ($savings > 0 && $regular_price != $tier_price): ?>
-                        <span class="tier-regular-price"><?php echo wc_price($regular_price); ?></span>
+                        <span class="tier-regular-price"><?php echo wp_kses_post(wc_price($regular_price)); ?></span>
                     <?php endif; ?>
-                    <span class="tier-sale-price"><?php echo wc_price($tier_price); ?></span>
+                    <span class="tier-sale-price"><?php echo wp_kses_post(wc_price($tier_price)); ?></span>
                 </div>
             </label>
             <?php endif; endforeach; ?>

@@ -43,9 +43,9 @@
 
                         <div class="tier-center">
                             <?php if ($savings > 0 && $regular_price != $tier['price']): ?>
-                                <span class="regular-price"><?php echo wc_price($regular_price); ?></span>
+                                <span class="regular-price"><?php echo wp_kses_post(wc_price($regular_price)); ?></span>
                             <?php endif; ?>
-                            <span class="sale-price"><?php echo wc_price($price); ?></span>
+                            <span class="sale-price"><?php echo wp_kses_post(wc_price($price)); ?></span>
                         </div>
 
                         <div class="tier-right">

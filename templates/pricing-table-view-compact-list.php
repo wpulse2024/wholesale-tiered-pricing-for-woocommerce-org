@@ -27,7 +27,7 @@
                 ?>
                 <li class="pricing-tier">
                     <span class="tier-qty"><?php echo esc_attr(intval($tier['min_qty'])); ?>+</span>
-                    <span class="tier-price"><?php echo wc_price($tier['price']); ?></span>
+                    <span class="tier-price"><?php echo wp_kses_post(wc_price($tier['price'])); ?></span>
                     <?php if ($savings > 0): ?>
                         <span class="tier-save woocommerce-Price-amount"><?php echo esc_html(round($savings_percent)); ?>% <?php echo esc_html__('off', 'wholesale-tiered-pricing-for-woocommerce'); ?></span>
                     <?php endif; ?>
