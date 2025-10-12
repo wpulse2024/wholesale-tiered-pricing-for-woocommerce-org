@@ -1,8 +1,13 @@
+<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+?>
 <div class="wholesale-tiered-pricing-for-woocommerce-premium">
     <?php 
-    wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-premium', WC_ROLE_PRICING_PLUGIN_URL . 'assets/minimal-template.css', array(), WC_ROLE_PRICING_VERSION);
+    wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-premium', WHTPROLE_PRICING_PLUGIN_URL . 'assets/minimal-template.css', array(), WHTPROLE_PRICING_VERSION);
     $regular_price = $product->get_regular_price();
-    $helper = new WC_Role_Pricing_Helper();
+    $helper = new WHTPRole_Pricing_Helper();
     foreach ($applicable_rules as $rule) {
         if (!empty($rule['tiered_pricing'])):
             usort($rule['tiered_pricing'], function($a, $b) {

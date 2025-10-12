@@ -265,7 +265,7 @@
                 <div class="code-header">
                   <span>PHP</span>
                 </div>
-                <pre><code>$rules = WC_Role_Pricing()->get_pricing_rules($product_id);
+                <pre><code>$rules = WHTPRole_Pricing()->get_pricing_rules($product_id);
   foreach ($rules as $rule) {
       echo $rule['min_qty'] . ' - ' . $rule['price'];
   }</code></pre>
@@ -278,7 +278,7 @@
                 <div class="code-header">
                   <span>PHP</span>
                 </div>
-                <pre><code>$price = WC_Role_Pricing()->calculate_price($product_id, $quantity);
+                <pre><code>$price = WHTPRole_Pricing()->calculate_price($product_id, $quantity);
   echo wc_price($price);</code></pre>
               </div>
             </div>

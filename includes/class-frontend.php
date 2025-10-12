@@ -3,7 +3,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class WC_Role_Pricing_Frontend {
+class WHTPRole_Pricing_Frontend {
 
     public function __construct() {
         add_action('woocommerce_single_product_summary', array($this, 'display_pricing_table'), 15);
@@ -15,18 +15,18 @@ class WC_Role_Pricing_Frontend {
 
     public function enqueue_scripts() {
         if (is_product()) {
-            wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce', WC_ROLE_PRICING_PLUGIN_URL . 'assets/frontend.js', array('jquery'), WC_ROLE_PRICING_VERSION, true);
+            wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce', WHTPROLE_PRICING_PLUGIN_URL . 'assets/frontend.js', array('jquery'), WHTPROLE_PRICING_VERSION, true);
             
-            wp_localize_script('wholesale-tiered-pricing-for-woocommerce', 'wcRolePricing', array(
+            wp_localize_script('wholesale-tiered-pricing-for-woocommerce', 'wholesaleTieredPricingVars', array(
                 'ajaxUrl' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('wc_role_pricing_nonce')
+                'nonce' => wp_create_nonce('wholesale-tiered-pricing-for-woocommerce-ajax')
             ));
         }
     }
 
     public function display_pricing_table() {
         global $product;
-        $helper = new WC_Role_Pricing_Helper();
+        $helper = new WHTPRole_Pricing_Helper();
         if (!$helper->validation($product->get_id())) {
             return;
         }

@@ -19,11 +19,11 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('WC_ROLE_PRICING_VERSION', '1.0.0');
-define('WC_ROLE_PRICING_PLUGIN_FILE', __FILE__);
-define('WC_ROLE_PRICING_PLUGIN_BASENAME', plugin_basename(__FILE__));
-define('WC_ROLE_PRICING_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('WC_ROLE_PRICING_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('WHTPROLE_PRICING_VERSION', '1.0.0');
+define('WHTPROLE_PRICING_PLUGIN_FILE', __FILE__);
+define('WHTPROLE_PRICING_PLUGIN_BASENAME', plugin_basename(__FILE__));
+define('WHTPROLE_PRICING_PLUGIN_PATH', plugin_dir_path(__FILE__));
+define('WHTPROLE_PRICING_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 add_action( 'before_woocommerce_init', function() {
     if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
@@ -38,7 +38,7 @@ add_action( 'before_woocommerce_init', function() {
 //     }
 // });
 
-class WC_Role_Based_Pricing
+class WHTPRole_Based_Pricing
 {
 
     private static $instance = null;
@@ -69,20 +69,20 @@ class WC_Role_Based_Pricing
 
     private function includes()
     {
-        require_once WC_ROLE_PRICING_PLUGIN_PATH . 'includes/class-admin.php';
-        require_once WC_ROLE_PRICING_PLUGIN_PATH . 'includes/class-frontend.php';
-        require_once WC_ROLE_PRICING_PLUGIN_PATH . 'includes/class-pricing.php';
-        require_once WC_ROLE_PRICING_PLUGIN_PATH . 'includes/class-ajax.php';
-        require_once WC_ROLE_PRICING_PLUGIN_PATH . 'includes/class-global-settings.php';
-        require_once WC_ROLE_PRICING_PLUGIN_PATH . 'includes/helper/class-helper.php';
+        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-admin.php';
+        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-frontend.php';
+        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-pricing.php';
+        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-ajax.php';
+        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-global-settings.php';
+        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/helper/class-helper.php';
     }
 
     private function hooks()
     {
-        new WC_Role_Pricing_Admin();
-        new WC_Role_Pricing_Frontend();
-        new WC_Role_Pricing_Engine();
-        new WC_Role_Pricing_Ajax();
+        new WHTPRole_Pricing_Admin();
+        new WHTPRole_Pricing_Frontend();
+        new WHTPRole_Pricing_Engine();
+        new WHTPRole_Pricing_Ajax();
 
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_deactivation_hook(__FILE__, array($this, 'deactivate'));
@@ -124,7 +124,7 @@ class WC_Role_Based_Pricing
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
 
-        update_option('wc_role_pricing_db_version', WC_ROLE_PRICING_VERSION);
+        update_option('whtprole_role_pricing_db_version', WHTPROLE_PRICING_VERSION);
     }
 
     public function woocommerce_missing_notice()
@@ -136,7 +136,7 @@ class WC_Role_Based_Pricing
 
 function wc_role_pricing_init()
 {
-    return WC_Role_Based_Pricing::get_instance();
+    return WHTPRole_Based_Pricing::get_instance();
 }
 
 //get role=================================

@@ -1,14 +1,20 @@
+<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+?>
+
 <div class="wholesale-tiered-pricing-for-woocommerce-table">
     <?php 
     wp_enqueue_style(
         'wholesale-tiered-pricing-for-woocommerce', 
-        WC_ROLE_PRICING_PLUGIN_URL . 'assets/frontend.css', 
+        WHTPROLE_PRICING_PLUGIN_URL . 'assets/frontend.css', 
         array(), 
-        WC_ROLE_PRICING_VERSION
+        WHTPROLE_PRICING_VERSION
     );
 
     $regular_price = floatval($product->get_regular_price());
-    $helper = new WC_Role_Pricing_Helper();
+    $helper = new WHTPRole_Pricing_Helper();
     $generalSettings = $helper->getGeneralSettings();
     $activePricingColor = !empty($generalSettings['activePricingColor']) ? $generalSettings['activePricingColor'] : '#7f54b3';
     $quantityLabel = !empty($generalSettings['quantityLabel']) ? $generalSettings['quantityLabel'] : 'Quantity';

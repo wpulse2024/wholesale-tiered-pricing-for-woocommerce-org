@@ -1,7 +1,7 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
-class WC_Role_Pricing_Helper
+class WHTPRole_Pricing_Helper
 {
     public function isValidProductToAppliedTieredPricing($product_id)
     {
@@ -84,11 +84,11 @@ class WC_Role_Pricing_Helper
         $template = !empty($globalSettings['defaultTemplate']) ? $globalSettings['defaultTemplate'] : 'table';
     
         $templates = apply_filters('wc_role_pricing_templates', [
-            'table' => WC_ROLE_PRICING_PLUGIN_PATH . 'templates/pricing-table-view.php',
-            'compact_list' => WC_ROLE_PRICING_PLUGIN_PATH . 'templates/pricing-table-view-compact-list.php',
-            'minimal_table' => WC_ROLE_PRICING_PLUGIN_PATH . 'templates/minimal-template.php',
-            'plain_text' => WC_ROLE_PRICING_PLUGIN_PATH . 'templates/plain-text-template.php',
-            'options' => WC_ROLE_PRICING_PLUGIN_PATH . 'templates/options-table.php',
+            'table' => WHTPROLE_PRICING_PLUGIN_PATH . 'templates/pricing-table-view.php',
+            'compact_list' => WHTPROLE_PRICING_PLUGIN_PATH . 'templates/pricing-table-view-compact-list.php',
+            'minimal_table' => WHTPROLE_PRICING_PLUGIN_PATH . 'templates/minimal-template.php',
+            'plain_text' => WHTPROLE_PRICING_PLUGIN_PATH . 'templates/plain-text-template.php',
+            'options' => WHTPROLE_PRICING_PLUGIN_PATH . 'templates/options-table.php',
         ]);
         return $templates[$template];
     }

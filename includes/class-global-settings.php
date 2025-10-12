@@ -27,13 +27,13 @@ add_action('woocommerce_settings_tabs_tiered_pricing', function() {
 
     $categories = get_terms(['taxonomy' => 'product_cat', 'hide_empty' => false]);
     
-    include_once WC_ROLE_PRICING_PLUGIN_PATH . 'templates/admin/global-settings.php';
+    include_once WHTPROLE_PRICING_PLUGIN_PATH . 'templates/admin/global-settings.php';
     $userRoles = wp_roles()->roles;
 
 
-    wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce-admin', WC_ROLE_PRICING_PLUGIN_URL . 'assets/global-settings.js', array('jquery'), WC_ROLE_PRICING_VERSION, true);
-    wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce-admin-vua-app', WC_ROLE_PRICING_PLUGIN_URL . 'assets/admin/app.js', array('jquery'), WC_ROLE_PRICING_VERSION, true);
-    wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-admin', WC_ROLE_PRICING_PLUGIN_URL . 'assets/global-setting.css', array(), WC_ROLE_PRICING_VERSION);
+    wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce-admin', WHTPROLE_PRICING_PLUGIN_URL . 'assets/global-settings.js', array('jquery'), WHTPROLE_PRICING_VERSION, true);
+    wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce-admin-vua-app', WHTPROLE_PRICING_PLUGIN_URL . 'assets/admin/app.js', array('jquery'), WHTPROLE_PRICING_VERSION, true);
+    wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-admin', WHTPROLE_PRICING_PLUGIN_URL . 'assets/global-setting.css', array(), WHTPROLE_PRICING_VERSION);
     wp_localize_script('wholesale-tiered-pricing-for-woocommerce-admin', 'wholesaleTieredPricingVars', array(
         'userRoles' => $userRoles,
         'nonce' => wp_create_nonce('wc_role_pricing_get_pricing_rules'),

@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class WC_Role_Pricing_Ajax {
+class WHTPRole_Pricing_Ajax {
 
     public function __construct() {
         add_action('wp_ajax_get_role_based_price', array($this, 'get_role_based_price'));
@@ -340,4 +340,4 @@ class WC_Role_Pricing_Ajax {
 }
 
 // Initialize AJAX handlers
-new WC_Role_Pricing_Ajax();
+new WHTPRole_Pricing_Ajax();

@@ -3,7 +3,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class WC_Role_Pricing_Engine {
+class WHTPRole_Pricing_Engine {
 
     public function __construct() {
         add_filter('woocommerce_product_get_price', array($this, 'get_role_based_price'), 99, 2);
