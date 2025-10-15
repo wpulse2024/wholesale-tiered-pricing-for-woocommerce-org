@@ -30,8 +30,8 @@ class WHTPRole_Pricing_Ajax {
         add_action('wp_ajax_nopriv_wc_role_pricing_get_general_settings', array($this, 'get_general_settings'));
     }
     public function get_general_settings() {
-        $nonce = $_POST['nonce'];
-        if (!wp_verify_nonce($nonce, 'wc_role_pricing_get_pricing_rules')) {
+        $nonce = sanitize_text_field($_POST['nonce']);
+        if (!wp_verify_nonce(wp_unslash($nonce), 'wc_role_pricing_get_pricing_rules')) {
             wp_send_json_error(array('message' => 'Invalid nonce'));
         }
 
@@ -40,18 +40,37 @@ class WHTPRole_Pricing_Ajax {
         wp_send_json_success($settings);
     }
     public function save_general_settings() {
-        $nonce = $_POST['nonce'];
-        if (!wp_verify_nonce($nonce, 'wc_role_pricing_get_pricing_rules')) {
+        $nonce = sanitize_text_field($_POST['nonce']);
+        if (!wp_verify_nonce(wp_unslash($nonce), 'wc_role_pricing_get_pricing_rules')) {
             wp_send_json_error(array('message' => 'Invalid nonce'));
         }
 
-        $settings = stripslashes($_POST['settings']);
+        $settings = $this->sanitizeGeneralSettings($_POST['settings']);
+        $settings = json_encode($settings);
         update_option('wc_role_pricing_save_general_settings', $settings);
         wp_send_json_success(array('message' => 'General settings saved successfully'));
     }
+
+    private function sanitizeGeneralSettings($settings) {
+        $settings = json_decode(stripslashes($settings), true);
+        return array(
+            'showTieredPricing' => isset($settings['showTieredPricing']) && $settings['showTieredPricing'] == true ? true : false,
+            'defaultTemplate' => sanitize_text_field($settings['defaultTemplate']),
+            'pricingTitle' => sanitize_text_field($settings['pricingTitle']),
+            'position' => sanitize_text_field($settings['position']),
+            'showQuantityColumn' => isset($settings['showQuantityColumn']) && $settings['showQuantityColumn'] == true ? true : false,
+            'showDiscountColumn' => isset($settings['showDiscountColumn']) && $settings['showDiscountColumn'] == true ? true : false,
+            'responsiveTable' => isset($settings['responsiveTable']) && $settings['responsiveTable'] == true ? true : false,
+            'activePricingColor' => sanitize_text_field($settings['activePricingColor']),
+            'quantityLabel' => sanitize_text_field($settings['quantityLabel']),
+            'discountLabel' => sanitize_text_field($settings['discountLabel']),
+            'priceLabel' => sanitize_text_field($settings['priceLabel'])
+        );
+    }
+
     public function get_product_settings() {
-        $nonce = $_POST['nonce'];
-        if (!wp_verify_nonce($nonce, 'wc_role_pricing_get_pricing_rules')) {
+        $nonce = sanitize_text_field($_POST['nonce']);
+        if (!wp_verify_nonce(wp_unslash($nonce), 'wc_role_pricing_get_pricing_rules')) {
             wp_send_json_error(array('message' => 'Invalid nonce'));
         }
 
@@ -60,36 +79,79 @@ class WHTPRole_Pricing_Ajax {
         wp_send_json_success($settings);
     }
     public function save_product_settings() {
-        $nonce = $_POST['nonce'];
-        if (!wp_verify_nonce($nonce, 'wc_role_pricing_get_pricing_rules')) {
+        $nonce = sanitize_text_field($_POST['nonce']);
+        if (!wp_verify_nonce(wp_unslash($nonce), 'wc_role_pricing_get_pricing_rules')) {
             wp_send_json_error(array('message' => 'Invalid nonce'));
         }
-
-        $settings = stripslashes($_POST['settings']);
-        update_option('wc_role_global_product_settings', $settings);
+        $settings = $this->sanitizeProductSettings($_POST['settings']);
+        update_option('wc_role_global_product_settings', sanitize_text_field(json_encode($settings)));
         wp_send_json_success(array('message' => 'Product settings saved successfully'));
     }
 
+    private function sanitizeProductSettings($settings) {
+        $settings = json_decode(stripslashes($settings), true);
+        return array(
+            'include_products' => !empty($settings['include_products']) ? array_map('intval', $settings['include_products']) : [],
+            'include_categories' => !empty($settings['include_categories']) ? array_map('intval', $settings['include_categories']) : [],
+            'exclude_products' => !empty($settings['exclude_products']) ? array_map('intval', $settings['exclude_products']) : [],
+            'exclude_categories' => !empty($settings['exclude_categories']) ? array_map('intval', $settings['exclude_categories']) : [],
+            'apply_type' => sanitize_text_field($settings['apply_type'])
+        );
+    }
+
+    
+
     public function get_pricing_rules() {
 
-        $nonce = $_POST['nonce'];
-        if (!wp_verify_nonce($nonce, 'wc_role_pricing_get_pricing_rules')) {
+        $nonce = sanitize_text_field($_POST['nonce']);
+        if (!wp_verify_nonce(wp_unslash($nonce), 'wc_role_pricing_get_pricing_rules')) {
             wp_send_json_error(array('message' => 'Invalid nonce'));
         }
 
         $rules = get_option('wc_role_pricing_global_rules', []);
+        $rules = json_decode($rules, true);
         wp_send_json_success($rules);
     }
 
     public function save_pricing_rules() {
-        $nonce = $_POST['nonce'];
-        if (!wp_verify_nonce($nonce, 'wc_role_pricing_get_pricing_rules')) {
+        $nonce = sanitize_text_field( $_POST['nonce'] );
+        if (!wp_verify_nonce(wp_unslash($nonce), 'wc_role_pricing_get_pricing_rules')) {
             wp_send_json_error(array('message' => 'Invalid nonce'));
         }
 
-        $rules = json_decode(stripslashes($_POST['rules']), true);
-        update_option('wc_role_pricing_global_rules', $rules);
+        $sanitized_rules = $this->sanitizeRulesData($_POST['rules']);
+
+        update_option('wc_role_pricing_global_rules', sanitize_text_field(json_encode($sanitized_rules)));
         wp_send_json_success(array('message' => 'Pricing rules saved successfully'));
+    }
+
+    private function sanitizeRulesData($rules) {
+        $sanitized_rules = array();
+        $rules = json_decode(stripslashes($rules), true);
+        foreach ($rules as $rule) {
+            $sanitized_rules[] = array(
+                'id' => sanitize_text_field($rule['id']),
+                'role' => sanitize_text_field($rule['role']),
+                'min_qty' => intval($rule['min_qty']),
+                'max_qty' => !empty($rule['max_qty']) ? intval($rule['max_qty']) : 0,
+                'step_qty' => intval($rule['step_qty']),
+                'tiered_pricing' => $this->sanitizeTieredPricingData($rule['tiered_pricing'])
+            );
+        }
+        return $sanitized_rules;
+    }
+
+    private function sanitizeTieredPricingData($tiers) {
+        $sanitized_tiers = array();
+        foreach ($tiers as $tier) {
+            $sanitized_tiers[] = array(
+                'id' => sanitize_text_field($tier['id']),
+                'min_qty' => intval($tier['min_qty']),
+                'discount_type' => sanitize_text_field($tier['discount_type']),
+                'price' => floatval($tier['price'])
+            );
+        }
+        return $sanitized_tiers;
     }
 
     /**

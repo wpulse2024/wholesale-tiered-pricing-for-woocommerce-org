@@ -176,7 +176,7 @@ class WHTPRole_Pricing_Admin
                         'step_qty' => intval($rule['step_qty']),
                         'price_type' => sanitize_text_field($rule['price_type']),
                         'price_value' => floatval($rule['price_value']),
-                        'tiered_pricing' => isset($rule['tiered_pricing']) ? $rule['tiered_pricing'] : array()
+                        'tiered_pricing' => isset($rule['tiered_pricing']) ? floatval($rule['tiered_pricing']) : array()
                     );
                 }
             }

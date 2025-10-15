@@ -1,5 +1,5 @@
 <template>
-    <div class="tiered-pricing-wrapper" v-loading="loading">
+        <div class="tiered-pricing-wrapper" v-loading="loading">
         <div class="page-header">
             <h1>Tiered Pricing Rules</h1>
             <p class="description">Configure pricing rules and discounts for different user roles</p>
