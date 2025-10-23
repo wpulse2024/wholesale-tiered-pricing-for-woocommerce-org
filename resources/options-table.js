@@ -1,8 +1,8 @@
 (function($) {
     'use strict';
     
-    const productId = wholesaleTieredPricingVars?.productId;
-    const regularPrice = wholesaleTieredPricingVars?.regularPrice;
+    const productId = whtproleTieredPricingVar?.productId;
+    const regularPrice = whtproleTieredPricingVar?.regularPrice;
     let currentQuantity = 1;
     
     function updateTierSelection(quantity) {

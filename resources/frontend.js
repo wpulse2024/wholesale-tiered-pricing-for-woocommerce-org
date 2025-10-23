@@ -68,7 +68,7 @@ jQuery(document).ready(function($) {
                     url: wc_add_to_cart_params.ajax_url,
                     type: 'POST',
                     data: {
-                        action: 'get_role_based_price',
+                        action: 'whtprole_get_role_based_price',
                         product_id: $('input[name="product_id"], input[name="add-to-cart"]').val(),
                         quantity: quantity,
                         nonce: wc_add_to_cart_params.wc_ajax_nonce

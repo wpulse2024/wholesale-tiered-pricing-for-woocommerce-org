@@ -6,14 +6,14 @@ if (!defined('ABSPATH')) {
 class WHTPRole_Pricing_Engine {
 
     public function __construct() {
-        add_filter('woocommerce_product_get_price', array($this, 'get_role_based_price'), 99, 2);
-        add_filter('woocommerce_product_variation_get_price', array($this, 'get_role_based_price'), 99, 2);
+        add_filter('woocommerce_product_get_price', array($this, 'whtprole_get_role_based_price'), 99, 2);
+        add_filter('woocommerce_product_variation_get_price', array($this, 'whtprole_get_role_based_price'), 99, 2);
         add_filter('woocommerce_get_price_html', array($this, 'get_price_html'), 99, 2);
         add_action('woocommerce_before_calculate_totals', array($this, 'update_cart_prices'), 99);
         add_filter('woocommerce_cart_item_price', array($this, 'cart_item_price_html'), 10, 3);
     }
 
-    public function get_role_based_price($price, $product) {
+    public function whtprole_get_role_based_price($price, $product) {
         if (is_admin() && !wp_doing_ajax()) {
             return $price;
         }
@@ -22,7 +22,7 @@ class WHTPRole_Pricing_Engine {
         $rules = get_post_meta($product_id, '_role_pricing_rules', true);
         
         if (empty($rules)) {
-            $globalRules = get_option('wc_role_pricing_global_rules', []);
+            $globalRules = get_option('whtprole_pricing_global_rules', []);
             if (empty($globalRules)) {
                 return $price;
             } else {
@@ -96,7 +96,7 @@ class WHTPRole_Pricing_Engine {
             $rules = get_post_meta($product_id, '_role_pricing_rules', true);
             
             if (empty($rules)) {
-                $globalRules = get_option('wc_role_pricing_global_rules', []);
+                $globalRules = get_option('whtprole_pricing_global_rules', []);
                 if (empty($globalRules)) {
                     continue;
                 } else {
@@ -106,7 +106,7 @@ class WHTPRole_Pricing_Engine {
 
             $current_user_role = $this->get_current_user_role();
             $original_price = $product->get_regular_price();
-            
+            $rules = is_array($rules) ? $rules : json_decode($rules, true);
             foreach ($rules as $rule) {
                 if ($rule['role'] === $current_user_role) {
                     $new_price = $this->calculate_price($original_price, $rule, $quantity);
@@ -154,7 +154,7 @@ class WHTPRole_Pricing_Engine {
                 return floatval(static::getPrice($applicable_tier['price'], $applicable_tier['discount_type'], $base_price));
             }
         }
-
+        
         switch ($rule['price_type']) {
             case 'fixed':
                 return !empty($rule['price_value']) ? floatval($rule['price_value']) : $base_price;

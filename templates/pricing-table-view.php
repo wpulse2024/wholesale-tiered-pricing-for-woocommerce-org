@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
     <?php 
     wp_enqueue_style(
         'wholesale-tiered-pricing-for-woocommerce', 
-        WHTPROLE_PRICING_PLUGIN_URL . 'assets/frontend.css', 
+        WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/frontend.css', 
         array(), 
         WHTPROLE_PRICING_VERSION
     );

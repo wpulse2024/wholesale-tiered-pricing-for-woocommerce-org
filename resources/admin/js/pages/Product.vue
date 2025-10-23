@@ -148,14 +148,14 @@ export default {
 
             saving: false,
             searchTimeout: null,
-            nonce: window.wholesaleTieredPricingVars?.nonce,
-            ajaxurl: window.wholesaleTieredPricingVars?.ajaxUrl
+            nonce: window.whtproleTieredPricingVar?.nonce,
+            ajaxurl: window.whtproleTieredPricingVar?.ajaxUrl
         }
     },
 
     mounted() {
-        this.categories = window?.wholesaleTieredPricingVars?.categories || []
-        this.products = window?.wholesaleTieredPricingVars?.products || []
+        this.categories = window?.whtproleTieredPricingVar?.categories || []
+        this.products = window?.whtproleTieredPricingVar?.products || []
         this.loadSettings()
     },
 
@@ -168,7 +168,7 @@ export default {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: new URLSearchParams({
-                        action: 'wc_role_pricing_get_product_settings',
+                        action: 'whtprole_pricing_get_product_settings',
                         nonce: this.nonce
                     })
                 })
@@ -206,7 +206,7 @@ export default {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: new URLSearchParams({
-                        action: 'wc_role_pricing_save_product_settings',
+                        action: 'whtprole_pricing_save_product_settings',
                         nonce: this.nonce,
                         settings: JSON.stringify({
                             include_categories: this.includeCategories,

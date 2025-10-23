@@ -25,8 +25,8 @@ class WHTPRole_Pricing_Admin
             return;
         }
 
-        wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-admin', WHTPROLE_PRICING_PLUGIN_URL . 'assets/admin.css', array(), WHTPROLE_PRICING_VERSION);
-        wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce-admin', WHTPROLE_PRICING_PLUGIN_URL . 'assets/admin.js', array('jquery', 'wp-util'), WHTPROLE_PRICING_VERSION, true);
+        wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-admin', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/admin.css', array(), WHTPROLE_PRICING_VERSION);
+        wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce-admin', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/admin.js', array('jquery', 'wp-util'), WHTPROLE_PRICING_VERSION, true);
     }
 
     public function add_product_data_tab($tabs)

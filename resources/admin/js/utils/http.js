@@ -1,8 +1,8 @@
 // src/services/api.js
 
 // Base URL and nonce injected from WordPress
-const API_BASE = window.wholesaleTieredPricingVars?.ajaxUrl;
-const API_NONCE = window.wholesaleTieredPricingVars?.nonce;
+const API_BASE = window.whtproleTieredPricingVar?.ajaxUrl;
+const API_NONCE = window.whtproleTieredPricingVar?.nonce;
 
 // Generic request wrapper using fetch
 async function request(endpoint, method = 'GET', data = null) {

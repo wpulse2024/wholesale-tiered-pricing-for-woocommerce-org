@@ -347,42 +347,9 @@
   </template>
   
   <script>
-  import { 
-    Document, 
-    Price, 
-    Goods, 
-    Grid, 
-    Postcard, 
-    Connection, 
-    QuestionFilled,
-    CopyDocument,
-    Service,
-    Discount,
-    Memo,
-    List,
-    ArrowDown,
-    Operation
-  } from '@element-plus/icons-vue'
   
   export default {
     name: 'DocumentationPage',
-  
-    components: {
-      Document,
-      Price,
-      Goods,
-      Grid,
-      Postcard,
-      Connection,
-      QuestionFilled,
-      CopyDocument,
-      Service,
-      Discount,
-      Memo,
-      List,
-      ArrowDown,
-      Operation
-    },
   
     data() {
       return {

@@ -164,8 +164,8 @@ export default {
                 { value: 'compact_list', label: 'Compact list' }
             ],
             saving: false,
-            nonce: window.wholesaleTieredPricingVars?.nonce,
-            ajaxurl: window.wholesaleTieredPricingVars?.ajaxUrl
+            nonce: window.whtproleTieredPricingVar?.nonce,
+            ajaxurl: window.whtproleTieredPricingVar?.ajaxUrl
         }
     },
 
@@ -182,7 +182,7 @@ export default {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: new URLSearchParams({
-                        action: 'wc_role_pricing_get_general_settings',
+                        action: 'whtprole_pricing_get_general_settings',
                         nonce: this.nonce
                     })
                 })
@@ -229,7 +229,7 @@ export default {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: new URLSearchParams({
-                        action: 'wc_role_pricing_save_general_settings',
+                        action: 'whtprole_pricing_save_general_settings',
                         nonce: this.nonce,
                         settings: JSON.stringify(this.settings)
                     })

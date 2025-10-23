@@ -15,9 +15,9 @@ class WHTPRole_Pricing_Frontend {
 
     public function enqueue_scripts() {
         if (is_product()) {
-            wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce', WHTPROLE_PRICING_PLUGIN_URL . 'assets/frontend.js', array('jquery'), WHTPROLE_PRICING_VERSION, true);
+            wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/frontend.js', array('jquery'), WHTPROLE_PRICING_VERSION, true);
             
-            wp_localize_script('wholesale-tiered-pricing-for-woocommerce', 'wholesaleTieredPricingVars', array(
+            wp_localize_script('wholesale-tiered-pricing-for-woocommerce', 'whtproleTieredPricingVar', array(
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('wholesale-tiered-pricing-for-woocommerce-ajax')
             ));
@@ -34,13 +34,16 @@ class WHTPRole_Pricing_Frontend {
             return;
         }
         $rules = get_post_meta($product->get_id(), '_role_pricing_rules', true);
-        $globalRules = get_option('wc_role_pricing_global_rules', []);
-
+        $globalRules = get_option('whtprole_pricing_global_rules', []);
         if (empty($rules)) {
             if (empty($globalRules)) {
                 return;
             }
             $rules = $globalRules;
+        }
+
+        if(!is_array($rules)) {
+            $rules = json_decode($rules, true);
         }
 
         $current_user_role = $this->get_current_user_role();
@@ -137,7 +140,7 @@ class WHTPRole_Pricing_Frontend {
     public function validate_add_to_cart($passed, $product_id, $quantity) {
         $rules = get_post_meta($product_id, '_role_pricing_rules', true);
         if (empty($rules)) {
-            $globalRules = get_option('wc_role_pricing_global_rules', []);
+            $globalRules = get_option('whtprole_pricing_global_rules', []);
             if (empty($globalRules)) {
                 return $passed;
             } else {

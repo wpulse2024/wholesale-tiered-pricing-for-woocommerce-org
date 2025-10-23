@@ -1,6 +1,6 @@
 (function($){
     let ruleIndex = $('.pricing-rule').length;
-    let userRoles = wholesaleTieredPricingVars?.userRoles;
+    let userRoles = whtproleTieredPricingVar?.userRoles;
     $('#add-rule').on('click', function(){
         let html = `<div class="pricing-rule" style="border:1px solid #ccc;padding:15px;margin-bottom:15px;background:#fff;">
             <div class="pricing-rule-header_wrapper">

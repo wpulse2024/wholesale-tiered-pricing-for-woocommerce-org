@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Wholesale & Tiered Pricing for WooCommerce
  * Description: Set role-based prices and quantity rules in WooCommerce. Show tiered pricing tables for wholesale, B2B, and bulk discounts.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: WPulse
  * Author URI: https://profiles.wordpress.org/wpulse/
  * Text Domain: wholesale-tiered-pricing-for-woocommerce
@@ -13,13 +13,15 @@
  * Tested up to: 6.8
  * WC requires at least: 5.0
  * WC tested up to: 8.0
+ * Requires PHP: 7.4
+ * Requires Plugins: woocommerce
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-define('WHTPROLE_PRICING_VERSION', '1.0.0');
+define('WHTPROLE_PRICING_VERSION', '1.0.1');
 define('WHTPROLE_PRICING_PLUGIN_FILE', __FILE__);
 define('WHTPROLE_PRICING_PLUGIN_BASENAME', plugin_basename(__FILE__));
 define('WHTPROLE_PRICING_PLUGIN_PATH', plugin_dir_path(__FILE__));
@@ -103,7 +105,7 @@ class WHTPRole_Based_Pricing
     {
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'wc_role_pricing';
+        $table_name = $wpdb->prefix . 'whtprole_pricing';
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
@@ -134,13 +136,13 @@ class WHTPRole_Based_Pricing
     }
 }
 
-function wc_role_pricing_init()
+function whtprole_pricing_init()
 {
     return WHTPRole_Based_Pricing::get_instance();
 }
 
 //get role=================================
-add_action('wp_ajax_get_user_roles', 'get_wp_user_roles');
+add_action('wp_ajax_whtprole_get_user_roles', 'get_wp_user_roles');
 function get_wp_user_roles()
 {
     global $wp_roles;
@@ -154,4 +156,4 @@ function get_wp_user_roles()
     wp_send_json_success($roles);
 }
 
-wc_role_pricing_init();
+whtprole_pricing_init();

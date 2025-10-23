@@ -5,7 +5,7 @@ class WHTPRole_Pricing_Helper
 {
     public function isValidProductToAppliedTieredPricing($product_id)
     {
-        $globalProductSettings = get_option('wc_role_global_product_settings', []);
+        $globalProductSettings = get_option('whtprole_global_product_settings', []);
         $globalProductSettings = is_array($globalProductSettings) ? $globalProductSettings : json_decode($globalProductSettings, true);
         $include_products = !empty($globalProductSettings['include_products']) ? $globalProductSettings['include_products'] : [];
         $exclude_products = !empty($globalProductSettings['exclude_products']) ? $globalProductSettings['exclude_products'] : [];
@@ -29,7 +29,7 @@ class WHTPRole_Pricing_Helper
         $productCategoryIds = array_map(function($category) {
             return $category->term_id;
         }, $productCategories);
-        $globalCategorySettings = get_option('wc_role_global_product_setting', []);
+        $globalCategorySettings = get_option('whtprole_global_product_setting', []);
         $globalCategorySettings = is_array($globalCategorySettings) ? $globalCategorySettings : json_decode($globalCategorySettings, true);
         $include_categories = !empty($globalCategorySettings['include_categories']) ? $globalCategorySettings['include_categories'] : [];
         $exclude_categories = !empty($globalCategorySettings['exclude_categories']) ? $globalCategorySettings['exclude_categories'] : [];
@@ -47,7 +47,7 @@ class WHTPRole_Pricing_Helper
     }
 
     public function getGeneralSettings() {
-        $enableGlobalRules = get_option('wc_role_pricing_save_general_settings', 'yes');
+        $enableGlobalRules = get_option('whtprole_pricing_save_general_settings', 'yes');
         $generalSettings = is_array($enableGlobalRules) ? $enableGlobalRules : json_decode($enableGlobalRules, true);
         return $generalSettings;
     }
@@ -83,7 +83,7 @@ class WHTPRole_Pricing_Helper
         $globalSettings = $this->getGeneralSettings();
         $template = !empty($globalSettings['defaultTemplate']) ? $globalSettings['defaultTemplate'] : 'table';
     
-        $templates = apply_filters('wc_role_pricing_templates', [
+        $templates = apply_filters('whtprole_pricing_templates', [
             'table' => WHTPROLE_PRICING_PLUGIN_PATH . 'templates/pricing-table-view.php',
             'compact_list' => WHTPROLE_PRICING_PLUGIN_PATH . 'templates/pricing-table-view-compact-list.php',
             'minimal_table' => WHTPROLE_PRICING_PLUGIN_PATH . 'templates/minimal-template.php',

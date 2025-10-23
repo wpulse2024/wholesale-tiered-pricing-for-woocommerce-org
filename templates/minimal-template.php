@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 ?>
 <div class="wholesale-tiered-pricing-for-woocommerce-premium">
     <?php 
-    wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-premium', WHTPROLE_PRICING_PLUGIN_URL . 'assets/minimal-template.css', array(), WHTPROLE_PRICING_VERSION);
+    wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-premium', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/minimal-template.css', array(), WHTPROLE_PRICING_VERSION);
     $regular_price = $product->get_regular_price();
     $helper = new WHTPRole_Pricing_Helper();
     foreach ($applicable_rules as $rule) {

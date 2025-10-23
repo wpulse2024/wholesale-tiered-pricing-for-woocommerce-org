@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 ?>
 <div class="wholesale-tiered-pricing-for-woocommerce-radio">
     <?php 
-    wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-radio-select', WHTPROLE_PRICING_PLUGIN_URL . 'assets/options-table.css', array(), WHTPROLE_PRICING_VERSION);
+    wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-radio-select', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/options-table.css', array(), WHTPROLE_PRICING_VERSION);
     
     $regular_price = $product->get_regular_price();
     $helper = new WHTPRole_Pricing_Helper();
@@ -76,8 +76,8 @@ if (!defined('ABSPATH')) {
             <?php endif; endforeach; ?>
         </div>
     <?php 
-        wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce-radio-select', WHTPROLE_PRICING_PLUGIN_URL . 'assets/options-table.js', array('jquery'), WHTPROLE_PRICING_VERSION, true);
-        wp_localize_script('wholesale-tiered-pricing-for-woocommerce-radio-select', 'wholesaleTieredPricingVars', array(
+        wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce-radio-select', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/options-table.js', array('jquery'), WHTPROLE_PRICING_VERSION, true);
+        wp_localize_script('wholesale-tiered-pricing-for-woocommerce-radio-select', 'whtproleTieredPricingVar', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wholesale-tiered-pricing-for-woocommerce-ajax'),
             'productId' => $product->get_id(),

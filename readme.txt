@@ -1,15 +1,14 @@
-# Wholesale & Tiered Pricing for WooCommerce
-
+=== Wholesale & Tiered Pricing for WooCommerce ===
 Contributors: wpulse, dasnitesh780, chadni54
-Tags: woocommerce, wholesale, pricing, role-based, tiered pricing, quantity, discounts, b2b
-Requires at least: 5.0
-Tested up to: 6.8
-Requires PHP: 7.4
-Stable tag: 1.0.0
 License: GPLv2 or later
-License URI: [https://www.gnu.org/licenses/gpl-2.0.html](https://www.gnu.org/licenses/gpl-2.0.html)
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Tags: woocommerce, wholesale, pricing, role-based, tiered pricing, quantity, discounts, b2b
+Requires at least: 4.5
+Tested up to: 6.8.3
+Stable tag: 1.0.1
+Requires PHP: 7.1
 
-**Create beautiful volume pricing tables with role-based discounts. Perfect for wholesale, B2B, and bulk sellers who want to offer tiered pricing based on quantity and user roles.**
+**Beautiful volume pricing tables with role-based discounts for wholesale, B2B & bulk sellers offering tiered pricing by quantity & user role.**
 
 ---
 
@@ -53,8 +52,6 @@ Show attractive **tiered pricing tables** on product pages and encourage bulk pu
 
 ## Upcoming Features 🚀
 
-* Global rules for all products (instead of per-product setup).
-* Cart & checkout validation for role-based rules.
 * Role-based shipping & payment method restrictions.
 * Shortcodes & Gutenberg blocks for pricing tables.
 * Import/export rules with CSV.
@@ -95,11 +92,13 @@ Yes, any role created by a membership or user role plugin is supported.
 
 ---
 
-## Changelog
+== Changelog ==
 
-### 1.0.0
+= 1.0.1 – 22 October, 2025 =
+- Bug fixes and minor improvements.
 
-* Initial release with role-based pricing, tiered discounts, quantity rules, and customizable pricing tables.
+= 1.0.0 – 22 October, 2025 =
+- Initial release with role-based pricing, tiered discounts, quantity rules, and customizable pricing tables.
 
 ---
 

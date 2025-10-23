@@ -1,12 +1,13 @@
 {
-    "/assets/admin/app.js": "/assets/admin/app.js",
-    "/assets/global-settings.js": "/assets/global-settings.js",
-    "/assets/frontend.js": "/assets/frontend.js",
-    "/assets/admin.js": "/assets/admin.js",
-    "/assets/admin.css": "/assets/admin.css",
-    "/assets/frontend.css": "/assets/frontend.css",
-    "/assets/global-setting.css": "/assets/global-setting.css",
-    "/assets/admin/app.css": "/assets/admin/app.css",
-    "/assets/options-table.css": "/assets/options-table.css",
-    "/assets/minimal-template.css": "/assets/minimal-template.css"
+    "/plugin-assets/admin/app.js": "/plugin-assets/admin/app.js",
+    "/plugin-assets/global-settings.js": "/plugin-assets/global-settings.js",
+    "/plugin-assets/frontend.js": "/plugin-assets/frontend.js",
+    "/plugin-assets/admin.js": "/plugin-assets/admin.js",
+    "/plugin-assets/options-table.js": "/plugin-assets/options-table.js",
+    "/plugin-assets/admin.css": "/plugin-assets/admin.css",
+    "/plugin-assets/frontend.css": "/plugin-assets/frontend.css",
+    "/plugin-assets/global-setting.css": "/plugin-assets/global-setting.css",
+    "/plugin-assets/admin/app.css": "/plugin-assets/admin/app.css",
+    "/plugin-assets/options-table.css": "/plugin-assets/options-table.css",
+    "/plugin-assets/minimal-template.css": "/plugin-assets/minimal-template.css"
 }

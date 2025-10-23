@@ -12,7 +12,7 @@ jQuery(document).ready(function($) {
             url: ajaxurl, // WordPress AJAX URL
             type: 'POST',
             data: {
-                action: 'get_user_roles'
+                action: 'whtprole_get_user_roles'
             },
             success: function(response) {
                 if (response.success) {

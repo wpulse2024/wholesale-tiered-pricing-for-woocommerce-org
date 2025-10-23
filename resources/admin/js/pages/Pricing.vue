@@ -152,9 +152,9 @@ export default {
         return {
             pricingRules: [],
             activeRules: [],
-            ajaxurl: window.wholesaleTieredPricingVars?.ajaxUrl,
-            nonce: window.wholesaleTieredPricingVars?.nonce,
-            userRoles: window.wholesaleTieredPricingVars?.userRoles,
+            ajaxurl: window.whtproleTieredPricingVar?.ajaxUrl,
+            nonce: window.whtproleTieredPricingVar?.nonce,
+            userRoles: window.whtproleTieredPricingVar?.userRoles,
             saving: false,
             ruleIdCounter: 1,
             tierIdCounter: 1,
@@ -178,7 +178,7 @@ export default {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: new URLSearchParams({
-                        action: 'wc_role_pricing_get_pricing_rules',
+                        action: 'whtprole_pricing_get_pricing_rules',
                         nonce: this.nonce
                     })
                 })
@@ -247,7 +247,7 @@ export default {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: new URLSearchParams({
-                        action: 'wc_role_pricing_save_pricing_rules',
+                        action: 'whtprole_pricing_save_pricing_rules',
                         nonce: this.nonce,
                         rules: JSON.stringify(this.pricingRules)
                     })
