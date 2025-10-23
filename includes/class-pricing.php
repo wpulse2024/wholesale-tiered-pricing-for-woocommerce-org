@@ -53,6 +53,12 @@ class WHTPRole_Pricing_Engine {
         $rules = get_post_meta($product_id, '_role_pricing_rules', true);
         
         if (empty($rules)) {
+            $globalRules = get_option('whtprole_pricing_global_rules', []);
+            if (empty($globalRules)) {
+                return $price_html;
+            } else {
+                $rules = $globalRules;
+            }
             return $price_html;
         }
 
@@ -103,6 +109,7 @@ class WHTPRole_Pricing_Engine {
                     $rules = $globalRules;
                 }
             }
+            $rules = is_array($rules) ? $rules : json_decode($rules, true);
 
             $current_user_role = $this->get_current_user_role();
             $original_price = $product->get_regular_price();
@@ -148,27 +155,33 @@ class WHTPRole_Pricing_Engine {
     }
 
     private function calculate_price($base_price, $rule, $quantity) {
+        // Check tiered pricing first
         if (!empty($rule['tiered_pricing'])) {
-            $applicable_tier = $this->find_applicable_tier($rule['tiered_pricing'], $quantity);
-            if ($applicable_tier && !empty($applicable_tier['price'])) {
-                return floatval(static::getPrice($applicable_tier['price'], $applicable_tier['discount_type'], $base_price));
+            $applicable_tier = null;
+            // Sort tiers by quantity descending to find the highest applicable tier
+            usort($rule['tiered_pricing'], function($a, $b) {
+                return $b['min_qty'] - $a['min_qty'];
+            });
+            
+            foreach ($rule['tiered_pricing'] as $tier) {
+                if (!empty($tier['min_qty']) && !empty($tier['price']) && $quantity >= $tier['min_qty']) {
+                    $applicable_tier = $tier;
+                    break;
+                }
             }
-        }
-        
-        switch ($rule['price_type']) {
-            case 'fixed':
-                return !empty($rule['price_value']) ? floatval($rule['price_value']) : $base_price;
             
-            case 'discount':
-                $discount_percent = floatval($rule['price_value']);
-                return $base_price * (1 - ($discount_percent / 100));
-            
-            case 'markup':
-                $markup_percent = floatval($rule['price_value']);
-                return $base_price * (1 + ($markup_percent / 100));
-            
-            default:
+            if ($applicable_tier) {
+                switch ($applicable_tier['discount_type']) {
+                    case 'percentage':
+                        return $base_price - ($base_price * floatval($applicable_tier['price']) / 100);
+                    case 'fixed':
+                        return $base_price - floatval($applicable_tier['price']);
+                    default:
+                        return floatval($applicable_tier['price']);
+                }
+            } else {
                 return $base_price;
+            }
         }
     }
 

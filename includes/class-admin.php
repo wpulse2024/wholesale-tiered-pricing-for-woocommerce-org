@@ -165,6 +165,8 @@ class WHTPRole_Pricing_Admin
 
     public function save_product_data($post_id)
     {
+        delete_post_meta($post_id, '_role_pricing_rules');
+        
         if (isset($_POST['role_pricing_rules'])) {
             $rules = array();
             foreach ($_POST['role_pricing_rules'] as $rule) {
@@ -176,7 +178,7 @@ class WHTPRole_Pricing_Admin
                         'step_qty' => intval($rule['step_qty']),
                         'price_type' => sanitize_text_field($rule['price_type']),
                         'price_value' => floatval($rule['price_value']),
-                        'tiered_pricing' => isset($rule['tiered_pricing']) ? floatval($rule['tiered_pricing']) : array()
+                        'tiered_pricing' => isset($rule['tiered_pricing']) ? $rule['tiered_pricing'] : array()
                     );
                 }
             }

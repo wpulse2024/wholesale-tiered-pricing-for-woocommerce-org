@@ -358,7 +358,6 @@ class WHTPRole_Pricing_Ajax {
         // Check tiered pricing first
         if (!empty($rule['tiered_pricing'])) {
             $applicable_tier = null;
-            
             // Sort tiers by quantity descending to find the highest applicable tier
             usort($rule['tiered_pricing'], function($a, $b) {
                 return $b['min_qty'] - $a['min_qty'];
@@ -372,23 +371,17 @@ class WHTPRole_Pricing_Ajax {
             }
             
             if ($applicable_tier) {
-                return floatval($applicable_tier['price']);
-            }
-        }
-        
-        // Apply regular pricing rule
-        switch ($rule['price_type']) {
-            case 'fixed':
-                return floatval($rule['price_value']);
-            
-            case 'discount':
-                return $base_price * (1 - (floatval($rule['price_value']) / 100));
-            
-            case 'markup':
-                return $base_price * (1 + (floatval($rule['price_value']) / 100));
-            
-            default:
+                switch ($applicable_tier['discount_type']) {
+                    case 'percentage':
+                        return $base_price - ($base_price * floatval($applicable_tier['price']) / 100);
+                    case 'fixed':
+                        return $base_price - floatval($applicable_tier['price']);
+                    default:
+                        return floatval($applicable_tier['price']);
+                }
+            } else {
                 return $base_price;
+            }
         }
     }
     
