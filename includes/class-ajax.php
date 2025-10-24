@@ -10,6 +10,8 @@ if (!defined('ABSPATH')) {
 class WHTPRole_Pricing_Ajax {
 
     public function __construct() {
+        // when plugin activate save save_pricing_rules
+        add_action('admin_init', array($this, 'save_pricing_global_settings_on_activation')); 
         add_action('wp_ajax_whtprole_get_role_based_price', array($this, 'whtprole_get_role_based_price'));
         add_action('wp_ajax_nopriv_whtprole_get_role_based_price', array($this, 'whtprole_get_role_based_price'));
         add_action('wp_ajax_whtprole_get_variation_pricing_rules', array($this, 'whtprole_get_variation_pricing_rules'));
@@ -61,6 +63,26 @@ class WHTPRole_Pricing_Ajax {
         );
         update_option('whtprole_pricing_save_general_settings', sanitize_text_field(json_encode($settings)));
         wp_send_json_success(array('message' => 'General settings saved successfully'));
+    }
+
+    public function save_pricing_global_settings_on_activation() {
+        $getGeneralSettings = get_option('whtprole_pricing_save_general_settings', []);
+        if (empty($getGeneralSettings)) {
+            $default_settings = [
+                'showTieredPricing'   => true,
+                'defaultTemplate'     => 'table',
+                'pricingTitle'        => 'Buy more save more!',
+                'position'            => 'above_add_to_cart',
+                'showQuantityColumn'  => true,
+                'showDiscountColumn'  => true,
+                'responsiveTable'     => true,
+                'activePricingColor'  => '#ff9a00',
+                'quantityLabel'       => 'Quantity',
+                'discountLabel'       => 'Discount',
+                'priceLabel'          => 'Price',
+            ];
+            update_option('whtprole_pricing_save_general_settings', sanitize_text_field(json_encode($default_settings)));
+        }
     }
 
     public function get_product_settings() {

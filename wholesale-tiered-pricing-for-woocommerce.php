@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Wholesale & Tiered Pricing for WooCommerce
  * Description: Set role-based prices and quantity rules in WooCommerce. Show tiered pricing tables for wholesale, B2B, and bulk discounts.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: WPulse
  * Author URI: https://profiles.wordpress.org/wpulse/
  * Text Domain: wholesale-tiered-pricing-for-woocommerce
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('WHTPROLE_PRICING_VERSION', '1.0.1');
+define('WHTPROLE_PRICING_VERSION', '1.0.2');
 define('WHTPROLE_PRICING_PLUGIN_FILE', __FILE__);
 define('WHTPROLE_PRICING_PLUGIN_BASENAME', plugin_basename(__FILE__));
 define('WHTPROLE_PRICING_PLUGIN_PATH', plugin_dir_path(__FILE__));

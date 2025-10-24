@@ -30,12 +30,10 @@ class WHTPRole_Pricing_Frontend {
         if (!$helper->validation($product->get_id())) {
             return;
         }
-        if (!$helper->enableToShowsTable($product->get_id())) {
-            return;
-        }
+        
         $rules = get_post_meta($product->get_id(), '_role_pricing_rules', true);
         $globalRules = get_option('whtprole_pricing_global_rules', []);
-        if (empty($rules)) {
+        if (empty($rules) || !$helper->enableToShowsTable($product->get_id())) {
             if (empty($globalRules)) {
                 return;
             }
