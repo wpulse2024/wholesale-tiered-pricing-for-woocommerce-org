@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Wholesale & Tiered Pricing for WooCommerce
  * Description: Set role-based prices and quantity rules in WooCommerce. Show tiered pricing tables for wholesale, B2B, and bulk discounts.
- * Version: 1.0.2
+ * Version: 1.0.4
  * Author: WPulse
  * Author URI: https://profiles.wordpress.org/wpulse/
  * Text Domain: wholesale-tiered-pricing-for-woocommerce
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('WHTPROLE_PRICING_VERSION', '1.0.2');
+define('WHTPROLE_PRICING_VERSION', '1.0.4');
 define('WHTPROLE_PRICING_PLUGIN_FILE', __FILE__);
 define('WHTPROLE_PRICING_PLUGIN_BASENAME', plugin_basename(__FILE__));
 define('WHTPROLE_PRICING_PLUGIN_PATH', plugin_dir_path(__FILE__));
@@ -77,6 +77,7 @@ class WHTPRole_Based_Pricing
         require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-ajax.php';
         require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-global-settings.php';
         require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/helper/class-helper.php';
+        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-shows-message.php';
     }
 
     private function hooks()
@@ -85,6 +86,7 @@ class WHTPRole_Based_Pricing
         new WHTPRole_Pricing_Frontend();
         new WHTPRole_Pricing_Engine();
         new WHTPRole_Pricing_Ajax();
+        new WHTPRole_Pricing_Show_Message();
 
         register_activation_hook(__FILE__, array($this, 'activate'));
         register_deactivation_hook(__FILE__, array($this, 'deactivate'));

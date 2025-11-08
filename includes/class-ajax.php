@@ -71,15 +71,15 @@ class WHTPRole_Pricing_Ajax {
             $default_settings = [
                 'showTieredPricing'   => true,
                 'defaultTemplate'     => 'table',
-                'pricingTitle'        => 'Buy more save more!',
+                'pricingTitle'        => __('Buy more save more!', 'wholesale-tiered-pricing-for-woocommerce'),
                 'position'            => 'above_add_to_cart',
                 'showQuantityColumn'  => true,
                 'showDiscountColumn'  => true,
                 'responsiveTable'     => true,
                 'activePricingColor'  => '#ff9a00',
-                'quantityLabel'       => 'Quantity',
-                'discountLabel'       => 'Discount',
-                'priceLabel'          => 'Price',
+                'quantityLabel'       => __('Quantity', 'wholesale-tiered-pricing-for-woocommerce'),
+                'discountLabel'       => __('Discount', 'wholesale-tiered-pricing-for-woocommerce'),
+                'priceLabel'          => __('Price', 'wholesale-tiered-pricing-for-woocommerce'),
             ];
             update_option('whtprole_pricing_save_general_settings', sanitize_text_field(json_encode($default_settings)));
         }
@@ -209,7 +209,7 @@ class WHTPRole_Pricing_Ajax {
         
         foreach ($rules as $rule) {
             if ($rule['role'] === $current_user_role) {
-                $new_price = $this->calculate_price($product->get_regular_price(), $rule, $quantity);
+                $new_price = $this->calculate_price($product->get_price(), $rule, $quantity);
                 break;
             }
         }

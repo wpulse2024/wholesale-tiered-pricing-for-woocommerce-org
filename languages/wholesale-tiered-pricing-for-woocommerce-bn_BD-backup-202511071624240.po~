@@ -1,0 +1,242 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Wholesale & Tiered Pricing for WooCommerce\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-07 16:19+0000\n"
+"PO-Revision-Date: 2025-11-07 16:22+0000\n"
+"Last-Translator: Nitesh Pulse\n"
+"Language-Team: Bengali (Bangladesh)\n"
+"Language: bn_BD\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.8.0; wp-6.8.3; php-8.1.29\n"
+"X-Domain: wholesale-tiered-pricing-for-woocommerce"
+
+#: includes/class-admin.php:66
+msgid "Add Pricing Rule"
+msgstr ""
+
+#: includes/class-admin.php:138
+msgid "Add Tier"
+msgstr ""
+
+#: templates/options-table.php:55
+#, php-format
+msgid "and save %d%%"
+msgstr ""
+
+#: templates/minimal-template.php:76
+msgid "Applied at checkout"
+msgstr ""
+
+#: includes/class-shows-message.php:76
+#, php-format
+msgid "Applied Tier: %s – Save %s (%.1f%%)"
+msgstr ""
+
+#: templates/minimal-template.php:41
+msgid "Best"
+msgstr ""
+
+#: templates/pricing-table-view-compact-list.php:22
+msgid "Bulk Pricing"
+msgstr ""
+
+#: templates/options-table.php:49
+msgid "Buy %d - %d pieces"
+msgstr "কিনুন %d - %d টি পিস"
+
+#: templates/options-table.php:51
+msgid "Buy %d+ pieces"
+msgstr ""
+
+#: includes/class-ajax.php:74
+msgid "Buy more save more!"
+msgstr ""
+
+#: includes/class-ajax.php:81
+msgid "Discount"
+msgstr "ছাড়"
+
+#: includes/class-admin.php:76
+msgid "Display tiered pricing table on product page"
+msgstr ""
+
+#: includes/class-admin.php:159
+msgid "Fixed"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://profiles.wordpress.org/wpulse/"
+msgstr ""
+
+#: templates/pricing-table-view.php:52
+msgid "items"
+msgstr ""
+
+#: includes/class-admin.php:119
+msgid "Max Quantity"
+msgstr ""
+
+#. %s = the savings amount formatted as a price
+#: includes/class-frontend.php:167
+msgid "Maximum order quantity is %d for this product."
+msgstr ""
+
+#. %s = the savings amount formatted as a price
+#: includes/class-frontend.php:115
+msgid "Maximum order: %d items"
+msgstr ""
+
+#. %s = the savings amount formatted as a price
+#: includes/class-ajax.php:329
+msgid "Maximum quantity allowed: %d"
+msgstr ""
+
+#: includes/class-admin.php:150
+msgid "Min Qty"
+msgstr ""
+
+#: includes/class-admin.php:112
+msgid "Min Quantity"
+msgstr ""
+
+#. %s = the savings amount formatted as a price
+#: includes/class-frontend.php:158
+msgid "Minimum order quantity is %d for this product."
+msgstr ""
+
+#. %s = the savings amount formatted as a price
+#: includes/class-frontend.php:110
+msgid "Minimum order: %d items"
+msgstr ""
+
+#. %s = the savings amount formatted as a price
+#: includes/class-ajax.php:320
+msgid "Minimum quantity required: %d"
+msgstr ""
+
+#. %s = the savings amount formatted as a price
+#: includes/class-frontend.php:120
+msgid "Must order in multiples of %d"
+msgstr ""
+
+#: templates/pricing-table-view.php:63
+#: templates/pricing-table-view-compact-list.php:37
+msgid "off"
+msgstr ""
+
+#: includes/class-admin.php:162
+msgid "Percentage"
+msgstr ""
+
+#: includes/class-admin.php:154 includes/class-ajax.php:82
+#: includes/class-ajax.php:354
+msgid "Price"
+msgstr ""
+
+#: templates/pricing-table-view.php:20
+msgid "Price Per Unit"
+msgstr ""
+
+#: includes/class-ajax.php:349
+msgid "Pricing Information"
+msgstr ""
+
+#: includes/class-ajax.php:80 includes/class-ajax.php:354
+#: templates/pricing-table-view.php:19
+msgid "Quantity"
+msgstr ""
+
+#. %s = the savings amount formatted as a price
+#: includes/class-ajax.php:338
+msgid "Quantity must be in multiples of %d"
+msgstr ""
+
+#. %s = the savings amount formatted as a price
+#: includes/class-frontend.php:178
+msgid "Quantity must be in multiples of %d."
+msgstr ""
+
+#: includes/class-admin.php:89 includes/class-admin.php:165
+msgid "Remove"
+msgstr ""
+
+#: wholesale-tiered-pricing-for-woocommerce.php:137
+msgid "requires WooCommerce to be installed and active."
+msgstr ""
+
+#: includes/class-admin.php:35
+msgid "Role Pricing"
+msgstr ""
+
+#: includes/class-admin.php:49
+msgid "Role-Based Pricing Rules"
+msgstr ""
+
+#: templates/pricing-table-view.php:61
+msgid "Save"
+msgstr ""
+
+#. %s = the savings amount formatted as a price
+#: includes/class-pricing.php:79
+#, php-format
+msgid "Save %s"
+msgstr ""
+
+#: includes/class-admin.php:94
+msgid "Select Role"
+msgstr ""
+
+#. Description of the plugin
+msgid ""
+"Set role-based prices and quantity rules in WooCommerce. Show tiered pricing "
+"tables for wholesale, B2B, and bulk discounts."
+msgstr ""
+
+#: includes/class-admin.php:75
+msgid "Show Pricing Table"
+msgstr ""
+
+#: includes/class-admin.php:105
+msgid "Step Quantity"
+msgstr ""
+
+#: includes/class-admin.php:128 includes/class-global-settings.php:8
+msgid "Tiered Pricing"
+msgstr ""
+
+#: templates/options-table.php:62
+msgid "Total:"
+msgstr ""
+
+#: includes/class-admin.php:122
+msgid "Unlimited"
+msgstr ""
+
+#: includes/class-admin.php:92
+msgid "User Role"
+msgstr ""
+
+#: templates/minimal-template.php:24
+msgid "Volume Savings"
+msgstr ""
+
+#. Name of the plugin
+msgid "Wholesale & Tiered Pricing for WooCommerce"
+msgstr ""
+
+#: wholesale-tiered-pricing-for-woocommerce.php:136
+msgid "WooCommerce Role-Based Pricing"
+msgstr ""
+
+#. Author of the plugin
+msgid "WPulse"
+msgstr ""
+
+#: templates/pricing-table-view.php:21
+msgid "You Save"
+msgstr ""

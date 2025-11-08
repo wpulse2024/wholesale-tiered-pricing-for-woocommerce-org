@@ -12,14 +12,13 @@ if (!defined('ABSPATH')) {
         array(), 
         WHTPROLE_PRICING_VERSION
     );
-
-    $regular_price = floatval($product->get_regular_price());
+    $regular_price = floatval($product->get_price());
     $helper = new WHTPRole_Pricing_Helper();
     $generalSettings = $helper->getGeneralSettings();
     $activePricingColor = !empty($generalSettings['activePricingColor']) ? $generalSettings['activePricingColor'] : '#7f54b3';
-    $quantityLabel = !empty($generalSettings['quantityLabel']) ? $generalSettings['quantityLabel'] : 'Quantity';
-    $discountLabel = !empty($generalSettings['discountLabel']) ? $generalSettings['discountLabel'] : 'Price Per Unit';
-    $priceLabel = !empty($generalSettings['priceLabel']) ? $generalSettings['priceLabel'] : 'You Save';
+    $quantityLabel = !empty($generalSettings['quantityLabel']) ? $generalSettings['quantityLabel'] : __('Quantity', 'wholesale-tiered-pricing-for-woocommerce');
+    $discountLabel = !empty($generalSettings['discountLabel']) ? $generalSettings['discountLabel'] : __('Price Per Unit', 'wholesale-tiered-pricing-for-woocommerce');
+    $priceLabel = !empty($generalSettings['priceLabel']) ? $generalSettings['priceLabel'] : __('You Save', 'wholesale-tiered-pricing-for-woocommerce');
     foreach ($applicable_rules as $rule) :
         if (empty($rule['tiered_pricing'])) {
             continue;
@@ -61,7 +60,7 @@ if (!defined('ABSPATH')) {
                             <span class="savings-badge">
                                 <?php echo esc_html__('Save', 'wholesale-tiered-pricing-for-woocommerce') . ' ' . esc_html(round($savings_percent)) . '%'; ?>
                             </span>
-                            <div class="savings-detail">(<?php echo wp_kses_post(wc_price($savings)); ?> off)</div>
+                            <div class="savings-detail">(<?php echo wp_kses_post(wc_price($savings)); ?> <?php esc_html_e('off', 'wholesale-tiered-pricing-for-woocommerce'); ?>)</div>
                         <?php else: ?>
                             &mdash;
                         <?php endif; ?>

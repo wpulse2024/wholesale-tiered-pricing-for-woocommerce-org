@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
     <?php 
     wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-radio-select', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/options-table.css', array(), WHTPROLE_PRICING_VERSION);
     
-    $regular_price = $product->get_regular_price();
+    $regular_price = $product->get_price();
     $helper = new WHTPRole_Pricing_Helper();
     $generalSettings = $helper->getGeneralSettings();
     $activePricingColor = !empty($generalSettings['activePricingColor']) ? $generalSettings['activePricingColor'] : '#7f54b3';
@@ -46,13 +46,13 @@ if (!defined('ABSPATH')) {
                     <span class="tier-label">
                         <?php 
                         if ($next_tier_qty) {
-                            echo esc_html(sprintf(esc_html('Buy %d - %d pieces', 'wholesale-tiered-pricing-for-woocommerce'), $min_qty, $next_tier_qty));
+                            echo esc_html(sprintf(esc_html__('Buy %d - %d pieces', 'wholesale-tiered-pricing-for-woocommerce'), $min_qty, $next_tier_qty));
                         } else {
-                            echo esc_html(sprintf(esc_html('Buy %d+ pieces', 'wholesale-tiered-pricing-for-woocommerce'), $min_qty));
+                            echo esc_html(sprintf(esc_html__('Buy %d+ pieces', 'wholesale-tiered-pricing-for-woocommerce'), $min_qty));
                         }
                         
                         if ($savings > 0) {
-                            echo esc_html(' ' . sprintf(esc_html('and save %d%%', 'wholesale-tiered-pricing-for-woocommerce'), round($savings_percent)));
+                            echo esc_html(' ' . sprintf(esc_html__('and save %d%%', 'wholesale-tiered-pricing-for-woocommerce'), round($savings_percent)));
                         }
                         ?>
                     </span>

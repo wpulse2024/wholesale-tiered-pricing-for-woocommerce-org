@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
 <div class="wholesale-tiered-pricing-for-woocommerce-compact">
     <?php 
     $helper = new WHTPRole_Pricing_Helper();
-    $regular_price = $product->get_regular_price();
+    $regular_price = $product->get_price();
     wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-grid', WHTPROLE_PRICING_PLUGIN_URL . 'includes/compact-list-template.css', array(), WHTPROLE_PRICING_VERSION);
     foreach ($applicable_rules as $rule) {
         if (!empty($rule['tiered_pricing'])):
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
                 return intval($a['min_qty']) - intval($b['min_qty']);
             });
 
-            $regular_price = $product->get_regular_price();
+            $regular_price = $product->get_price();
     ?>
         <div class="woocommerce-bulk-pricing">
             <div class="bulk-pricing-header">

@@ -5,7 +5,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: woocommerce, wholesale, pricing, role-based, tiered pricing 
 Requires at least: 4.5  
 Tested up to: 6.8.3  
-Stable tag: 1.0.2  
+Stable tag: 1.0.4
 Requires PHP: 7.1  
 
 **Beautiful volume pricing tables with role-based discounts for wholesale, B2B & bulk sellers offering tiered pricing by quantity and user role.**
@@ -105,6 +105,15 @@ Yes, any role created by a membership or user role plugin is supported.
 ---
 
 ## Changelog
+
+= 1.0.4 – 2025-11-07 =
+- Added Multi language support for frontend.
+- Fix some minor issues.
+
+= 1.0.3 – 2025-11-01 =
+- Added Admin order details now display the applied tier pricing rule beside each product line for better clarity.
+- Added Discount notice now shows in the cart, checkout, and order details (frontend) pages.
+- Improved Discount calculation now uses the actual/selling price instead of the regular price for more accurate savings.
 
 = 1.0.2 – 22 October, 2025 =  
 - Fixed undefined `price_type` key on cart and checkout page.  

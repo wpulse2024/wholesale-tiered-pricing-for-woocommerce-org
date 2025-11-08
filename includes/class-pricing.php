@@ -10,7 +10,6 @@ class WHTPRole_Pricing_Engine {
         add_filter('woocommerce_product_variation_get_price', array($this, 'whtprole_get_role_based_price'), 99, 2);
         add_filter('woocommerce_get_price_html', array($this, 'get_price_html'), 99, 2);
         add_action('woocommerce_before_calculate_totals', array($this, 'update_cart_prices'), 99);
-        add_filter('woocommerce_cart_item_price', array($this, 'cart_item_price_html'), 10, 3);
     }
 
     public function whtprole_get_role_based_price($price, $product) {
@@ -33,7 +32,7 @@ class WHTPRole_Pricing_Engine {
 
         $current_user_role = $this->get_current_user_role();
         $quantity = 1;
-        
+
         foreach ($rules as $rule) {
             if ($rule['role'] === $current_user_role) {
                 $new_price = $this->calculate_price($price, $rule, $quantity);
@@ -63,7 +62,7 @@ class WHTPRole_Pricing_Engine {
         }
 
         $current_user_role = $this->get_current_user_role();
-        $original_price = $product->get_regular_price();
+        $original_price = $product->get_price();
         
         foreach ($rules as $rule) {
             if ($rule['role'] === $current_user_role) {
@@ -112,7 +111,7 @@ class WHTPRole_Pricing_Engine {
             $rules = is_array($rules) ? $rules : json_decode($rules, true);
 
             $current_user_role = $this->get_current_user_role();
-            $original_price = $product->get_regular_price();
+            $original_price = $product->get_price();
             $rules = is_array($rules) ? $rules : json_decode($rules, true);
             foreach ($rules as $rule) {
                 if ($rule['role'] === $current_user_role) {
@@ -122,26 +121,6 @@ class WHTPRole_Pricing_Engine {
                 }
             }
         }
-    }
-
-    public function cart_item_price_html($price_html, $cart_item, $cart_item_key) {
-        $product = $cart_item['data'];
-        $product_id = $product->get_id();
-        
-        $rules = get_post_meta($product_id, '_role_pricing_rules', true);
-        
-        if (empty($rules)) {
-            return $price_html;
-        }
-
-        $original_price = $product->get_regular_price();
-        $current_price = $product->get_price();
-        
-        if ($current_price < $original_price) {
-            return '<del>' . wc_price($original_price) . '</del> <ins>' . wc_price($current_price) . '</ins>';
-        }
-
-        return $price_html;
     }
 
     public static function getPrice($price, $discount_type, $base_price ) {
