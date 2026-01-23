@@ -9,7 +9,7 @@
         <div v-if="pricingRules.length > 0" class="rules-container">
             <div v-for="(rule, index) in pricingRules" :key="rule.id" class="rule-card">
                 <div class="rule-header" @click="toggleRule(rule.id)">
-                    <h3 class="rule-title">{{ getRoleLabel(rule.role) }} - Rule #{{ index + 1 }}</h3>
+                    <h3 class="rule-title">{{ getRuleTitle(rule) }} - Rule #{{ index + 1 }}</h3>
                     <div class="header-actions">
                         <button type="button" class="btn-icon btn-danger" @click.stop="removeRule(index)">
                             <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
@@ -28,16 +28,36 @@
                 <transition name="slide">
                     <div v-show="activeRules.includes(rule.id)" class="rule-body">
                         <div class="form-group">
-                            <label>User Role</label>
-                            <select v-model="rule.role" class="form-control">
-                                <option value="guest">Global</option>
-                                <option v-for="role in userRoles" :key="role.key" :value="role.key">
-                                    {{ role.name }}
-                                </option>
-                            </select>
+                            <label>User Roles (Select Multiple)</label>
+                            <el-select
+                                v-model="rule.roles"
+                                multiple
+                                placeholder="Select user roles"
+                                style="width: 100%"
+                                @change="handleRolesChange(index)"
+                                collapse-tags
+                                collapse-tags-tooltip
+                                :max-collapse-tags="2">
+                                <el-option
+                                    label="Global (All Logged-in Users)"
+                                    value="guest">
+                                </el-option>
+                                <el-option
+                                    v-for="role in userRoles"
+                                    :key="role.key"
+                                    :label="role.name"
+                                    :value="role.key">
+                                </el-option>
+                            </el-select>
+                            <p class="description" style="margin-top: 5px; font-size: 12px; color: #666;">
+                                Select one or more user roles. "Global" applies to all logged-in users.
+                            </p>
+                            <p v-if="rule.roles && rule.roles.length > 0" style="margin-top: 5px; font-size: 12px; color: #999;">
+                                <strong>Selected:</strong> {{ getSelectedRolesLabel(rule.roles) }}
+                            </p>
                         </div>
 
-                        <div v-if="rule.role === 'guest'" class="form-group">
+                        <div v-if="hasGlobalRole(rule.roles)" class="form-group">
                             <label class="checkbox-label">
                                 <input type="checkbox" v-model="rule.also_for_guest" />
                                 <span>Make it for guest user also</span>
@@ -196,8 +216,19 @@ export default {
                 const data = await response.json()
                 // Ensure all rules have the new fields with proper initialization
                 this.pricingRules = (data?.data || []).map(rule => {
+                    // Normalize roles: support legacy 'role' (string) and new 'roles' (array)
+                    let roles = [];
+                    if (rule.roles && Array.isArray(rule.roles)) {
+                        roles = rule.roles;
+                    } else if (rule.role) {
+                        // Legacy: single role as string
+                        roles = [rule.role];
+                    }
+                    
                     return {
                         ...rule,
+                        roles: roles, // Always use roles array
+                        role: roles.length > 0 ? roles[0] : 'customer', // Keep for backward compatibility
                         also_for_guest: rule.also_for_guest === true || rule.also_for_guest === 'true' || rule.also_for_guest === 1 || rule.also_for_guest === '1'
                     }
                 })
@@ -220,13 +251,16 @@ export default {
         addRule() {
             const newRule = {
                 id: this.pricingRules.length,
-                role: 'customer',
+                roles: ['customer'], // New: array of roles
+                role: 'customer', // Keep for backward compatibility
                 step_qty: 1,
                 min_qty: 1,
                 max_qty: '',
                 tiered_pricing: [],
                 also_for_guest: false
             }
+            // Ensure roles is reactive
+            this.$set(newRule, 'roles', ['customer'])
             this.pricingRules.push(newRule)
             this.activeRules.push(newRule.id)
         },
@@ -252,8 +286,76 @@ export default {
         },
 
         getRoleLabel(roleKey) {
+            if (roleKey === 'guest') {
+                return 'Global'
+            }
             const role = this.userRoles.find(r => r.key === roleKey)
             return role ? role.name : roleKey
+        },
+
+        getRuleTitle(rule) {
+            // Support both new (roles array) and legacy (role string) formats
+            const roles = rule.roles && Array.isArray(rule.roles) ? rule.roles : (rule.role ? [rule.role] : [])
+            
+            if (roles.length === 0) {
+                return 'No Role Selected'
+            }
+            
+            if (roles.length === 1) {
+                return this.getRoleLabel(roles[0])
+            }
+            
+            // Multiple roles
+            const roleLabels = roles.map(r => this.getRoleLabel(r))
+            if (roleLabels.length <= 2) {
+                return roleLabels.join(' & ')
+            }
+            return roleLabels.slice(0, 2).join(', ') + ' +' + (roleLabels.length - 2) + ' more'
+        },
+
+        hasGlobalRole(roles) {
+            if (!roles || !Array.isArray(roles)) {
+                return false
+            }
+            return roles.includes('guest')
+        },
+
+        handleRolesChange(ruleIndex) {
+            const rule = this.pricingRules[ruleIndex]
+            if (!rule.roles || !Array.isArray(rule.roles)) {
+                // Ensure roles is always an array
+                this.$set(rule, 'roles', [])
+                return
+            }
+            
+            // If Global is selected, remove other roles (Global is wildcard)
+            if (rule.roles.includes('guest')) {
+                // Use $nextTick to ensure Vue reactivity updates properly with el-select
+                this.$nextTick(() => {
+                    this.$set(rule, 'roles', ['guest'])
+                    rule.role = 'guest'
+                })
+            } else {
+                // Update legacy role field for backward compatibility
+                if (rule.roles.length > 0) {
+                    rule.role = rule.roles[0]
+                } else {
+                    rule.role = 'customer'
+                }
+            }
+        },
+
+        getSelectedRolesLabel(roles) {
+            if (!roles || !Array.isArray(roles) || roles.length === 0) {
+                return 'None'
+            }
+            return roles.map(roleKey => {
+                if (roleKey === 'guest') {
+                    return 'Global'
+                }
+                const role = this.userRoles.find(r => r.key === roleKey)
+                return role ? role.name : roleKey
+            }).join(', ')
         },
 
         async saveRules() {

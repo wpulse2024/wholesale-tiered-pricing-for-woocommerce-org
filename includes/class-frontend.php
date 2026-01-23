@@ -49,29 +49,15 @@ class WHTPRole_Pricing_Frontend {
         }
 
         $current_user_role = $this->get_current_user_role();
+        $is_guest = ($current_user_role === 'guest');
         $applicable_rules = array();
 
         foreach ($rules as $rule) {
-            // Check if rule applies to current user
-            $rule_applies = false;
+            // Use helper to check if rule applies
+            $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
+            $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
             
-            // Global role applies to all logged-in users
-            if ($rule['role'] === 'guest') {
-                // If user is logged in, always apply Global rules
-                if ($current_user_role !== 'guest') {
-                    $rule_applies = true;
-                } 
-                // If user is guest, only apply if also_for_guest is enabled
-                elseif ($current_user_role === 'guest' && !empty($rule['also_for_guest'])) {
-                    $rule_applies = true;
-                }
-            } 
-            // Role-specific rules
-            elseif ($rule['role'] === $current_user_role) {
-                $rule_applies = true;
-            }
-            
-            if ($rule_applies) {
+            if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
                 $applicable_rules[] = $rule;
             }
         }
@@ -92,28 +78,14 @@ class WHTPRole_Pricing_Frontend {
         }
 
         $current_user_role = $this->get_current_user_role();
+        $is_guest = ($current_user_role === 'guest');
         
         foreach ($rules as $rule) {
-            // Check if rule applies to current user
-            $rule_applies = false;
+            // Use helper to check if rule applies
+            $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
+            $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
             
-            // Global role applies to all logged-in users
-            if ($rule['role'] === 'guest') {
-                // If user is logged in, always apply Global rules
-                if ($current_user_role !== 'guest') {
-                    $rule_applies = true;
-                } 
-                // If user is guest, only apply if also_for_guest is enabled
-                elseif ($current_user_role === 'guest' && !empty($rule['also_for_guest'])) {
-                    $rule_applies = true;
-                }
-            } 
-            // Role-specific rules
-            elseif ($rule['role'] === $current_user_role) {
-                $rule_applies = true;
-            }
-            
-            if ($rule_applies) {
+            if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
                 if ($rule['min_qty'] > 0) {
                     $args['min_value'] = $rule['min_qty'];
                 }
@@ -142,28 +114,14 @@ class WHTPRole_Pricing_Frontend {
         }
 
         $current_user_role = $this->get_current_user_role();
+        $is_guest = ($current_user_role === 'guest');
         
         foreach ($rules as $rule) {
-            // Check if rule applies to current user
-            $rule_applies = false;
+            // Use helper to check if rule applies
+            $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
+            $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
             
-            // Global role applies to all logged-in users
-            if ($rule['role'] === 'guest') {
-                // If user is logged in, always apply Global rules
-                if ($current_user_role !== 'guest') {
-                    $rule_applies = true;
-                } 
-                // If user is guest, only apply if also_for_guest is enabled
-                elseif ($current_user_role === 'guest' && !empty($rule['also_for_guest'])) {
-                    $rule_applies = true;
-                }
-            } 
-            // Role-specific rules
-            elseif ($rule['role'] === $current_user_role) {
-                $rule_applies = true;
-            }
-            
-            if ($rule_applies) {
+            if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
                 $messages = array();
                 
                 if ($rule['min_qty'] > 1) {
@@ -209,28 +167,14 @@ class WHTPRole_Pricing_Frontend {
         }
 
         $current_user_role = $this->get_current_user_role();
+        $is_guest = ($current_user_role === 'guest');
         
         foreach ($rules as $rule) {
-            // Check if rule applies to current user
-            $rule_applies = false;
+            // Use helper to check if rule applies
+            $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
+            $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
             
-            // Global role applies to all logged-in users
-            if ($rule['role'] === 'guest') {
-                // If user is logged in, always apply Global rules
-                if ($current_user_role !== 'guest') {
-                    $rule_applies = true;
-                } 
-                // If user is guest, only apply if also_for_guest is enabled
-                elseif ($current_user_role === 'guest' && !empty($rule['also_for_guest'])) {
-                    $rule_applies = true;
-                }
-            } 
-            // Role-specific rules
-            elseif ($rule['role'] === $current_user_role) {
-                $rule_applies = true;
-            }
-            
-            if ($rule_applies) {
+            if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
                 if ($rule['min_qty'] > 0 && $quantity < $rule['min_qty']) {
                     wc_add_notice(
                         /* translators: %s = the savings amount formatted as a price */
@@ -298,31 +242,19 @@ class WHTPRole_Pricing_Frontend {
         }
         
         $current_user_role = $this->get_current_user_role();
+        $is_guest = ($current_user_role === 'guest');
         $has_applicable_rules = false;
         
         foreach ($rules as $rule) {
-            // Check if rule applies to current user
-            $rule_applies = false;
+            // Use helper to check if rule applies
+            $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
+            $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
             
-            // Global role applies to all logged-in users
-            if ($rule['role'] === 'guest') {
-                // If user is logged in, always apply Global rules
-                if ($current_user_role !== 'guest') {
-                    $rule_applies = true;
-                } 
-                // If user is guest, only apply if also_for_guest is enabled
-                elseif ($current_user_role === 'guest' && !empty($rule['also_for_guest'])) {
-                    $rule_applies = true;
+            if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
+                if (!empty($rule['tiered_pricing']) && is_array($rule['tiered_pricing'])) {
+                    $has_applicable_rules = true;
+                    break;
                 }
-            } 
-            // Role-specific rules
-            elseif ($rule['role'] === $current_user_role) {
-                $rule_applies = true;
-            }
-            
-            if ($rule_applies && !empty($rule['tiered_pricing']) && is_array($rule['tiered_pricing'])) {
-                $has_applicable_rules = true;
-                break;
             }
         }
         

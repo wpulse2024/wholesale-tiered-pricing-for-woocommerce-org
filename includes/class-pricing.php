@@ -31,29 +31,15 @@ class WHTPRole_Pricing_Engine {
         }
 
         $current_user_role = $this->get_current_user_role();
+        $is_guest = ($current_user_role === 'guest');
         $quantity = 1;
 
         foreach ($rules as $rule) {
-            // Check if rule applies to current user
-            $rule_applies = false;
+            // Use helper to check if rule applies
+            $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
+            $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
             
-            // Global role applies to all logged-in users
-            if ($rule['role'] === 'guest') {
-                // If user is logged in, always apply Global rules
-                if ($current_user_role !== 'guest') {
-                    $rule_applies = true;
-                } 
-                // If user is guest, only apply if also_for_guest is enabled
-                elseif ($current_user_role === 'guest' && !empty($rule['also_for_guest'])) {
-                    $rule_applies = true;
-                }
-            } 
-            // Role-specific rules
-            elseif ($rule['role'] === $current_user_role) {
-                $rule_applies = true;
-            }
-            
-            if ($rule_applies) {
+            if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
                 $new_price = $this->calculate_price($price, $rule, $quantity);
                 return $new_price;
             }
@@ -81,29 +67,15 @@ class WHTPRole_Pricing_Engine {
         }
 
         $current_user_role = $this->get_current_user_role();
+        $is_guest = ($current_user_role === 'guest');
         $original_price = $product->get_price();
         
         foreach ($rules as $rule) {
-            // Check if rule applies to current user
-            $rule_applies = false;
+            // Use helper to check if rule applies
+            $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
+            $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
             
-            // Global role applies to all logged-in users
-            if ($rule['role'] === 'guest') {
-                // If user is logged in, always apply Global rules
-                if ($current_user_role !== 'guest') {
-                    $rule_applies = true;
-                } 
-                // If user is guest, only apply if also_for_guest is enabled
-                elseif ($current_user_role === 'guest' && !empty($rule['also_for_guest'])) {
-                    $rule_applies = true;
-                }
-            } 
-            // Role-specific rules
-            elseif ($rule['role'] === $current_user_role) {
-                $rule_applies = true;
-            }
-            
-            if ($rule_applies) {
+            if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
                 $new_price = $this->calculate_price($original_price, $rule, 1);
                 
                 if ($new_price < $original_price) {
@@ -149,29 +121,15 @@ class WHTPRole_Pricing_Engine {
             $rules = is_array($rules) ? $rules : json_decode($rules, true);
 
             $current_user_role = $this->get_current_user_role();
+            $is_guest = ($current_user_role === 'guest');
             $original_price = $product->get_price();
             $rules = is_array($rules) ? $rules : json_decode($rules, true);
             foreach ($rules as $rule) {
-                // Check if rule applies to current user
-                $rule_applies = false;
+                // Use helper to check if rule applies
+                $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
+                $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
                 
-                // Global role applies to all logged-in users
-                if ($rule['role'] === 'guest') {
-                    // If user is logged in, always apply Global rules
-                    if ($current_user_role !== 'guest') {
-                        $rule_applies = true;
-                    } 
-                    // If user is guest, only apply if also_for_guest is enabled
-                    elseif ($current_user_role === 'guest' && !empty($rule['also_for_guest'])) {
-                        $rule_applies = true;
-                    }
-                } 
-                // Role-specific rules
-                elseif ($rule['role'] === $current_user_role) {
-                    $rule_applies = true;
-                }
-                
-                if ($rule_applies) {
+                if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
                     $new_price = $this->calculate_price($original_price, $rule, $quantity);
                     $cart_item['data']->set_price($new_price);
                     break;

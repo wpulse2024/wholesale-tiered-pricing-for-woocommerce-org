@@ -144,4 +144,72 @@ class WHTPRole_Pricing_Helper
         }
         return $discounted_tier;
     }
+
+    /**
+     * Normalize rule roles to always return an array
+     * Supports backward compatibility with legacy single role string format
+     * 
+     * @param array|string $rule_roles Role(s) from rule - can be string (legacy) or array (new)
+     * @return array Normalized array of role slugs
+     */
+    public static function normalize_rule_roles($rule_roles) {
+        // Handle null/empty
+        if (empty($rule_roles)) {
+            return array();
+        }
+        
+        // If already an array, return as-is (but ensure it's a proper array)
+        if (is_array($rule_roles)) {
+            return array_values(array_filter($rule_roles)); // Remove empty values and reindex
+        }
+        
+        // Legacy: single role as string
+        if (is_string($rule_roles)) {
+            return array($rule_roles);
+        }
+        
+        // Fallback
+        return array();
+    }
+
+    /**
+     * Check if a rule applies to the current user
+     * 
+     * @param array|string $rule_roles Role(s) from rule (will be normalized)
+     * @param string $current_user_role Current user's role
+     * @param bool $is_guest Whether current user is a guest
+     * @param bool $also_for_guest Whether rule should also apply to guests (for Global rules)
+     * @return bool True if rule applies to current user
+     */
+    public static function rule_applies_to_user($rule_roles, $current_user_role, $is_guest = false, $also_for_guest = false) {
+        $roles = self::normalize_rule_roles($rule_roles);
+        
+        // If roles array is empty, rule doesn't apply
+        if (empty($roles)) {
+            return false;
+        }
+        
+        // Check if "global" or "guest" is in roles (wildcard for all logged-in users)
+        if (in_array('guest', $roles) || in_array('global', $roles)) {
+            // Global applies to all logged-in users
+            if (!$is_guest) {
+                return true;
+            }
+            // For guest users, check also_for_guest flag
+            if ($is_guest && $also_for_guest) {
+                return true;
+            }
+            // Global without also_for_guest doesn't apply to guests
+            return false;
+        }
+        
+        // Role-specific matching
+        if ($is_guest) {
+            // Guest users can only match if explicitly in roles array
+            return in_array('guest', $roles);
+        }
+        
+        // Check if current user role is in the roles array
+        return in_array($current_user_role, $roles);
+    }
 }
