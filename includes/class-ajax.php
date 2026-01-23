@@ -30,6 +30,8 @@ class WHTPRole_Pricing_Ajax {
         add_action('wp_ajax_nopriv_whtprole_pricing_save_general_settings', array($this, 'save_general_settings'));
         add_action('wp_ajax_whtprole_pricing_get_general_settings', array($this, 'get_general_settings'));
         add_action('wp_ajax_nopriv_whtprole_pricing_get_general_settings', array($this, 'get_general_settings'));
+        add_action('wp_ajax_whtprole_calculate_savings', array($this, 'calculate_savings'));
+        add_action('wp_ajax_nopriv_whtprole_calculate_savings', array($this, 'calculate_savings'));
     }
     public function get_general_settings() {
         $nonce = sanitize_text_field($_POST['nonce']);
@@ -184,7 +186,15 @@ class WHTPRole_Pricing_Ajax {
      * Get role-based price for a product and quantity
      */
     public function whtprole_get_role_based_price() {
-        check_ajax_referer('wc_add_to_cart_nonce', 'nonce');
+        // Check nonce - support both WooCommerce and custom nonce
+        if (isset($_POST['nonce'])) {
+            $nonce = sanitize_text_field($_POST['nonce']);
+            if (!wp_verify_nonce($nonce, 'wholesale-tiered-pricing-for-woocommerce-ajax') && 
+                !wp_verify_nonce($nonce, 'wc_add_to_cart_nonce')) {
+                wp_send_json_error(array('message' => 'Invalid nonce'));
+                return;
+            }
+        }
         
         $product_id = intval($_POST['product_id']);
         $quantity = intval($_POST['quantity']);
@@ -208,7 +218,8 @@ class WHTPRole_Pricing_Ajax {
         $new_price = $product->get_price();
         
         foreach ($rules as $rule) {
-            if ($rule['role'] === $current_user_role) {
+            // Global role (guest) applies to all users
+            if ($rule['role'] === 'guest' || $rule['role'] === $current_user_role) {
                 $new_price = $this->calculate_price($product->get_price(), $rule, $quantity);
                 break;
             }
@@ -374,37 +385,142 @@ class WHTPRole_Pricing_Ajax {
     }
     
     /**
-     * Calculate price based on rule and quantity
+     * Calculate price based on rule and quantity (Improved with better edge case handling)
      */
     private function calculate_price($base_price, $rule, $quantity) {
+        // Validate inputs
+        if (empty($base_price) || $base_price <= 0) {
+            return $base_price;
+        }
+        
+        if (empty($quantity) || $quantity <= 0) {
+            $quantity = 1;
+        }
+        
         // Check tiered pricing first
-        if (!empty($rule['tiered_pricing'])) {
+        if (!empty($rule['tiered_pricing']) && is_array($rule['tiered_pricing'])) {
             $applicable_tier = null;
             // Sort tiers by quantity descending to find the highest applicable tier
             usort($rule['tiered_pricing'], function($a, $b) {
-                return $b['min_qty'] - $a['min_qty'];
+                $qty_a = isset($a['min_qty']) ? intval($a['min_qty']) : 0;
+                $qty_b = isset($b['min_qty']) ? intval($b['min_qty']) : 0;
+                return $qty_b - $qty_a;
             });
             
             foreach ($rule['tiered_pricing'] as $tier) {
-                if (!empty($tier['min_qty']) && !empty($tier['price']) && $quantity >= $tier['min_qty']) {
+                if (!empty($tier['min_qty']) && !empty($tier['price']) && $quantity >= intval($tier['min_qty'])) {
+                    // Check max_qty constraint if set
+                    if (!empty($tier['max_qty']) && $quantity > intval($tier['max_qty'])) {
+                        continue;
+                    }
                     $applicable_tier = $tier;
                     break;
                 }
             }
             
             if ($applicable_tier) {
-                switch ($applicable_tier['discount_type']) {
+                $discount_type = isset($applicable_tier['discount_type']) ? $applicable_tier['discount_type'] : 'fixed';
+                $tier_price = floatval($applicable_tier['price']);
+                
+                switch ($discount_type) {
                     case 'percentage':
-                        return $base_price - ($base_price * floatval($applicable_tier['price']) / 100);
+                        $calculated_price = $base_price - ($base_price * $tier_price / 100);
+                        // Ensure price doesn't go negative
+                        return max(0, $calculated_price);
                     case 'fixed':
-                        return $base_price - floatval($applicable_tier['price']);
+                        $calculated_price = $base_price - $tier_price;
+                        // Ensure price doesn't go negative
+                        return max(0, $calculated_price);
                     default:
-                        return floatval($applicable_tier['price']);
+                        // Direct price override
+                        return max(0, $tier_price);
                 }
             } else {
                 return $base_price;
             }
         }
+        
+        return $base_price;
+    }
+    
+    /**
+     * Calculate savings for a given quantity (Dynamic Savings Calculator)
+     */
+    public function calculate_savings() {
+        check_ajax_referer('wholesale-tiered-pricing-for-woocommerce-ajax', 'nonce');
+        
+        $product_id = intval($_POST['product_id']);
+        $quantity = intval($_POST['quantity']);
+        
+        if (!$product_id || !$quantity) {
+            wp_send_json_error(array('message' => 'Invalid parameters'));
+            return;
+        }
+        
+        $product = wc_get_product($product_id);
+        if (!$product) {
+            wp_send_json_error(array('message' => 'Product not found'));
+            return;
+        }
+        
+        $rules = get_post_meta($product_id, '_role_pricing_rules', true);
+        if (empty($rules)) {
+            $globalRules = get_option('whtprole_pricing_global_rules', []);
+            if (empty($globalRules)) {
+                wp_send_json_success(array(
+                    'has_discount' => false,
+                    'regular_price' => $product->get_price(),
+                    'discounted_price' => $product->get_price(),
+                    'savings' => 0,
+                    'savings_percent' => 0,
+                    'total_regular' => $product->get_price() * $quantity,
+                    'total_discounted' => $product->get_price() * $quantity,
+                    'total_savings' => 0
+                ));
+                return;
+            } else {
+                $rules = $globalRules;
+            }
+        }
+        
+        if (!is_array($rules)) {
+            $rules = json_decode($rules, true);
+        }
+        
+        $current_user_role = $this->get_current_user_role();
+        $regular_price = floatval($product->get_price());
+        $discounted_price = $regular_price;
+        $applicable_rule = null;
+        
+        foreach ($rules as $rule) {
+            // Global role (guest) applies to all users
+            if ($rule['role'] === 'guest' || $rule['role'] === $current_user_role) {
+                $applicable_rule = $rule;
+                $discounted_price = $this->calculate_price($regular_price, $rule, $quantity);
+                break;
+            }
+        }
+        
+        $savings = $regular_price - $discounted_price;
+        $savings_percent = $regular_price > 0 ? ($savings / $regular_price) * 100 : 0;
+        $total_regular = $regular_price * $quantity;
+        $total_discounted = $discounted_price * $quantity;
+        $total_savings = $total_regular - $total_discounted;
+        
+        wp_send_json_success(array(
+            'has_discount' => $savings > 0,
+            'regular_price' => $regular_price,
+            'discounted_price' => $discounted_price,
+            'savings' => $savings,
+            'savings_percent' => round($savings_percent, 2),
+            'total_regular' => $total_regular,
+            'total_discounted' => $total_discounted,
+            'total_savings' => $total_savings,
+            'quantity' => $quantity,
+            'formatted_regular_total' => wc_price($total_regular),
+            'formatted_discounted_total' => wc_price($total_discounted),
+            'formatted_total_savings' => wc_price($total_savings)
+        ));
     }
     
     /**
@@ -412,11 +528,11 @@ class WHTPRole_Pricing_Ajax {
      */
     private function get_current_user_role() {
         if (!is_user_logged_in()) {
-            return '';
+            return 'guest';
         }
         
         $user = wp_get_current_user();
-        return !empty($user->roles) ? $user->roles[0] : '';
+        return !empty($user->roles) ? $user->roles[0] : 'customer';
     }
 }
 

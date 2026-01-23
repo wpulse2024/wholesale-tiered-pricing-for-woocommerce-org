@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
 class WHTPRole_Pricing_Engine {
 
     public function __construct() {
-        add_filter('woocommerce_product_get_price', array($this, 'whtprole_get_role_based_price'), 99, 2);
+        // add_filter('woocommerce_product_get_price', array($this, 'whtprole_get_role_based_price'), 99, 2);
         add_filter('woocommerce_product_variation_get_price', array($this, 'whtprole_get_role_based_price'), 99, 2);
         add_filter('woocommerce_get_price_html', array($this, 'get_price_html'), 99, 2);
         add_action('woocommerce_before_calculate_totals', array($this, 'update_cart_prices'), 99);
@@ -34,7 +34,8 @@ class WHTPRole_Pricing_Engine {
         $quantity = 1;
 
         foreach ($rules as $rule) {
-            if ($rule['role'] === $current_user_role) {
+            // Global role (guest) applies to all users
+            if ($rule['role'] === 'guest' || $rule['role'] === $current_user_role) {
                 $new_price = $this->calculate_price($price, $rule, $quantity);
                 return $new_price;
             }
@@ -65,7 +66,8 @@ class WHTPRole_Pricing_Engine {
         $original_price = $product->get_price();
         
         foreach ($rules as $rule) {
-            if ($rule['role'] === $current_user_role) {
+            // Global role (guest) applies to all users
+            if ($rule['role'] === 'guest' || $rule['role'] === $current_user_role) {
                 $new_price = $this->calculate_price($original_price, $rule, 1);
                 
                 if ($new_price < $original_price) {
@@ -114,7 +116,8 @@ class WHTPRole_Pricing_Engine {
             $original_price = $product->get_price();
             $rules = is_array($rules) ? $rules : json_decode($rules, true);
             foreach ($rules as $rule) {
-                if ($rule['role'] === $current_user_role) {
+                // Global role (guest) applies to all users
+                if ($rule['role'] === 'guest' || $rule['role'] === $current_user_role) {
                     $new_price = $this->calculate_price($original_price, $rule, $quantity);
                     $cart_item['data']->set_price($new_price);
                     break;
@@ -134,34 +137,59 @@ class WHTPRole_Pricing_Engine {
     }
 
     private function calculate_price($base_price, $rule, $quantity) {
+        // Validate inputs
+        if (empty($base_price) || $base_price <= 0) {
+            return $base_price;
+        }
+        
+        if (empty($quantity) || $quantity <= 0) {
+            $quantity = 1;
+        }
+        
         // Check tiered pricing first
-        if (!empty($rule['tiered_pricing'])) {
+        if (!empty($rule['tiered_pricing']) && is_array($rule['tiered_pricing'])) {
             $applicable_tier = null;
             // Sort tiers by quantity descending to find the highest applicable tier
             usort($rule['tiered_pricing'], function($a, $b) {
-                return $b['min_qty'] - $a['min_qty'];
+                $qty_a = isset($a['min_qty']) ? intval($a['min_qty']) : 0;
+                $qty_b = isset($b['min_qty']) ? intval($b['min_qty']) : 0;
+                return $qty_b - $qty_a;
             });
             
             foreach ($rule['tiered_pricing'] as $tier) {
-                if (!empty($tier['min_qty']) && !empty($tier['price']) && $quantity >= $tier['min_qty']) {
+                if (!empty($tier['min_qty']) && !empty($tier['price']) && $quantity >= intval($tier['min_qty'])) {
+                    // Check max_qty constraint if set
+                    if (!empty($tier['max_qty']) && $quantity > intval($tier['max_qty'])) {
+                        continue;
+                    }
                     $applicable_tier = $tier;
                     break;
                 }
             }
             
             if ($applicable_tier) {
-                switch ($applicable_tier['discount_type']) {
+                $discount_type = isset($applicable_tier['discount_type']) ? $applicable_tier['discount_type'] : 'fixed';
+                $tier_price = floatval($applicable_tier['price']);
+                
+                switch ($discount_type) {
                     case 'percentage':
-                        return $base_price - ($base_price * floatval($applicable_tier['price']) / 100);
+                        $calculated_price = $base_price - ($base_price * $tier_price / 100);
+                        // Ensure price doesn't go negative
+                        return max(0, $calculated_price);
                     case 'fixed':
-                        return $base_price - floatval($applicable_tier['price']);
+                        $calculated_price = $base_price - $tier_price;
+                        // Ensure price doesn't go negative
+                        return max(0, $calculated_price);
                     default:
-                        return floatval($applicable_tier['price']);
+                        // Direct price override
+                        return max(0, $tier_price);
                 }
             } else {
                 return $base_price;
             }
         }
+        
+        return $base_price;
     }
 
     private function find_applicable_tier($tiers, $quantity) {

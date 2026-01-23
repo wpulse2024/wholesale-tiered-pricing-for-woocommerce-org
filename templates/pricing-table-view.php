@@ -6,12 +6,6 @@ if (!defined('ABSPATH')) {
 
 <div class="wholesale-tiered-pricing-for-woocommerce-table">
     <?php 
-    wp_enqueue_style(
-        'wholesale-tiered-pricing-for-woocommerce', 
-        WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/frontend.css', 
-        array(), 
-        WHTPROLE_PRICING_VERSION
-    );
     $regular_price = floatval($product->get_price());
     $helper = new WHTPRole_Pricing_Helper();
     $generalSettings = $helper->getGeneralSettings();

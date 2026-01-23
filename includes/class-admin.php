@@ -70,10 +70,13 @@ class WHTPRole_Pricing_Admin
 
             <div class="options_group">
                 <?php
+
                 woocommerce_wp_checkbox(array(
                     'id'    => '_show_pricing_table',
                     'label' => __('Show Pricing Table', 'wholesale-tiered-pricing-for-woocommerce'),
                     'description' => __('Display tiered pricing table on product page', 'wholesale-tiered-pricing-for-woocommerce'),
+                    'desc_tip' => true,
+                    'value' => get_post_meta($post->ID, '_show_pricing_table', 'yes') == 'no' ? 'no' : 'yes',
                 ));
                 ?>
             </div>
@@ -91,6 +94,7 @@ class WHTPRole_Pricing_Admin
                 <p class="form-field">
                     <label><?php esc_html_e('User Role', 'wholesale-tiered-pricing-for-woocommerce'); ?></label>
                     <select name="role_pricing_rules[<?php echo esc_attr($index); ?>][role]">
+                        <option value="guest">Global</option>
                         <option value=""><?php esc_html_e('Select Role', 'wholesale-tiered-pricing-for-woocommerce'); ?></option>
                         <?php foreach ($roles as $role_key => $role_name): ?>
                             <option value="<?php echo esc_attr($role_key); ?>"

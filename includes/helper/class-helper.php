@@ -82,7 +82,13 @@ class WHTPRole_Pricing_Helper
     public function getTemplatePath() {
         $globalSettings = $this->getGeneralSettings();
         $template = !empty($globalSettings['defaultTemplate']) ? $globalSettings['defaultTemplate'] : 'table';
-    
+        wp_enqueue_style(
+            'wholesale-tiered-pricing-for-woocommerce', 
+            WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/frontend.css', 
+            array(), 
+            WHTPROLE_PRICING_VERSION
+        );
+        
         $templates = apply_filters('whtprole_pricing_templates', [
             'table' => WHTPROLE_PRICING_PLUGIN_PATH . 'templates/pricing-table-view.php',
             'compact_list' => WHTPROLE_PRICING_PLUGIN_PATH . 'templates/pricing-table-view-compact-list.php',
@@ -94,9 +100,10 @@ class WHTPRole_Pricing_Helper
     }
 
     public function calculationDiscount($regular_price, $tier) {
-
+        // Ensure both values are floats to prevent type errors
+        $regular_price = floatval($regular_price);
         $discount_type = $tier['discount_type'] ?? '';
-        $tier_price = floatval($tier['price']);
+        $tier_price = floatval($tier['price'] ?? 0);
 
         if ($discount_type === 'fixed') {
             $price = $regular_price - $tier_price;
@@ -111,6 +118,10 @@ class WHTPRole_Pricing_Helper
             $savings = $regular_price - $tier_price;
             $savings_percent = $regular_price > 0 ? ($savings / $regular_price) * 100 : 0;
         }
+
+        // Ensure we don't return negative values
+        $price = max(0, $price);
+        $savings = max(0, $savings);
 
         return [
             'price' => $price,

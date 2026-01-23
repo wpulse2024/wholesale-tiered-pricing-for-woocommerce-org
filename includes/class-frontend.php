@@ -11,11 +11,15 @@ class WHTPRole_Pricing_Frontend {
         add_filter('woocommerce_add_to_cart_validation', array($this, 'validate_add_to_cart'), 10, 3);
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('woocommerce_before_add_to_cart_button', array($this, 'display_quantity_messages'));
+        add_action('woocommerce_before_add_to_cart_button', array($this, 'display_savings_calculator'), 5);
     }
 
     public function enqueue_scripts() {
         if (is_product()) {
-            wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/frontend.js', array('jquery'), WHTPROLE_PRICING_VERSION, true);
+            // Ensure WooCommerce scripts are loaded first
+            wp_enqueue_script('wc-add-to-cart');
+            
+            wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/frontend.js', array('jquery', 'wc-add-to-cart'), WHTPROLE_PRICING_VERSION, true);
             
             wp_localize_script('wholesale-tiered-pricing-for-woocommerce', 'whtproleTieredPricingVar', array(
                 'ajaxUrl' => admin_url('admin-ajax.php'),
@@ -48,7 +52,8 @@ class WHTPRole_Pricing_Frontend {
         $applicable_rules = array();
 
         foreach ($rules as $rule) {
-            if ($rule['role'] === $current_user_role) {
+            // Global role (guest) applies to all users
+            if ($rule['role'] === 'guest' || $rule['role'] === $current_user_role) {
                 $applicable_rules[] = $rule;
             }
         }
@@ -71,7 +76,8 @@ class WHTPRole_Pricing_Frontend {
         $current_user_role = $this->get_current_user_role();
         
         foreach ($rules as $rule) {
-            if ($rule['role'] === $current_user_role) {
+            // Global role (guest) applies to all users
+            if ($rule['role'] === 'guest' || $rule['role'] === $current_user_role) {
                 if ($rule['min_qty'] > 0) {
                     $args['min_value'] = $rule['min_qty'];
                 }
@@ -102,7 +108,8 @@ class WHTPRole_Pricing_Frontend {
         $current_user_role = $this->get_current_user_role();
         
         foreach ($rules as $rule) {
-            if ($rule['role'] === $current_user_role) {
+            // Global role (guest) applies to all users
+            if ($rule['role'] === 'guest' || $rule['role'] === $current_user_role) {
                 $messages = array();
                 
                 if ($rule['min_qty'] > 1) {
@@ -150,7 +157,8 @@ class WHTPRole_Pricing_Frontend {
         $current_user_role = $this->get_current_user_role();
         
         foreach ($rules as $rule) {
-            if ($rule['role'] === $current_user_role) {
+            // Global role (guest) applies to all users
+            if ($rule['role'] === 'guest' || $rule['role'] === $current_user_role) {
                 
                 if ($rule['min_qty'] > 0 && $quantity < $rule['min_qty']) {
                     wc_add_notice(
@@ -187,6 +195,80 @@ class WHTPRole_Pricing_Frontend {
         }
 
         return $passed;
+    }
+
+    public function display_savings_calculator() {
+        global $product;
+        
+        if (!$product) {
+            return;
+        }
+        
+        $helper = new WHTPRole_Pricing_Helper();
+        if (!$helper->validation($product->get_id())) {
+            return;
+        }
+        
+        $rules = get_post_meta($product->get_id(), '_role_pricing_rules', true);
+        $globalRules = get_option('whtprole_pricing_global_rules', []);
+        if (empty($rules)) {
+            if (empty($globalRules)) {
+                return;
+            }
+            $rules = $globalRules;
+        }
+        
+        if (!is_array($rules)) {
+            $rules = json_decode($rules, true);
+        }
+        
+        if (empty($rules) || !is_array($rules)) {
+            return;
+        }
+        
+        $current_user_role = $this->get_current_user_role();
+        $has_applicable_rules = false;
+        
+        foreach ($rules as $rule) {
+            // Global role (guest) applies to all users
+            if ($rule['role'] === 'guest' || $rule['role'] === $current_user_role) {
+                if (!empty($rule['tiered_pricing']) && is_array($rule['tiered_pricing'])) {
+                    $has_applicable_rules = true;
+                    break;
+                }
+            }
+        }
+        
+        if (!$has_applicable_rules) {
+            return;
+        }
+        
+        $product_id = $product->get_id();
+        $regular_price = floatval($product->get_price());
+        
+        if ($regular_price <= 0) {
+            return;
+        }
+        
+        echo '<div class="whtprole-savings-calculator" data-product-id="' . esc_attr($product_id) . '" data-regular-price="' . esc_attr($regular_price) . '">';
+        echo '<div class="savings-calculator-header">';
+        echo '<h4>' . esc_html__('See Your Savings', 'wholesale-tiered-pricing-for-woocommerce') . '</h4>';
+        echo '</div>';
+        echo '<div class="savings-calculator-content">';
+        echo '<div class="savings-row">';
+        echo '<span class="savings-label">' . esc_html__('Regular Price:', 'wholesale-tiered-pricing-for-woocommerce') . '</span>';
+        echo '<span class="savings-value regular-total">' . wc_price($regular_price) . '</span>';
+        echo '</div>';
+        echo '<div class="savings-row">';
+        echo '<span class="savings-label">' . esc_html__('Your Price:', 'wholesale-tiered-pricing-for-woocommerce') . '</span>';
+        echo '<span class="savings-value discounted-total">' . wc_price($regular_price) . '</span>';
+        echo '</div>';
+        echo '<div class="savings-row savings-highlight">';
+        echo '<span class="savings-label">' . esc_html__('You Save:', 'wholesale-tiered-pricing-for-woocommerce') . '</span>';
+        echo '<span class="savings-value total-savings">' . wc_price(0) . ' <span class="savings-percent">(0%)</span></span>';
+        echo '</div>';
+        echo '</div>';
+        echo '</div>';
     }
 
     private function get_current_user_role() {

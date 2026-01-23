@@ -30,6 +30,7 @@
                         <div class="form-group">
                             <label>User Role</label>
                             <select v-model="rule.role" class="form-control">
+                                <option value="guest">Global</option>
                                 <option v-for="role in userRoles" :key="role.key" :value="role.key">
                                     {{ role.name }}
                                 </option>
@@ -37,11 +38,6 @@
                         </div>
 
                         <div class="form-row">
-                            <div class="form-group">
-                                <label>Step Quantity</label>
-                                <input type="number" v-model.number="rule.step_qty" class="form-control" min="1" />
-                            </div>
-
                             <div class="form-group">
                                 <label>Min Quantity</label>
                                 <input type="number" v-model.number="rule.min_qty" class="form-control" min="1" />
@@ -51,6 +47,11 @@
                                 <label>Max Quantity</label>
                                 <input type="text" v-model="rule.max_qty" class="form-control"
                                     placeholder="e.g., 100 or unlimited" />
+                            </div>
+
+                            <div class="form-group">
+                                <label>Step Quantity</label>
+                                <input type="number" v-model.number="rule.step_qty" class="form-control" min="1" />
                             </div>
                         </div>
 

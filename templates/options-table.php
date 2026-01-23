@@ -56,14 +56,17 @@ if (!defined('ABSPATH')) {
                         }
                         ?>
                     </span>
+
+                    <div class="tier-total">
+                        <span class="total-label"><?php echo esc_html__('Total:', 'wholesale-tiered-pricing-for-woocommerce'); ?></span>
+                        <span class="total-regular" data-regular-total="">
+                            <?php echo wp_kses_post(wc_price($regular_price)); ?>
+                        </span>
+                        <span class="total-sale" data-sale-total="">
+                            <?php echo wp_kses_post(wc_price($tier_price)); ?>
+                        </span>
+                    </div>
                     
-                    <?php if ($is_last_tier): ?>
-                        <div class="tier-total">
-                            <span class="total-label"><?php echo esc_html__('Total:', 'wholesale-tiered-pricing-for-woocommerce'); ?></span>
-                            <span class="total-regular" data-regular-total=""></span>
-                            <span class="total-sale" data-sale-total=""></span>
-                        </div>
-                    <?php endif; ?>
                 </div>
                 
                 <div class="tier-pricing">

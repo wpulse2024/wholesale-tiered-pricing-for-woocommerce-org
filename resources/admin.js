@@ -30,6 +30,7 @@ jQuery(document).ready(function($) {
     // Generate role options HTML
     function generateRoleOptions(roles) {
         var options = '<option value="">Select Role</option>';
+        options += '<option value="guest">Global</option>';
         $.each(roles, function(roleKey, roleName) {
             options += `<option value="${roleKey}">${roleName}</option>`;
         });

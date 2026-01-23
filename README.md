@@ -5,7 +5,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: woocommerce, wholesale, pricing, role-based, tiered pricing 
 Requires at least: 4.5  
 Tested up to: 6.8.3  
-Stable tag: 1.0.4
+Stable tag: 1.0.6
 Requires PHP: 7.1  
 
 **Beautiful volume pricing tables with role-based discounts for wholesale, B2B & bulk sellers offering tiered pricing by quantity and user role.**
@@ -105,6 +105,16 @@ Yes, any role created by a membership or user role plugin is supported.
 ---
 
 ## Changelog
+
+= 1.0.6 – 2025-11-11 =
+- Added Dynamic Savings Calculator - Real-time savings display that updates as customers change quantity, showing total savings and discount percentage.
+- Improved pricing calculation logic with better edge case handling (negative price prevention, max_qty validation, improved tier matching).
+- Enhanced performance and reliability of tiered pricing calculations.
+- Fixed pricing calculation issues when max_qty constraints are set.
+
+= 1.0.5 – 2025-11-10 =
+- Added pricing rule for guest users.
+- Added Option to show/hide pricing table on product page.
 
 = 1.0.4 – 2025-11-07 =
 - Added Multi language support for frontend.
