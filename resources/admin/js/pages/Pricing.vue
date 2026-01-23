@@ -259,8 +259,7 @@ export default {
                 tiered_pricing: [],
                 also_for_guest: false
             }
-            // Ensure roles is reactive
-            this.$set(newRule, 'roles', ['customer'])
+            // In Vue 3, reactivity is automatic - no need for $set
             this.pricingRules.push(newRule)
             this.activeRules.push(newRule.id)
         },
@@ -323,8 +322,8 @@ export default {
         handleRolesChange(ruleIndex) {
             const rule = this.pricingRules[ruleIndex]
             if (!rule.roles || !Array.isArray(rule.roles)) {
-                // Ensure roles is always an array
-                this.$set(rule, 'roles', [])
+                // Ensure roles is always an array - Vue 3 handles reactivity automatically
+                rule.roles = []
                 return
             }
             
@@ -332,7 +331,7 @@ export default {
             if (rule.roles.includes('guest')) {
                 // Use $nextTick to ensure Vue reactivity updates properly with el-select
                 this.$nextTick(() => {
-                    this.$set(rule, 'roles', ['guest'])
+                    rule.roles = ['guest']
                     rule.role = 'guest'
                 })
             } else {
