@@ -35,9 +35,17 @@ class WHTPRole_Pricing_Frontend {
             return;
         }
         
-        $rules = get_post_meta($product->get_id(), '_role_pricing_rules', true);
+        $product_id = $product->get_id();
+        
+        // For variations, get rules from parent product
+        $parent_id = $product_id;
+        if ($product->is_type('variation')) {
+            $parent_id = $product->get_parent_id();
+        }
+        
+        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
         $globalRules = get_option('whtprole_pricing_global_rules', []);
-        if (empty($rules) || !$helper->enableToShowsTable($product->get_id())) {
+        if (empty($rules) || !$helper->enableToShowsTable($parent_id)) {
             if (empty($globalRules)) {
                 return;
             }
@@ -51,14 +59,49 @@ class WHTPRole_Pricing_Frontend {
         $current_user_role = $this->get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
         $applicable_rules = array();
+        
+        // Get current variation ID if viewing a variation
+        $variation_id = $product->is_type('variation') ? $product->get_id() : null;
 
         foreach ($rules as $rule) {
+            // Check if rule applies to this variation (if viewing a variation)
+            // Note: We removed rule-level variations, so this check is for backward compatibility only
+            if ($variation_id) {
+                $rule_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : array();
+                // If variations are specified and current variation is not in the list, skip this rule
+                if (!empty($rule_variations) && !in_array($variation_id, $rule_variations)) {
+                    continue;
+                }
+            }
+            
             // Use helper to check if rule applies
             $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
             $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
             
             if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
-                $applicable_rules[] = $rule;
+                // Filter tiers by variation if viewing a variation
+                $filtered_rule = $rule;
+                if ($variation_id && !empty($rule['tiered_pricing']) && is_array($rule['tiered_pricing'])) {
+                    $filtered_tiers = array();
+                    foreach ($rule['tiered_pricing'] as $tier) {
+                        $tier_variation = isset($tier['variation']) ? $tier['variation'] : null;
+                        // Backward compatibility: check old variations array format
+                        if ($tier_variation === null && isset($tier['variations']) && is_array($tier['variations'])) {
+                            $tier_variations = $tier['variations'];
+                            // If variations are specified and current variation is not in the list, skip this tier
+                            if (!empty($tier_variations) && !in_array($variation_id, $tier_variations)) {
+                                continue;
+                            }
+                        } elseif ($tier_variation !== null && $tier_variation !== 'all' && intval($tier_variation) !== $variation_id) {
+                            // If a specific variation is set and it doesn't match, skip this tier
+                            continue;
+                        }
+                        // Tier applies to this variation (or all variations)
+                        $filtered_tiers[] = $tier;
+                    }
+                    $filtered_rule['tiered_pricing'] = $filtered_tiers;
+                }
+                $applicable_rules[] = $filtered_rule;
             }
         }
 
@@ -66,13 +109,24 @@ class WHTPRole_Pricing_Frontend {
             return;
         }
 
+        // Pass variation_id to template if available (for variable products)
+        $template_variation_id = $variation_id;
+
         $templatePath = $helper->getTemplatePath();
    
         include_once($templatePath);
     }
 
     public function modify_quantity_args($args, $product) {
-        $rules = get_post_meta($product->get_id(), '_role_pricing_rules', true);
+        $product_id = $product->get_id();
+        
+        // For variations, get rules from parent product
+        $parent_id = $product_id;
+        if ($product->is_type('variation')) {
+            $parent_id = $product->get_parent_id();
+        }
+        
+        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
         if (empty($rules)) {
             return $args;
         }
@@ -80,7 +134,19 @@ class WHTPRole_Pricing_Frontend {
         $current_user_role = $this->get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
         
+        // Get variation ID if product is a variation
+        $variation_id = $product->is_type('variation') ? $product->get_id() : null;
+        
         foreach ($rules as $rule) {
+            // Check if rule applies to this variation (if product is a variation)
+            if ($variation_id) {
+                $rule_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : array();
+                // If variations are specified and current variation is not in the list, skip this rule
+                if (!empty($rule_variations) && !in_array($variation_id, $rule_variations)) {
+                    continue;
+                }
+            }
+            
             // Use helper to check if rule applies
             $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
             $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
@@ -108,7 +174,15 @@ class WHTPRole_Pricing_Frontend {
     public function display_quantity_messages() {
         global $product;
         
-        $rules = get_post_meta($product->get_id(), '_role_pricing_rules', true);
+        $product_id = $product->get_id();
+        
+        // For variations, get rules from parent product
+        $parent_id = $product_id;
+        if ($product->is_type('variation')) {
+            $parent_id = $product->get_parent_id();
+        }
+        
+        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
         if (empty($rules)) {
             return;
         }
@@ -116,7 +190,19 @@ class WHTPRole_Pricing_Frontend {
         $current_user_role = $this->get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
         
+        // Get variation ID if product is a variation
+        $variation_id = $product->is_type('variation') ? $product->get_id() : null;
+        
         foreach ($rules as $rule) {
+            // Check if rule applies to this variation (if product is a variation)
+            if ($variation_id) {
+                $rule_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : array();
+                // If variations are specified and current variation is not in the list, skip this rule
+                if (!empty($rule_variations) && !in_array($variation_id, $rule_variations)) {
+                    continue;
+                }
+            }
+            
             // Use helper to check if rule applies
             $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
             $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
@@ -155,7 +241,15 @@ class WHTPRole_Pricing_Frontend {
     }
 
     public function validate_add_to_cart($passed, $product_id, $quantity) {
-        $rules = get_post_meta($product_id, '_role_pricing_rules', true);
+        $product_obj = wc_get_product($product_id);
+        
+        // For variations, get rules from parent product
+        $parent_id = $product_id;
+        if ($product_obj && $product_obj->is_type('variation')) {
+            $parent_id = $product_obj->get_parent_id();
+        }
+        
+        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
         if (empty($rules)) {
             $globalRules = get_option('whtprole_pricing_global_rules', []);
             if (empty($globalRules)) {
@@ -169,7 +263,19 @@ class WHTPRole_Pricing_Frontend {
         $current_user_role = $this->get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
         
+        // Get variation ID if product is a variation
+        $variation_id = ($product_obj && $product_obj->is_type('variation')) ? $product_obj->get_id() : null;
+        
         foreach ($rules as $rule) {
+            // Check if rule applies to this variation (if product is a variation)
+            if ($variation_id) {
+                $rule_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : array();
+                // If variations are specified and current variation is not in the list, skip this rule
+                if (!empty($rule_variations) && !in_array($variation_id, $rule_variations)) {
+                    continue;
+                }
+            }
+            
             // Use helper to check if rule applies
             $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
             $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
@@ -224,7 +330,15 @@ class WHTPRole_Pricing_Frontend {
             return;
         }
         
-        $rules = get_post_meta($product->get_id(), '_role_pricing_rules', true);
+        $product_id = $product->get_id();
+        
+        // For variations, get rules from parent product
+        $parent_id = $product_id;
+        if ($product->is_type('variation')) {
+            $parent_id = $product->get_parent_id();
+        }
+        
+        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
         $globalRules = get_option('whtprole_pricing_global_rules', []);
         if (empty($rules)) {
             if (empty($globalRules)) {
@@ -245,7 +359,19 @@ class WHTPRole_Pricing_Frontend {
         $is_guest = ($current_user_role === 'guest');
         $has_applicable_rules = false;
         
+        // Get variation ID if product is a variation
+        $variation_id = $product->is_type('variation') ? $product->get_id() : null;
+        
         foreach ($rules as $rule) {
+            // Check if rule applies to this variation (if product is a variation)
+            if ($variation_id) {
+                $rule_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : array();
+                // If variations are specified and current variation is not in the list, skip this rule
+                if (!empty($rule_variations) && !in_array($variation_id, $rule_variations)) {
+                    continue;
+                }
+            }
+            
             // Use helper to check if rule applies
             $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
             $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;

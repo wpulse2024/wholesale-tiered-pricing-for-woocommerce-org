@@ -53,10 +53,52 @@ class WHTPRole_Pricing_Admin
     public function add_product_data_panel()
     {
         global $post;
+        $product = wc_get_product($post->ID);
+        $is_variable = $product && $product->is_type('variable');
+        $variations = array();
+        
+        if ($is_variable) {
+            $variation_ids = $product->get_children();
+            foreach ($variation_ids as $variation_id) {
+                $variation = wc_get_product($variation_id);
+                if ($variation) {
+                    // Get variation name - build clean name without HTML
+                    $variation_name = $variation->get_name();
+                    
+                    // Get variation attributes as plain text
+                    $attributes = $variation->get_variation_attributes();
+                    if (!empty($attributes)) {
+                        $attribute_parts = array();
+                        foreach ($attributes as $attr_name => $attr_value) {
+                            $taxonomy = str_replace('attribute_', '', $attr_name);
+                            $term = get_term_by('slug', $attr_value, $taxonomy);
+                            if ($term) {
+                                $attribute_parts[] = wc_attribute_label($taxonomy) . ': ' . $term->name;
+                            } else {
+                                $attribute_parts[] = wc_attribute_label($taxonomy) . ': ' . $attr_value;
+                            }
+                        }
+                        if (!empty($attribute_parts)) {
+                            $variation_name .= ' - ' . implode(', ', $attribute_parts);
+                        }
+                    }
+                    
+                    // Add variation ID for clarity
+                    $variations[$variation_id] = $variation_name . ' (#' . $variation_id . ')';
+                }
+            }
+        }
     ?>
         <div id="role_pricing_data" class="panel woocommerce_options_panel">
             <div class="options_group">
                 <h3><?php esc_html_e('Role-Based Pricing Rules', 'wholesale-tiered-pricing-for-woocommerce'); ?></h3>
+                
+                <?php if ($is_variable && !empty($variations)): ?>
+                    <p class="description" style="margin-bottom: 15px; padding: 10px; background: #f0f6fc; border-left: 4px solid #2271b1;">
+                        <strong><?php esc_html_e('Variable Product Detected', 'wholesale-tiered-pricing-for-woocommerce'); ?></strong><br>
+                        <?php esc_html_e('You can set pricing rules for specific variations. If no variation is selected, the rule will apply to all variations.', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                    </p>
+                <?php endif; ?>
 
                 <div id="role-pricing-rules">
                     <?php
@@ -66,13 +108,13 @@ class WHTPRole_Pricing_Admin
                     }
 
                     foreach ($rules as $index => $rule) {
-                        $this->render_pricing_rule($index, $rule);
+                        $this->render_pricing_rule($index, $rule, $is_variable, $variations);
                     }
                     ?>
                 </div>
 
                 <p>
-                    <button type="button" class="button" id="add-pricing-rule">
+                    <button type="button" class="button" id="add-pricing-rule" data-is-variable="<?php echo $is_variable ? '1' : '0'; ?>" data-variations='<?php echo json_encode($variations); ?>'>
                         <?php esc_html_e('Add Pricing Rule', 'wholesale-tiered-pricing-for-woocommerce'); ?>
                     </button>
                 </p>
@@ -94,7 +136,7 @@ class WHTPRole_Pricing_Admin
     <?php
     }
 
-    private function render_pricing_rule($index, $rule = array())
+    private function render_pricing_rule($index, $rule = array(), $is_variable = false, $variations = array())
     {
         $roles = wp_roles()->get_names();
         
@@ -110,6 +152,9 @@ class WHTPRole_Pricing_Admin
         // Get also_for_guest value
         $also_for_guest = isset($rule['also_for_guest']) ? ($rule['also_for_guest'] === true || $rule['also_for_guest'] === 'true' || $rule['also_for_guest'] === 1 || $rule['also_for_guest'] === '1') : false;
         $has_global = in_array('guest', $rule_roles);
+        
+        // Get selected variations
+        $selected_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : array();
     ?>
         <div class="pricing-rule-row" data-index="<?php echo esc_attr($index); ?>">
             <a href="#" class="remove-pricing-rule"><?php esc_html_e('Remove', 'wholesale-tiered-pricing-for-woocommerce'); ?></a>
@@ -181,11 +226,11 @@ class WHTPRole_Pricing_Admin
                     <?php
                     $tiered_rules = isset($rule['tiered_pricing']) ? $rule['tiered_pricing'] : array();
                     foreach ($tiered_rules as $tier_index => $tier_rule) {
-                        $this->render_tier_rule($index, $tier_index, $tier_rule);
+                        $this->render_tier_rule($index, $tier_index, $tier_rule, $is_variable, $variations);
                     }
                     ?>
                 </div>
-                <button type="button" class="button add-tier-rule" data-parent="<?php echo esc_attr($index); ?>">
+                <button type="button" class="button add-tier-rule" data-parent="<?php echo esc_attr($index); ?>" data-is-variable="<?php echo $is_variable ? '1' : '0'; ?>" data-variations='<?php echo json_encode($variations); ?>'>
                     <?php esc_html_e('Add Tier', 'wholesale-tiered-pricing-for-woocommerce'); ?>
                 </button>
             </div>
@@ -193,27 +238,63 @@ class WHTPRole_Pricing_Admin
     <?php
     }
 
-    private function render_tier_rule($parent_index, $tier_index, $tier_rule = array())
+    private function render_tier_rule($parent_index, $tier_index, $tier_rule = array(), $is_variable = false, $variations = array())
     {
+        // Get selected variation for this tier (single select)
+        $selected_variation = isset($tier_rule['variation']) ? $tier_rule['variation'] : 'all';
+        // Backward compatibility: check old variations array format
+        if ($selected_variation === 'all' && isset($tier_rule['variations']) && is_array($tier_rule['variations']) && !empty($tier_rule['variations'])) {
+            if (!in_array('all', $tier_rule['variations'])) {
+                $selected_variation = $tier_rule['variations'][0]; // Use first variation
+            }
+        }
     ?>
-        <div class="tier-rule-row" style="display: flex; gap: 10px; margin-bottom: 5px;">
-            <input type="number" name="role_pricing_rules[<?php echo esc_attr($parent_index); ?>][tiered_pricing][<?php echo esc_attr($tier_index); ?>][min_qty]"
-                placeholder="<?php esc_html_e('Min Qty', 'wholesale-tiered-pricing-for-woocommerce'); ?>"
-                value="<?php echo isset($tier_rule['min_qty']) ? esc_attr($tier_rule['min_qty']) : ''; ?>"
-                min="1" style="width: 150px;" />
-            <input type="number" name="role_pricing_rules[<?php echo esc_attr($parent_index); ?>][tiered_pricing][<?php echo esc_attr($tier_index); ?>][price]"
-                placeholder="<?php esc_html_e('Price', 'wholesale-tiered-pricing-for-woocommerce'); ?>"
-                value="<?php echo isset($tier_rule['price']) ? esc_attr($tier_rule['price']) : ''; ?>"
-                step="0.01" min="0" style="width: 150px;" />
-            <select name="role_pricing_rules[<?php echo esc_attr($parent_index); ?>][tiered_pricing][<?php echo esc_attr($tier_index); ?>][discount_type]">
-                <option value="fixed" <?php selected(isset($tier_rule['discount_type']) ? $tier_rule['discount_type'] : '', 'fixed'); ?>>
-                    <?php esc_html_e('Fixed', 'wholesale-tiered-pricing-for-woocommerce'); ?>
-                </option>
-                <option value="percentage" <?php selected(isset($tier_rule['discount_type']) ? $tier_rule['discount_type'] : '', 'percentage'); ?>>
-                    <?php esc_html_e('Percentage', 'wholesale-tiered-pricing-for-woocommerce'); ?>
-                </option>
-            </select>
-            <button type="button" class="button remove-tier-rule"><?php esc_html_e('Remove', 'wholesale-tiered-pricing-for-woocommerce'); ?></button>
+        <div class="tier-rule-row" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; padding: 15px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px;">
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <input type="number" name="role_pricing_rules[<?php echo esc_attr($parent_index); ?>][tiered_pricing][<?php echo esc_attr($tier_index); ?>][min_qty]"
+                    placeholder="<?php esc_html_e('Min Qty', 'wholesale-tiered-pricing-for-woocommerce'); ?>"
+                    value="<?php echo isset($tier_rule['min_qty']) ? esc_attr($tier_rule['min_qty']) : ''; ?>"
+                    min="1" style="width: 150px;" />
+                <input type="number" name="role_pricing_rules[<?php echo esc_attr($parent_index); ?>][tiered_pricing][<?php echo esc_attr($tier_index); ?>][price]"
+                    placeholder="<?php esc_html_e('Price', 'wholesale-tiered-pricing-for-woocommerce'); ?>"
+                    value="<?php echo isset($tier_rule['price']) ? esc_attr($tier_rule['price']) : ''; ?>"
+                    step="0.01" min="0" style="width: 150px;" />
+                <select name="role_pricing_rules[<?php echo esc_attr($parent_index); ?>][tiered_pricing][<?php echo esc_attr($tier_index); ?>][discount_type]" style="width: 150px;">
+                    <option value="fixed" <?php selected(isset($tier_rule['discount_type']) ? $tier_rule['discount_type'] : '', 'fixed'); ?>>
+                        <?php esc_html_e('Fixed', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                    </option>
+                    <option value="percentage" <?php selected(isset($tier_rule['discount_type']) ? $tier_rule['discount_type'] : '', 'percentage'); ?>>
+                        <?php esc_html_e('Percentage', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                    </option>
+                </select>
+                <button type="button" class="button remove-tier-rule"><?php esc_html_e('Remove', 'wholesale-tiered-pricing-for-woocommerce'); ?></button>
+            </div>
+            
+            <?php if ($is_variable && !empty($variations)): ?>
+            <div style="width: 100%; margin-top: 10px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 12px;">
+                    <?php esc_html_e('Apply to Variation (Optional)', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                </label>
+                <select name="role_pricing_rules[<?php echo esc_attr($parent_index); ?>][tiered_pricing][<?php echo esc_attr($tier_index); ?>][variation]" 
+                        class="tier-variation-select" 
+                        style="width: 100%;"
+                        data-parent-index="<?php echo esc_attr($parent_index); ?>"
+                        data-tier-index="<?php echo esc_attr($tier_index); ?>">
+                    <option value="all" <?php selected($selected_variation === 'all' || empty($selected_variation), true); ?>>
+                        <?php esc_html_e('All Variations', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                    </option>
+                    <?php foreach ($variations as $variation_id => $variation_name): ?>
+                        <option value="<?php echo esc_attr($variation_id); ?>"
+                            <?php selected($selected_variation == $variation_id, true); ?>>
+                            <?php echo esc_html($variation_name); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="description" style="margin-top: 5px; font-size: 11px; color: #666;">
+                    <?php esc_html_e('Select a specific variation for this tier. If "All Variations" is selected, applies to all variations.', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                </p>
+            </div>
+            <?php endif; ?>
         </div>
 <?php
     }
@@ -255,12 +336,31 @@ class WHTPRole_Pricing_Admin
                 $tiered_pricing = array();
                 if (isset($rule['tiered_pricing']) && is_array($rule['tiered_pricing'])) {
                     foreach ($rule['tiered_pricing'] as $tier) {
+                        // Handle variation for each tier (single select)
+                        $tier_variation = null;
+                        if (isset($tier['variation']) && !empty($tier['variation']) && $tier['variation'] !== 'all') {
+                            $tier_variation = intval($tier['variation']);
+                        }
+                        // Backward compatibility: check for old 'variations' array format
+                        elseif (isset($tier['variations']) && is_array($tier['variations']) && !empty($tier['variations'])) {
+                            if (!in_array('all', $tier['variations'])) {
+                                $tier_variation = intval($tier['variations'][0]); // Use first variation
+                            }
+                        }
+                        
                         $tiered_pricing[] = array(
                             'min_qty' => isset($tier['min_qty']) ? intval($tier['min_qty']) : 0,
                             'price' => isset($tier['price']) ? floatval($tier['price']) : 0,
-                            'discount_type' => isset($tier['discount_type']) ? sanitize_text_field($tier['discount_type']) : 'fixed'
+                            'discount_type' => isset($tier['discount_type']) ? sanitize_text_field($tier['discount_type']) : 'fixed',
+                            'variation' => $tier_variation // Store single variation ID for this tier (null = all variations)
                         );
                     }
+                }
+                
+                // Handle variations (for variable products)
+                $variations = array();
+                if (isset($rule['variations']) && is_array($rule['variations'])) {
+                    $variations = array_map('intval', array_filter($rule['variations']));
                 }
                 
                 $rules[] = array(
@@ -270,7 +370,8 @@ class WHTPRole_Pricing_Admin
                     'max_qty' => !empty($rule['max_qty']) ? intval($rule['max_qty']) : 0,
                     'step_qty' => isset($rule['step_qty']) ? intval($rule['step_qty']) : 1,
                     'tiered_pricing' => $tiered_pricing,
-                    'also_for_guest' => $also_for_guest
+                    'also_for_guest' => $also_for_guest,
+                    'variations' => $variations // Store selected variation IDs
                 );
             }
             update_post_meta($post_id, '_role_pricing_rules', $rules);

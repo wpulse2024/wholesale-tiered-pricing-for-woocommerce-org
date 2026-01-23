@@ -6,16 +6,94 @@ if (!defined('ABSPATH')) {
 <div class="wholesale-tiered-pricing-for-woocommerce-premium">
     <?php 
     wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-premium', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/minimal-template.css', array(), WHTPROLE_PRICING_VERSION);
-    $regular_price = $product->get_price();
+    
+    // Get the correct base price - use sale price if available, otherwise regular price
+    // For variable products, we need to handle the case where variation is selected via JavaScript
+    // On initial page load, use the parent product's price (sale price if available, otherwise regular)
+    $base_price = 0;
+    
+    // Check if we have a variation_id passed from the frontend class
+    $template_variation_id = isset($template_variation_id) ? $template_variation_id : null;
+    
+    // For variable products, try to get the selected variation price
+    if ($product->is_type('variable')) {
+        // If variation_id is provided (from frontend class), use that variation's price
+        if ($template_variation_id) {
+            $variation = wc_get_product($template_variation_id);
+            if ($variation && $variation->is_type('variation')) {
+                // Get sale price if available, otherwise regular price
+                $sale_price = $variation->get_sale_price();
+                $regular_price = $variation->get_regular_price();
+                $base_price = ($sale_price && $sale_price > 0) ? $sale_price : $regular_price;
+                
+                // Fallback to current price if both are empty
+                if ($base_price <= 0) {
+                    $base_price = $variation->get_price();
+                }
+            }
+        }
+        
+        // If we still don't have a price, use the parent product's price
+        if ($base_price <= 0) {
+            $sale_price = $product->get_sale_price();
+            $regular_price = $product->get_regular_price();
+            $base_price = ($sale_price && $sale_price > 0) ? $sale_price : $regular_price;
+            
+            // Fallback to current price if both are empty
+            if ($base_price <= 0) {
+                $base_price = $product->get_price();
+            }
+        }
+    } elseif ($product->is_type('variation')) {
+        // If product is already a variation, use sale price if available, otherwise regular price
+        $sale_price = $product->get_sale_price();
+        $regular_price = $product->get_regular_price();
+        $base_price = ($sale_price && $sale_price > 0) ? $sale_price : $regular_price;
+        
+        // Fallback to current price if both are empty
+        if ($base_price <= 0) {
+            $base_price = $product->get_price();
+        }
+    } else {
+        // For simple products, use sale price if available, otherwise regular price
+        $sale_price = $product->get_sale_price();
+        $regular_price = $product->get_regular_price();
+        $base_price = ($sale_price && $sale_price > 0) ? $sale_price : $regular_price;
+        
+        // Fallback to current price if both are empty
+        if ($base_price <= 0) {
+            $base_price = $product->get_price();
+        }
+    }
+    
+    // Ensure we have a valid price - final validation
+    $base_price = floatval($base_price);
+    if ($base_price <= 0) {
+        return; // Don't display pricing table if we can't determine a valid price
+    }
+    
+    // Keep $regular_price variable for backward compatibility in calculations
+    // But use $base_price as the actual base for tier calculations
+    $regular_price = $base_price;
+    
     $helper = new WHTPRole_Pricing_Helper();
     foreach ($applicable_rules as $rule) {
         if (!empty($rule['tiered_pricing'])):
+            // Filter out empty tiers
+            $rule['tiered_pricing'] = array_filter($rule['tiered_pricing'], function($tier) {
+                return !empty($tier['min_qty']) && !empty($tier['price']);
+            });
+            
+            if (empty($rule['tiered_pricing'])) {
+                continue;
+            }
+            
             usort($rule['tiered_pricing'], function($a, $b) {
                 return intval($a['min_qty']) - intval($b['min_qty']);
             });
             $tier_count = count($rule['tiered_pricing']);
     ?>
-        <div class="premium-pricing-wrapper">
+        <div class="premium-pricing-wrapper" data-base-regular-price="<?php echo esc_attr($base_price); ?>" data-product-id="<?php echo esc_attr($product->get_id()); ?>">
             <div class="premium-header">
                 <h4 class="premium-title">
                     <svg class="premium-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -27,16 +105,41 @@ if (!defined('ABSPATH')) {
 
             <div class="premium-tiers">
                 <?php
+                // Calculate featured tier based on best savings percentage
                 $tieredFeatured = $helper->getTieredFeatured($rule['tiered_pricing'], $regular_price);
+                
                 foreach ($rule['tiered_pricing'] as $index => $tier):
                     if (!empty($tier['min_qty']) && !empty($tier['price'])):
+                        // Calculate discount based on the correct regular price
                         $discount = $helper->calculationDiscount($regular_price, $tier);
                         $price = $discount['price'];
                         $savings = $discount['savings'];
                         $savings_percent = $discount['savings_percent'];
                         $is_featured = $index == $tieredFeatured;
+                        
+                        // Ensure price is valid (not negative or zero)
+                        if ($price <= 0) {
+                            $price = $regular_price;
+                            $savings = 0;
+                            $savings_percent = 0;
+                        }
+                        
+                        // Ensure price is valid (not negative or zero)
+                        if ($price <= 0) {
+                            $price = $regular_price;
+                        }
+                        
+                        // Recalculate savings if price was adjusted
+                        if ($price == $regular_price) {
+                            $savings = 0;
+                            $savings_percent = 0;
+                        }
                 ?>
-                <div class="premium-tier <?php echo $is_featured ? 'featured-tier' : ''; ?>">
+                <div class="premium-tier <?php echo $is_featured ? 'featured-tier' : ''; ?>" 
+                     data-tier-min-qty="<?php echo esc_attr($tier['min_qty']); ?>"
+                     data-tier-price="<?php echo esc_attr($tier['price']); ?>"
+                     data-tier-discount-type="<?php echo esc_attr(isset($tier['discount_type']) ? $tier['discount_type'] : ''); ?>"
+                     data-tier-index="<?php echo esc_attr($index); ?>">
                     <?php if ($is_featured): ?>
                         <span class="featured-badge"><?php echo esc_html__('Best', 'wholesale-tiered-pricing-for-woocommerce'); ?></span>
                     <?php endif; ?>

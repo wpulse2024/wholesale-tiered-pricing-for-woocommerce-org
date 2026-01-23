@@ -32,6 +32,8 @@ class WHTPRole_Pricing_Ajax {
         add_action('wp_ajax_nopriv_whtprole_pricing_get_general_settings', array($this, 'get_general_settings'));
         add_action('wp_ajax_whtprole_calculate_savings', array($this, 'calculate_savings'));
         add_action('wp_ajax_nopriv_whtprole_calculate_savings', array($this, 'calculate_savings'));
+        add_action('wp_ajax_whtprole_get_variation_price', array($this, 'whtprole_get_variation_price'));
+        add_action('wp_ajax_nopriv_whtprole_get_variation_price', array($this, 'whtprole_get_variation_price'));
     }
     public function get_general_settings() {
         $nonce = sanitize_text_field($_POST['nonce']);
@@ -249,6 +251,7 @@ class WHTPRole_Pricing_Ajax {
         }
         
         $product_id = intval($_POST['product_id']);
+        $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : null;
         $quantity = intval($_POST['quantity']);
         
         if (!$product_id || !$quantity) {
@@ -260,29 +263,77 @@ class WHTPRole_Pricing_Ajax {
             wp_die();
         }
         
-        $rules = get_post_meta($product_id, '_role_pricing_rules', true);
+        // If variation_id is provided, get the variation product instead
+        $variation_product = null;
+        if ($variation_id) {
+            $variation_product = wc_get_product($variation_id);
+            if ($variation_product && $variation_product->is_type('variation')) {
+                // Use the variation product for price calculations
+                $product = $variation_product;
+            }
+        }
+        
+        // For variations, get rules from parent product
+        $parent_id = $product_id;
+        if ($product->is_type('variation')) {
+            $parent_id = $product->get_parent_id();
+            // Use product ID as variation_id if not provided
+            if ($variation_id === null) {
+                $variation_id = $product->get_id();
+            }
+        } elseif ($variation_id && $variation_product) {
+            // If variation_id is provided and we have the variation product, use parent
+            $parent_id = $variation_product->get_parent_id();
+        }
+        
+        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
+        $globalRules = get_option('whtprole_pricing_global_rules', []);
         if (empty($rules)) {
-            wp_send_json_success(array('price_html' => $product->get_price_html()));
-            return;
+            if (empty($globalRules)) {
+                wp_send_json_success(array('price_html' => $product->get_price_html()));
+                return;
+            } else {
+                $rules = $globalRules;
+            }
+        }
+        
+        if (!is_array($rules)) {
+            $rules = json_decode($rules, true);
         }
         
         $current_user_role = $this->get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
-        $new_price = $product->get_price();
+        
+        // Use the variation's price if available, otherwise use product price
+        $base_price = $product->get_price();
+        if ($variation_id && $variation_product) {
+            $base_price = $variation_product->get_price();
+        }
+        $new_price = $base_price;
         
         foreach ($rules as $rule) {
+            // Check if rule applies to this variation (if product is a variation)
+            if ($variation_id) {
+                $rule_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : array();
+                // If variations are specified and current variation is not in the list, skip this rule
+                if (!empty($rule_variations) && !in_array($variation_id, $rule_variations)) {
+                    continue;
+                }
+            }
+            
             // Use helper to check if rule applies
             $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
             $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
             
             if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
-                $new_price = $this->calculate_price($product->get_price(), $rule, $quantity);
+                $new_price = $this->calculate_price($base_price, $rule, $quantity, $variation_id);
                 break;
             }
         }
         
         // Create a temporary product object with the new price
-        $temp_product = clone $product;
+        // Use variation product if available, otherwise use the main product
+        $temp_product = ($variation_product && $variation_product->is_type('variation')) ? clone $variation_product : clone $product;
         $temp_product->set_price($new_price);
         
         wp_send_json_success(array(
@@ -443,7 +494,7 @@ class WHTPRole_Pricing_Ajax {
     /**
      * Calculate price based on rule and quantity (Improved with better edge case handling)
      */
-    private function calculate_price($base_price, $rule, $quantity) {
+    private function calculate_price($base_price, $rule, $quantity, $variation_id = null) {
         // Validate inputs
         if (empty($base_price) || $base_price <= 0) {
             return $base_price;
@@ -464,6 +515,23 @@ class WHTPRole_Pricing_Ajax {
             });
             
             foreach ($rule['tiered_pricing'] as $tier) {
+                // Check if tier applies to this variation (if viewing a variation)
+                if ($variation_id) {
+                    // Check new single variation format first
+                    $tier_variation = isset($tier['variation']) ? $tier['variation'] : null;
+                    // Backward compatibility: check old variations array format
+                    if ($tier_variation === null && isset($tier['variations']) && is_array($tier['variations'])) {
+                        $tier_variations = $tier['variations'];
+                        // If variations are specified and current variation is not in the list, skip this tier
+                        if (!empty($tier_variations) && !in_array($variation_id, $tier_variations)) {
+                            continue;
+                        }
+                    } elseif ($tier_variation !== null && $tier_variation !== 'all' && intval($tier_variation) !== $variation_id) {
+                        // If a specific variation is set and it doesn't match, skip this tier
+                        continue;
+                    }
+                }
+                
                 if (!empty($tier['min_qty']) && !empty($tier['price']) && $quantity >= intval($tier['min_qty'])) {
                     // Check max_qty constraint if set
                     if (!empty($tier['max_qty']) && $quantity > intval($tier['max_qty'])) {
@@ -503,9 +571,15 @@ class WHTPRole_Pricing_Ajax {
      * Calculate savings for a given quantity (Dynamic Savings Calculator)
      */
     public function calculate_savings() {
-        check_ajax_referer('wholesale-tiered-pricing-for-woocommerce-ajax', 'nonce');
+        // Accept both plugin nonce and WooCommerce nonce
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+        if (!wp_verify_nonce($nonce, 'wholesale-tiered-pricing-for-woocommerce-ajax') && 
+            !wp_verify_nonce($nonce, 'wc_add_to_cart_nonce')) {
+            wp_send_json_error(array('message' => __('Security check failed', 'wholesale-tiered-pricing-for-woocommerce')));
+        }
         
         $product_id = intval($_POST['product_id']);
+        $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : null;
         $quantity = intval($_POST['quantity']);
         
         if (!$product_id || !$quantity) {
@@ -519,18 +593,42 @@ class WHTPRole_Pricing_Ajax {
             return;
         }
         
-        $rules = get_post_meta($product_id, '_role_pricing_rules', true);
+        // If variation_id is provided, get the variation product instead
+        $variation_product = null;
+        if ($variation_id) {
+            $variation_product = wc_get_product($variation_id);
+            if ($variation_product && $variation_product->is_type('variation')) {
+                // Use the variation product for price calculations
+                $product = $variation_product;
+            }
+        }
+        
+        // For variations, get rules from parent product
+        $parent_id = $product_id;
+        if ($product->is_type('variation')) {
+            $parent_id = $product->get_parent_id();
+            // Use product ID as variation_id if not provided
+            if ($variation_id === null) {
+                $variation_id = $product->get_id();
+            }
+        } elseif ($variation_id && $variation_product) {
+            // If variation_id is provided and we have the variation product, use parent
+            $parent_id = $variation_product->get_parent_id();
+        }
+        
+        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
         if (empty($rules)) {
             $globalRules = get_option('whtprole_pricing_global_rules', []);
             if (empty($globalRules)) {
+                $base_price = $product->get_price();
                 wp_send_json_success(array(
                     'has_discount' => false,
-                    'regular_price' => $product->get_price(),
-                    'discounted_price' => $product->get_price(),
+                    'regular_price' => $base_price,
+                    'discounted_price' => $base_price,
                     'savings' => 0,
                     'savings_percent' => 0,
-                    'total_regular' => $product->get_price() * $quantity,
-                    'total_discounted' => $product->get_price() * $quantity,
+                    'total_regular' => $base_price * $quantity,
+                    'total_discounted' => $base_price * $quantity,
                     'total_savings' => 0
                 ));
                 return;
@@ -545,18 +643,34 @@ class WHTPRole_Pricing_Ajax {
         
         $current_user_role = $this->get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
-        $regular_price = floatval($product->get_price());
+        
+        // Use the variation's price if available, otherwise use product price
+        $base_price = $product->get_price();
+        if ($variation_id && $variation_product) {
+            $base_price = $variation_product->get_price();
+        }
+        $regular_price = floatval($base_price);
         $discounted_price = $regular_price;
         $applicable_rule = null;
         
         foreach ($rules as $rule) {
+            // Check if rule applies to this variation (if product is a variation)
+            // Note: We removed rule-level variations, so this check is for backward compatibility only
+            if ($variation_id) {
+                $rule_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : array();
+                // If variations are specified and current variation is not in the list, skip this rule
+                if (!empty($rule_variations) && !in_array($variation_id, $rule_variations)) {
+                    continue;
+                }
+            }
+            
             // Use helper to check if rule applies
             $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
             $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
             
             if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
                 $applicable_rule = $rule;
-                $discounted_price = $this->calculate_price($regular_price, $rule, $quantity);
+                $discounted_price = $this->calculate_price($regular_price, $rule, $quantity, $variation_id);
                 break;
             }
         }
@@ -580,6 +694,50 @@ class WHTPRole_Pricing_Ajax {
             'formatted_regular_total' => wc_price($total_regular),
             'formatted_discounted_total' => wc_price($total_discounted),
             'formatted_total_savings' => wc_price($total_savings)
+        ));
+    }
+    
+    /**
+     * Get variation regular price
+     */
+    public function whtprole_get_variation_price() {
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+        if (!wp_verify_nonce($nonce, 'wholesale-tiered-pricing-for-woocommerce-ajax') && 
+            !wp_verify_nonce($nonce, 'wc_add_to_cart_nonce')) {
+            wp_send_json_error(array('message' => __('Security check failed', 'wholesale-tiered-pricing-for-woocommerce')));
+            return;
+        }
+        
+        $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : 0;
+        
+        if (!$variation_id) {
+            wp_send_json_error(array('message' => __('Invalid variation ID', 'wholesale-tiered-pricing-for-woocommerce')));
+            return;
+        }
+        
+        $variation = wc_get_product($variation_id);
+        if (!$variation || !$variation->is_type('variation')) {
+            wp_send_json_error(array('message' => __('Invalid variation', 'wholesale-tiered-pricing-for-woocommerce')));
+            return;
+        }
+        
+        // Get sale price if available, otherwise use regular price
+        $sale_price = $variation->get_sale_price();
+        $regular_price = $variation->get_regular_price();
+        
+        // Use sale price if available, otherwise fall back to regular price
+        $base_price = ($sale_price && $sale_price > 0) ? $sale_price : $regular_price;
+        
+        // Final fallback to current price if both are empty
+        if (!$base_price || $base_price <= 0) {
+            $base_price = $variation->get_price();
+        }
+        
+        wp_send_json_success(array(
+            'base_price' => floatval($base_price),
+            'sale_price' => $sale_price ? floatval($sale_price) : null,
+            'regular_price' => $regular_price ? floatval($regular_price) : null,
+            'formatted_price' => wc_price($base_price)
         ));
     }
     

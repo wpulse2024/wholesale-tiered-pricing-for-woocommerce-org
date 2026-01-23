@@ -63,6 +63,15 @@ jQuery(document).ready(function($) {
     $('#add-pricing-rule').on('click', function(e) {
         e.preventDefault();
         
+        var $button = $(this);
+        var isVariable = $button.data('is-variable') === '1' || $button.data('is-variable') === 1;
+        var variations = {};
+        try {
+            variations = $button.data('variations') || {};
+        } catch(e) {
+            variations = {};
+        }
+        
         // Try to get roles from existing select elements first, or fetch via AJAX
         var existingRoles = {};
         $('.role-multi-select option').each(function() {
@@ -76,17 +85,52 @@ jQuery(document).ready(function($) {
         // If we have existing roles, use them; otherwise fetch via AJAX
         if (Object.keys(existingRoles).length > 0) {
             var roleOptions = generateRoleOptions(existingRoles, ['customer']); // Default to customer
-            addNewRule(roleOptions);
+            addNewRule(roleOptions, isVariable, variations);
         } else {
             fetchUserRoles(function(roles) {
                 var roleOptions = generateRoleOptions(roles, ['customer']); // Default to customer
-                addNewRule(roleOptions);
+                addNewRule(roleOptions, isVariable, variations);
             });
         }
     });
     
+    // Generate variation options HTML
+    function generateVariationOptions(variations, selectedVariations) {
+        selectedVariations = selectedVariations || [];
+        var options = '';
+        $.each(variations, function(variationId, variationName) {
+            var selected = selectedVariations.indexOf(String(variationId)) !== -1 ? ' selected' : '';
+            options += `<option value="${variationId}"${selected}>${variationName}</option>`;
+        });
+        return options;
+    }
+    
     // Function to add new rule
-    function addNewRule(roleOptions) {
+    function addNewRule(roleOptions, isVariable, variations) {
+        isVariable = isVariable || false;
+        variations = variations || {};
+        
+        var variationOptions = '';
+        var variationField = '';
+        if (isVariable && Object.keys(variations).length > 0) {
+            variationOptions = generateVariationOptions(variations, []);
+            variationField = `
+                        <p class="form-field" style="grid-column: 1 / -1;">
+                            <label>Apply to Variations (Optional)</label>
+                            <select name="role_pricing_rules[${ruleIndex}][variations][]" 
+                                    multiple 
+                                    class="variation-multi-select" 
+                                    style="min-height: 100px; width: 100%;"
+                                    data-index="${ruleIndex}">
+                                ${variationOptions}
+                            </select>
+                            <p class="description" style="margin-top: 5px; font-size: 12px; color: #666;">
+                                Select specific variations for this rule. If none are selected, the rule applies to all variations.
+                            </p>
+                        </p>
+            `;
+        }
+        
         var newRule = `
                 <div class="pricing-rule-row" data-index="${ruleIndex}">
                     <a href="#" class="remove-pricing-rule">Remove</a>
@@ -116,6 +160,7 @@ jQuery(document).ready(function($) {
                                 When enabled, this Global pricing rule will also apply to guest (non-logged-in) users
                             </span>
                         </p>
+                        ${variationField}
                         <p class="form-field">
                             <label>Step Quantity</label>
                             <input type="number" name="role_pricing_rules[${ruleIndex}][step_qty]" value="1" min="1" style="width: 100%;"/>
@@ -140,7 +185,7 @@ jQuery(document).ready(function($) {
         var $newRule = $(newRule);
         $('#role-pricing-rules').append($newRule);
         
-        // Initialize Select2 on the multi-select (like Element Plus)
+        // Initialize Select2 on the role multi-select (like Element Plus)
         var $select = $newRule.find('.role-multi-select');
         if ($select.length) {
             // Set default selection to customer
@@ -172,6 +217,31 @@ jQuery(document).ready(function($) {
             $select.trigger('change');
         }
         
+        // Initialize Select2 on variation multi-select if it exists
+        var $variationSelect = $newRule.find('.variation-multi-select');
+        if ($variationSelect.length) {
+            $variationSelect.select2({
+                placeholder: 'Select variations (optional)',
+                allowClear: false,
+                width: '100%',
+                closeOnSelect: false,
+                tags: false,
+                multiple: true,
+                templateResult: function(data) {
+                    if (!data.id) {
+                        return data.text;
+                    }
+                    return $('<span>' + data.text + '</span>');
+                },
+                templateSelection: function(data) {
+                    if (!data.id) {
+                        return data.text;
+                    }
+                    return $('<span class="select2-selection__choice">' + data.text + '</span>');
+                }
+            });
+        }
+        
         ruleIndex++;
     }
     
@@ -201,6 +271,44 @@ jQuery(document).ready(function($) {
                 });
             }
         });
+        
+        // Initialize variation selects (rule-level)
+        $('.variation-multi-select').each(function() {
+            if (!$(this).hasClass('select2-hidden-accessible')) {
+                $(this).select2({
+                    placeholder: 'Select variations (optional)',
+                    allowClear: false,
+                    width: '100%',
+                    closeOnSelect: false,
+                    tags: false,
+                    multiple: true,
+                    templateResult: function(data) {
+                        if (!data.id) {
+                            return data.text;
+                        }
+                        return $('<span>' + data.text + '</span>');
+                    },
+                    templateSelection: function(data) {
+                        if (!data.id) {
+                            return data.text;
+                        }
+                        return $('<span class="select2-selection__choice">' + data.text + '</span>');
+                    }
+                });
+            }
+        });
+        
+        // Initialize tier-level variation selects (single select)
+        $('.tier-variation-select').each(function() {
+            if (!$(this).hasClass('select2-hidden-accessible')) {
+                $(this).select2({
+                    placeholder: 'Select variation (optional)',
+                    allowClear: false,
+                    width: '100%',
+                    minimumResultsForSearch: -1
+                });
+            }
+        });
     }
     
     // Initialize Select2 when document is ready
@@ -215,24 +323,73 @@ jQuery(document).ready(function($) {
     // Add tier rule
     $(document).on('click', '.add-tier-rule', function(e) {
         e.preventDefault();
-        var parentIndex = $(this).data('parent');
-        var tierIndex = $(this).siblings('.tiered-pricing-rules').find('.tier-rule-row').length;
+        var $button = $(this);
+        var parentIndex = $button.data('parent');
+        var tierIndex = $button.siblings('.tiered-pricing-rules').find('.tier-rule-row').length;
+        var isVariable = $button.data('is-variable') === '1' || $button.data('is-variable') === 1;
+        var variations = {};
+        try {
+            variations = $button.data('variations') || {};
+        } catch(e) {
+            variations = {};
+        }
+        
+        var variationField = '';
+        if (isVariable && Object.keys(variations).length > 0) {
+            var variationOptions = '<option value="all" selected>All Variations</option>';
+            $.each(variations, function(variationId, variationName) {
+                variationOptions += `<option value="${variationId}">${variationName}</option>`;
+            });
+            
+            variationField = `
+                <div style="width: 100%; margin-top: 10px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 12px;">
+                        Apply to Variation (Optional)
+                    </label>
+                    <select name="role_pricing_rules[${parentIndex}][tiered_pricing][${tierIndex}][variation]" 
+                            class="tier-variation-select" 
+                            style="width: 100%;"
+                            data-parent-index="${parentIndex}"
+                            data-tier-index="${tierIndex}">
+                        ${variationOptions}
+                    </select>
+                    <p class="description" style="margin-top: 5px; font-size: 11px; color: #666;">
+                        Select a specific variation for this tier. If "All Variations" is selected, applies to all variations.
+                    </p>
+                </div>
+            `;
+        }
         
         var newTier = `
-            <div class="tier-rule-row">
-                <input type="number" name="role_pricing_rules[${parentIndex}][tiered_pricing][${tierIndex}][min_qty]" 
-                       placeholder="Min Qty" min="1" style="width: 150px;" />
-                <input type="number" name="role_pricing_rules[${parentIndex}][tiered_pricing][${tierIndex}][price]" 
-                       placeholder="Price" step="0.01" min="0" style="width: 150px;" />
-                <button type="button" class="button remove-tier-rule">Remove</button>
-                <select name="role_pricing_rules[${parentIndex}][tiered_pricing][${tierIndex}][discount_type]">
-                    <option value="fixed">Fixed</option>
-                    <option value="percentage">Percentage</option>
-                </select>
+            <div class="tier-rule-row" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; padding: 15px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px;">
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <input type="number" name="role_pricing_rules[${parentIndex}][tiered_pricing][${tierIndex}][min_qty]" 
+                           placeholder="Min Qty" min="1" style="width: 150px;" />
+                    <input type="number" name="role_pricing_rules[${parentIndex}][tiered_pricing][${tierIndex}][price]" 
+                           placeholder="Price" step="0.01" min="0" style="width: 150px;" />
+                    <select name="role_pricing_rules[${parentIndex}][tiered_pricing][${tierIndex}][discount_type]" style="width: 150px;">
+                        <option value="fixed">Fixed</option>
+                        <option value="percentage">Percentage</option>
+                    </select>
+                    <button type="button" class="button remove-tier-rule">Remove</button>
+                </div>
+                ${variationField}
             </div>
         `;
         
-        $(this).siblings('.tiered-pricing-rules').append(newTier);
+        var $newTier = $(newTier);
+        $button.siblings('.tiered-pricing-rules').append($newTier);
+        
+        // Initialize Select2 on variation select if it exists (single select)
+        var $variationSelect = $newTier.find('.tier-variation-select');
+        if ($variationSelect.length) {
+            $variationSelect.select2({
+                placeholder: 'Select variation (optional)',
+                allowClear: false,
+                width: '100%',
+                minimumResultsForSearch: -1
+            });
+        }
     });
     
     // Remove tier rule

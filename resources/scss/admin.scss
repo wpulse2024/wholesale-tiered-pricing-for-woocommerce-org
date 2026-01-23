@@ -200,3 +200,68 @@
     background-color: #409eff;
     color: #fff;
 }
+
+// Variation multi-select styling (same as role select)
+.variation-multi-select + .select2-container {
+    width: 100% !important;
+    margin-top: 5px;
+}
+
+.variation-multi-select + .select2-container .select2-selection {
+    min-height: 100px;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    padding: 5px;
+    background-color: #fff;
+    transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.variation-multi-select + .select2-container.select2-container--focus .select2-selection,
+.variation-multi-select + .select2-container.select2-container--open .select2-selection {
+    border-color: #409eff;
+    outline: none;
+}
+
+.variation-multi-select + .select2-container .select2-selection__choice {
+    background-color: #ecf5ff;
+    border: 1px solid #b3d8ff;
+    color: #409eff;
+    padding: 0 8px;
+    margin: 2px 4px 2px 0;
+    border-radius: 3px;
+    font-size: 12px;
+    line-height: 24px;
+    display: inline-block;
+}
+
+.variation-multi-select + .select2-container .select2-selection__choice__remove {
+    color: #409eff;
+    margin-right: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.variation-multi-select + .select2-container .select2-selection__choice__remove:hover {
+    color: #66b1ff;
+}
+
+// Tier-level variation single select styling
+.tier-variation-select + .select2-container {
+    width: 100% !important;
+    margin-top: 5px;
+}
+
+.tier-variation-select + .select2-container .select2-selection {
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    padding: 5px;
+    background-color: #fff;
+    transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+    min-height: 32px;
+}
+
+.tier-variation-select + .select2-container.select2-container--focus .select2-selection,
+.tier-variation-select + .select2-container.select2-container--open .select2-selection {
+    border-color: #409eff;
+    outline: none;
+}
