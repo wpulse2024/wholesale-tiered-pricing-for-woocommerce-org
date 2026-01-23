@@ -37,6 +37,16 @@
                             </select>
                         </div>
 
+                        <div v-if="rule.role === 'guest'" class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" v-model="rule.also_for_guest" />
+                                <span>Make it for guest user also</span>
+                            </label>
+                            <p class="description" style="margin-top: 5px; font-size: 12px; color: #666;">
+                                When enabled, this Global pricing rule will also apply to guest (non-logged-in) users
+                            </p>
+                        </div>
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Min Quantity</label>
@@ -184,7 +194,13 @@ export default {
                     })
                 })
                 const data = await response.json()
-                this.pricingRules = data?.data
+                // Ensure all rules have the new fields with proper initialization
+                this.pricingRules = (data?.data || []).map(rule => {
+                    return {
+                        ...rule,
+                        also_for_guest: rule.also_for_guest === true || rule.also_for_guest === 'true' || rule.also_for_guest === 1 || rule.also_for_guest === '1'
+                    }
+                })
                 this.loading = false
             } catch (error) {
                 this.loading = false
@@ -208,7 +224,8 @@ export default {
                 step_qty: 1,
                 min_qty: 1,
                 max_qty: '',
-                tiered_pricing: []
+                tiered_pricing: [],
+                also_for_guest: false
             }
             this.pricingRules.push(newRule)
             this.activeRules.push(newRule.id)

@@ -139,13 +139,23 @@ class WHTPRole_Pricing_Ajax {
         $sanitized_rules = array();
         $rules = is_array($rules) ? $rules : json_decode(stripslashes($rules), true);
         foreach ($rules as $rule) {
+            // Handle also_for_guest field (only for Global/guest role)
+            $also_for_guest = false;
+            if (isset($rule['role']) && $rule['role'] === 'guest' && isset($rule['also_for_guest'])) {
+                $also_for_guest = ($rule['also_for_guest'] === true || 
+                                  $rule['also_for_guest'] === 'true' || 
+                                  $rule['also_for_guest'] === 1 || 
+                                  $rule['also_for_guest'] === '1');
+            }
+            
             $sanitized_rules[] = array(
                 'id' => sanitize_text_field($rule['id']),
                 'role' => sanitize_text_field($rule['role']),
                 'min_qty' => intval($rule['min_qty']),
                 'max_qty' => !empty($rule['max_qty']) ? intval($rule['max_qty']) : 0,
                 'step_qty' => intval($rule['step_qty']),
-                'tiered_pricing' => $this->sanitizeTieredPricingData($rule['tiered_pricing'])
+                'tiered_pricing' => $this->sanitizeTieredPricingData($rule['tiered_pricing']),
+                'also_for_guest' => $also_for_guest
             );
         }
 
@@ -157,13 +167,23 @@ class WHTPRole_Pricing_Ajax {
         $sanitized_rules = array();
         $rules = is_array($rules) ? $rules : json_decode(stripslashes($rules), true);
         foreach ($rules as $rule) {
+            // Handle also_for_guest field (only for Global/guest role)
+            $also_for_guest = false;
+            if (isset($rule['role']) && $rule['role'] === 'guest' && isset($rule['also_for_guest'])) {
+                $also_for_guest = ($rule['also_for_guest'] === true || 
+                                  $rule['also_for_guest'] === 'true' || 
+                                  $rule['also_for_guest'] === 1 || 
+                                  $rule['also_for_guest'] === '1');
+            }
+            
             $sanitized_rules[] = array(
                 'id' => sanitize_text_field($rule['id']),
                 'role' => sanitize_text_field($rule['role']),
                 'min_qty' => intval($rule['min_qty']),
                 'max_qty' => !empty($rule['max_qty']) ? intval($rule['max_qty']) : 0,
                 'step_qty' => intval($rule['step_qty']),
-                'tiered_pricing' => $this->sanitizeTieredPricingData($rule['tiered_pricing'])
+                'tiered_pricing' => $this->sanitizeTieredPricingData($rule['tiered_pricing']),
+                'also_for_guest' => $also_for_guest
             );
         }
         return $sanitized_rules;
@@ -218,8 +238,26 @@ class WHTPRole_Pricing_Ajax {
         $new_price = $product->get_price();
         
         foreach ($rules as $rule) {
-            // Global role (guest) applies to all users
-            if ($rule['role'] === 'guest' || $rule['role'] === $current_user_role) {
+            // Check if rule applies to current user
+            $rule_applies = false;
+            
+            // Global role applies to all logged-in users
+            if ($rule['role'] === 'guest') {
+                // If user is logged in, always apply Global rules
+                if ($current_user_role !== 'guest') {
+                    $rule_applies = true;
+                } 
+                // If user is guest, only apply if also_for_guest is enabled
+                elseif ($current_user_role === 'guest' && !empty($rule['also_for_guest'])) {
+                    $rule_applies = true;
+                }
+            } 
+            // Role-specific rules
+            elseif ($rule['role'] === $current_user_role) {
+                $rule_applies = true;
+            }
+            
+            if ($rule_applies) {
                 $new_price = $this->calculate_price($product->get_price(), $rule, $quantity);
                 break;
             }
@@ -493,8 +531,26 @@ class WHTPRole_Pricing_Ajax {
         $applicable_rule = null;
         
         foreach ($rules as $rule) {
-            // Global role (guest) applies to all users
-            if ($rule['role'] === 'guest' || $rule['role'] === $current_user_role) {
+            // Check if rule applies to current user
+            $rule_applies = false;
+            
+            // Global role applies to all logged-in users
+            if ($rule['role'] === 'guest') {
+                // If user is logged in, always apply Global rules
+                if ($current_user_role !== 'guest') {
+                    $rule_applies = true;
+                } 
+                // If user is guest, only apply if also_for_guest is enabled
+                elseif ($current_user_role === 'guest' && !empty($rule['also_for_guest'])) {
+                    $rule_applies = true;
+                }
+            } 
+            // Role-specific rules
+            elseif ($rule['role'] === $current_user_role) {
+                $rule_applies = true;
+            }
+            
+            if ($rule_applies) {
                 $applicable_rule = $rule;
                 $discounted_price = $this->calculate_price($regular_price, $rule, $quantity);
                 break;
