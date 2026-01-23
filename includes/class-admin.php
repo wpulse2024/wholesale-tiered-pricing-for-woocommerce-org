@@ -25,8 +25,18 @@ class WHTPRole_Pricing_Admin
             return;
         }
 
+        // Enqueue Select2 (WordPress includes it for WooCommerce)
+        wp_enqueue_script('select2');
+        wp_enqueue_style('select2', WC()->plugin_url() . '/assets/css/select2.css', array(), WC_VERSION);
+        
         wp_enqueue_style('wholesale-tiered-pricing-for-woocommerce-admin', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/admin.css', array(), WHTPROLE_PRICING_VERSION);
-        wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce-admin', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/admin.js', array('jquery', 'wp-util'), WHTPROLE_PRICING_VERSION, true);
+        wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce-admin', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/admin.js', array('jquery', 'select2', 'wp-util'), WHTPROLE_PRICING_VERSION, true);
+        
+        // Pass user roles to JavaScript
+        $roles = wp_roles()->get_names();
+        wp_localize_script('wholesale-tiered-pricing-for-woocommerce-admin', 'whtproleAdminRoles', array(
+            'roles' => $roles
+        ));
     }
 
     public function add_product_data_tab($tabs)
@@ -87,22 +97,59 @@ class WHTPRole_Pricing_Admin
     private function render_pricing_rule($index, $rule = array())
     {
         $roles = wp_roles()->get_names();
+        
+        // Normalize roles: support both legacy 'role' (string) and new 'roles' (array)
+        $rule_roles = array();
+        if (isset($rule['roles']) && is_array($rule['roles'])) {
+            $rule_roles = $rule['roles'];
+        } elseif (isset($rule['role']) && !empty($rule['role'])) {
+            // Legacy: single role as string
+            $rule_roles = array($rule['role']);
+        }
+        
+        // Get also_for_guest value
+        $also_for_guest = isset($rule['also_for_guest']) ? ($rule['also_for_guest'] === true || $rule['also_for_guest'] === 'true' || $rule['also_for_guest'] === 1 || $rule['also_for_guest'] === '1') : false;
+        $has_global = in_array('guest', $rule_roles);
     ?>
         <div class="pricing-rule-row" data-index="<?php echo esc_attr($index); ?>">
             <a href="#" class="remove-pricing-rule"><?php esc_html_e('Remove', 'wholesale-tiered-pricing-for-woocommerce'); ?></a>
             <div class="pricing-rule-fields">
                 <p class="form-field">
-                    <label><?php esc_html_e('User Role', 'wholesale-tiered-pricing-for-woocommerce'); ?></label>
-                    <select name="role_pricing_rules[<?php echo esc_attr($index); ?>][role]">
-                        <option value="guest">Global</option>
-                        <option value=""><?php esc_html_e('Select Role', 'wholesale-tiered-pricing-for-woocommerce'); ?></option>
+                    <label><?php esc_html_e('User Roles (Select Multiple)', 'wholesale-tiered-pricing-for-woocommerce'); ?></label>
+                    <select name="role_pricing_rules[<?php echo esc_attr($index); ?>][roles][]" 
+                            multiple 
+                            class="role-multi-select" 
+                            style="min-height: 120px; width: 100%;"
+                            data-index="<?php echo esc_attr($index); ?>">
+                        <option value="guest" <?php selected(in_array('guest', $rule_roles), true); ?>>
+                            <?php esc_html_e('Global (All Logged-in Users)', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                        </option>
                         <?php foreach ($roles as $role_key => $role_name): ?>
                             <option value="<?php echo esc_attr($role_key); ?>"
-                                <?php selected(isset($rule['role']) ? $rule['role'] : '', $role_key); ?>>
+                                <?php selected(in_array($role_key, $rule_roles), true); ?>>
                                 <?php echo esc_html($role_name); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
+                    <p class="description" style="margin-top: 5px; font-size: 12px; color: #666;">
+                        <?php esc_html_e('Select one or more user roles. "Global" applies to all logged-in users. Hold Ctrl/Cmd to select multiple.', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                    </p>
+                    <!-- Hidden field for backward compatibility -->
+                    <input type="hidden" name="role_pricing_rules[<?php echo esc_attr($index); ?>][role]" 
+                           value="<?php echo esc_attr(!empty($rule_roles) ? $rule_roles[0] : ''); ?>" />
+                </p>
+
+                <p class="form-field guest-checkbox-field" style="<?php echo $has_global ? '' : 'display: none;'; ?>">
+                    <label>
+                        <input type="checkbox" 
+                               name="role_pricing_rules[<?php echo esc_attr($index); ?>][also_for_guest]" 
+                               value="1" 
+                               <?php checked($also_for_guest, true); ?> />
+                        <?php esc_html_e('Make it for guest user also', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                    </label>
+                    <span class="description" style="display: block; margin-top: 5px; font-size: 12px; color: #666;">
+                        <?php esc_html_e('When enabled, this Global pricing rule will also apply to guest (non-logged-in) users', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                    </span>
                 </p>
 
                 <p class="form-field">
@@ -178,17 +225,53 @@ class WHTPRole_Pricing_Admin
         if (isset($_POST['role_pricing_rules'])) {
             $rules = array();
             foreach ($_POST['role_pricing_rules'] as $rule) {
-                if (!empty($rule['role'])) {
-                    $rules[] = array(
-                        'role' => sanitize_text_field($rule['role']),
-                        'min_qty' => intval($rule['min_qty']),
-                        'max_qty' => !empty($rule['max_qty']) ? intval($rule['max_qty']) : 0,
-                        'step_qty' => intval($rule['step_qty']),
-                        'price_type' => sanitize_text_field($rule['price_type']),
-                        'price_value' => floatval($rule['price_value']),
-                        'tiered_pricing' => isset($rule['tiered_pricing']) ? $rule['tiered_pricing'] : array()
-                    );
+                // Normalize roles: support both new 'roles' (array) and legacy 'role' (string)
+                $roles = array();
+                if (isset($rule['roles']) && is_array($rule['roles'])) {
+                    // New format: array of roles
+                    $roles = array_map('sanitize_text_field', array_filter($rule['roles']));
+                } elseif (isset($rule['role']) && !empty($rule['role'])) {
+                    // Legacy format: single role string
+                    $roles = array(sanitize_text_field($rule['role']));
                 }
+                
+                // If no roles, skip this rule
+                if (empty($roles)) {
+                    continue;
+                }
+                
+                // If Global is in roles, it should be the only role (wildcard behavior)
+                if (in_array('guest', $roles)) {
+                    $roles = array('guest');
+                }
+                
+                // Handle also_for_guest field (only for Global/guest role)
+                $also_for_guest = false;
+                if (in_array('guest', $roles) && isset($rule['also_for_guest'])) {
+                    $also_for_guest = ($rule['also_for_guest'] === '1' || $rule['also_for_guest'] === 1 || $rule['also_for_guest'] === true);
+                }
+                
+                // Sanitize tiered pricing
+                $tiered_pricing = array();
+                if (isset($rule['tiered_pricing']) && is_array($rule['tiered_pricing'])) {
+                    foreach ($rule['tiered_pricing'] as $tier) {
+                        $tiered_pricing[] = array(
+                            'min_qty' => isset($tier['min_qty']) ? intval($tier['min_qty']) : 0,
+                            'price' => isset($tier['price']) ? floatval($tier['price']) : 0,
+                            'discount_type' => isset($tier['discount_type']) ? sanitize_text_field($tier['discount_type']) : 'fixed'
+                        );
+                    }
+                }
+                
+                $rules[] = array(
+                    'roles' => $roles, // New: always store as array
+                    'role' => !empty($roles) ? $roles[0] : 'customer', // Keep for backward compatibility
+                    'min_qty' => isset($rule['min_qty']) ? intval($rule['min_qty']) : 0,
+                    'max_qty' => !empty($rule['max_qty']) ? intval($rule['max_qty']) : 0,
+                    'step_qty' => isset($rule['step_qty']) ? intval($rule['step_qty']) : 1,
+                    'tiered_pricing' => $tiered_pricing,
+                    'also_for_guest' => $also_for_guest
+                );
             }
             update_post_meta($post_id, '_role_pricing_rules', $rules);
         }
