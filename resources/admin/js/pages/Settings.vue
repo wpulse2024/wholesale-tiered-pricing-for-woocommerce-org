@@ -160,7 +160,7 @@ export default {
                 { value: 'table', label: 'Table' },
                 { value: 'options', label: 'Options' },
                 { value: 'minimal_table', label: 'Minimal table' },
-                { value: 'plain_text', label: 'Plain text' },
+                // { value: 'plain_text', label: 'Plain text' },
                 { value: 'compact_list', label: 'Compact list' }
             ],
             saving: false,
