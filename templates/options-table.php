@@ -159,8 +159,7 @@ if (!defined('ABSPATH')) {
                    data-min-qty="<?php echo esc_attr($min_qty); ?>" 
                    data-price="<?php echo esc_attr($tier_price); ?>"
                    data-tier-price="<?php echo esc_attr($tier['price']); ?>"
-                   data-tier-discount-type="<?php echo esc_attr(isset($tier['discount_type']) ? $tier['discount_type'] : ''); ?>"
-                   data-tier-variation="<?php echo esc_attr($tier_variation ? $tier_variation : 'all'); ?>">
+                   data-tier-discount-type="<?php echo esc_attr(isset($tier['discount_type']) ? $tier['discount_type'] : ''); ?>">
                 <input type="radio" 
                        name="tier_selection_<?php echo esc_attr($product->get_id()); ?>" 
                        value="<?php echo esc_attr($min_qty); ?>" 

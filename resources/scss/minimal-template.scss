@@ -102,26 +102,6 @@
 
 .tier-content {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.tier-variation-name {
-    display: block;
-    font-size: 0.75em;
-    font-weight: 600;
-    color: rgba(4, 107, 210, 0.8);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 2px;
-}
-
-.premium-tier.featured-tier .tier-variation-name {
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.tier-content-row {
-    display: flex;
     align-items: center;
     gap: 12px;
 }

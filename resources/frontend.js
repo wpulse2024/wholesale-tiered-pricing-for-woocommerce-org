@@ -246,7 +246,7 @@ jQuery(document).ready(function($) {
     // Update pricing table prices when variation changes
     function updatePricingTablePrices(variationId) {
         // Support minimal template, table template, and options table template
-        const pricingWrappers = $('.premium-pricing-wrapper, .radio-pricing-wrapper');
+        const pricingWrappers = $('.premium-pricing-wrapper, .radio-pricing-wrapper, .wholesale-tiered-pricing-for-woocommerce-table');
         if (!pricingWrappers.length) {
             return;
         }
@@ -348,8 +348,8 @@ jQuery(document).ready(function($) {
             return;
         }
         
-        // Support minimal template and options table template
-        const pricingWrappers = $('.premium-pricing-wrapper, .radio-pricing-wrapper');
+        // Support minimal template, options table template, and pricing table template
+        const pricingWrappers = $('.premium-pricing-wrapper, .radio-pricing-wrapper, .wholesale-tiered-pricing-for-woocommerce-table');
         if (!pricingWrappers.length) {
             return;
         }
@@ -357,6 +357,90 @@ jQuery(document).ready(function($) {
         // Update data attribute on all pricing wrappers
         pricingWrappers.each(function() {
             $(this).data('base-regular-price', regularPrice);
+        });
+        
+        // Also update data attribute on pricing tables
+        $('.pricing-table').each(function() {
+            $(this).data('base-regular-price', regularPrice);
+        });
+        
+        // Update pricing table template (table view)
+        $('.wholesale-tiered-pricing-for-woocommerce-table').find('.pricing-table tbody tr').each(function() {
+            const $tier = $(this);
+            const tierPrice = parseFloat($tier.data('tier-price')) || 0;
+            const discountType = $tier.data('tier-discount-type') || '';
+            const minQty = parseInt($tier.data('tier-min-qty')) || 0;
+            
+            if (!tierPrice || !minQty) {
+                return;
+            }
+            
+            // Calculate discount
+            let calculatedPrice = 0;
+            let savings = 0;
+            let savingsPercent = 0;
+            
+            if (discountType === 'fixed') {
+                calculatedPrice = regularPrice - tierPrice;
+                savings = regularPrice - calculatedPrice;
+                savingsPercent = regularPrice > 0 ? (savings / regularPrice) * 100 : 0;
+            } else if (discountType === 'percentage') {
+                calculatedPrice = regularPrice - (regularPrice * tierPrice / 100);
+                savings = regularPrice - calculatedPrice;
+                savingsPercent = tierPrice;
+            } else {
+                // Direct price override
+                calculatedPrice = tierPrice;
+                savings = regularPrice - tierPrice;
+                savingsPercent = regularPrice > 0 ? (savings / regularPrice) * 100 : 0;
+            }
+            
+            // Ensure price is valid
+            if (calculatedPrice <= 0) {
+                calculatedPrice = regularPrice;
+                savings = 0;
+                savingsPercent = 0;
+            }
+            
+            // Update displayed prices using WooCommerce price format
+            const $regularPriceEl = $tier.find('.tier-regular-price');
+            const $salePriceEl = $tier.find('.tier-sale-price');
+            const $savingsBadge = $tier.find('.savings-badge .save-amount');
+            const $savingsDetail = $tier.find('.savings-detail');
+            
+            // Update regular price (show if there are savings)
+            if (savings > 0 && regularPrice != tierPrice) {
+                const regularPriceFormatted = formatWooCommercePrice(regularPrice);
+                if ($regularPriceEl.length) {
+                    $regularPriceEl.html(regularPriceFormatted).show();
+                }
+            } else {
+                $regularPriceEl.hide();
+            }
+            
+            // Update sale price
+            if ($salePriceEl.length) {
+                const salePriceFormatted = formatWooCommercePrice(calculatedPrice);
+                $salePriceEl.html(salePriceFormatted);
+            }
+            
+            // Update savings badge
+            if (savings > 0) {
+                if ($savingsBadge.length) {
+                    $savingsBadge.text('Save ' + Math.round(savingsPercent) + '%');
+                }
+                if ($savingsDetail.length) {
+                    const savingsFormatted = formatWooCommercePrice(savings);
+                    $savingsDetail.html('(' + savingsFormatted + ' off)');
+                }
+            } else {
+                if ($savingsBadge.length) {
+                    $savingsBadge.closest('.savings-badge').hide();
+                }
+                if ($savingsDetail.length) {
+                    $savingsDetail.hide();
+                }
+            }
         });
         
         // Update minimal template tiers
@@ -590,45 +674,11 @@ jQuery(document).ready(function($) {
         return '$' + parseFloat(price).toFixed(2);
     }
     
-    // Filter tiers by variation for options table
-    function filterTiersByVariation(variationId) {
-        const $radioWrapper = $('.radio-pricing-wrapper');
-        if (!$radioWrapper.length) {
-            return;
-        }
-        
-        const $tiers = $radioWrapper.find('.radio-tier');
-        
-        if (!variationId) {
-            // No variation selected - show all tiers
-            $tiers.show();
-            return;
-        }
-        
-        // Filter tiers: show only tiers that apply to this variation or "all variations"
-        $tiers.each(function() {
-            const $tier = $(this);
-            const tierVariation = $tier.data('tier-variation');
-            
-            // Show tier if:
-            // 1. It's set to "all" variations
-            // 2. It matches the current variation ID
-            if (tierVariation === 'all' || tierVariation === 'null' || tierVariation === null || tierVariation === '' || parseInt(tierVariation) === variationId) {
-                $tier.show();
-            } else {
-                $tier.hide();
-            }
-        });
-    }
-    
     // Handle variation changes for variable products
     function handleVariationChange() {
         $(document).on('found_variation', function(event, variation) {
             // Store the current variation ID
             currentVariationId = variation.variation_id || getCurrentVariationId();
-            
-            // Filter tiers based on selected variation
-            filterTiersByVariation(currentVariationId);
             
             // Update pricing table with new variation price
             if (currentVariationId) {
@@ -707,10 +757,6 @@ jQuery(document).ready(function($) {
         // Also listen for variation clearing
         $(document).on('reset_data', function() {
             currentVariationId = null;
-            
-            // Show all tiers when variation is cleared
-            filterTiersByVariation(null);
-            
             // Reset pricing table to base price
             const pricingWrapper = $('.premium-pricing-wrapper, .radio-pricing-wrapper').first();
             if (pricingWrapper.length) {
@@ -731,9 +777,6 @@ jQuery(document).ready(function($) {
         // Listen for variation input changes directly
         $(document).on('change', 'input[name="variation_id"]', function() {
             currentVariationId = $(this).val() ? parseInt($(this).val()) : null;
-            
-            // Filter tiers based on selected variation
-            filterTiersByVariation(currentVariationId);
             
             // Update pricing table with new variation price
             if (currentVariationId) {
@@ -763,13 +806,6 @@ jQuery(document).ready(function($) {
     initializePricingTable();
     initializeSavingsCalculator();
     handleVariationChange();
-    
-    // Check initial variation state for options table
-    if ($('form.variations_form').length) {
-        const variationInput = $('input[name="variation_id"]');
-        const initialVariationId = variationInput.length && variationInput.val() ? parseInt(variationInput.val()) : null;
-        filterTiersByVariation(initialVariationId);
-    }
 
     // Cart update re-init
     $(document.body).on('updated_cart_totals', function() {

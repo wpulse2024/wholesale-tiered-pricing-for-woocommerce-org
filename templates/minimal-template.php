@@ -134,75 +134,34 @@ if (!defined('ABSPATH')) {
                             $savings = 0;
                             $savings_percent = 0;
                         }
-                        
-                        // Get variation name if this tier is for a specific variation
-                        $variation_name = '';
-                        $tier_variation = isset($tier['variation']) ? $tier['variation'] : null;
-                        if ($tier_variation && $tier_variation !== 'all' && $product->is_type('variable')) {
-                            $variation_product = wc_get_product(intval($tier_variation));
-                            if ($variation_product && $variation_product->is_type('variation')) {
-                                // Get variation attributes as plain text
-                                $attributes = $variation_product->get_variation_attributes();
-                                if (!empty($attributes)) {
-                                    $attribute_parts = array();
-                                    foreach ($attributes as $attr_name => $attr_value) {
-                                        $taxonomy = str_replace('attribute_', '', $attr_name);
-                                        $term = get_term_by('slug', $attr_value, $taxonomy);
-                                        if ($term) {
-                                            $attribute_parts[] = wc_attribute_label($taxonomy) . ': ' . $term->name;
-                                        } else {
-                                            $attribute_parts[] = wc_attribute_label($taxonomy) . ': ' . $attr_value;
-                                        }
-                                    }
-                                    if (!empty($attribute_parts)) {
-                                        $variation_name = implode(', ', $attribute_parts);
-                                    }
-                                }
-                                
-                                // If no attributes found, use variation ID
-                                if (empty($variation_name)) {
-                                    $variation_name = sprintf(esc_html__('Variation #%d', 'wholesale-tiered-pricing-for-woocommerce'), intval($tier_variation));
-                                }
-                            }
-                        } elseif ($tier_variation === 'all' && $product->is_type('variable')) {
-                            $variation_name = esc_html__('All Variations', 'wholesale-tiered-pricing-for-woocommerce');
-                        }
                 ?>
                 <div class="premium-tier <?php echo $is_featured ? 'featured-tier' : ''; ?>" 
                      data-tier-min-qty="<?php echo esc_attr($tier['min_qty']); ?>"
                      data-tier-price="<?php echo esc_attr($tier['price']); ?>"
                      data-tier-discount-type="<?php echo esc_attr(isset($tier['discount_type']) ? $tier['discount_type'] : ''); ?>"
-                     data-tier-index="<?php echo esc_attr($index); ?>"
-                     data-tier-variation="<?php echo esc_attr($tier_variation ? $tier_variation : 'all'); ?>">
+                     data-tier-index="<?php echo esc_attr($index); ?>">
                     <?php if ($is_featured): ?>
                         <span class="featured-badge"><?php echo esc_html__('Best', 'wholesale-tiered-pricing-for-woocommerce'); ?></span>
                     <?php endif; ?>
 
                     <div class="tier-content">
-                        <?php if (!empty($variation_name)): ?>
-                            <div class="tier-variation-name">
-                                <?php echo esc_html($variation_name); ?>
-                            </div>
-                        <?php endif; ?>
-                        <div class="tier-content-row">
-                            <div class="tier-left">
-                                <span class="qty-value"><?php echo esc_html(intval($tier['min_qty'])); ?><span class="qty-plus">+</span></span>
-                            </div>
+                        <div class="tier-left">
+                            <span class="qty-value"><?php echo esc_html(intval($tier['min_qty'])); ?><span class="qty-plus">+</span></span>
+                        </div>
 
-                            <div class="tier-center">
-                                <?php if ($savings > 0 && $regular_price != $tier['price']): ?>
-                                    <span class="regular-price"><?php echo wp_kses_post(wc_price($regular_price)); ?></span>
-                                <?php endif; ?>
-                                <span class="sale-price"><?php echo wp_kses_post(wc_price($price)); ?></span>
-                            </div>
+                        <div class="tier-center">
+                            <?php if ($savings > 0 && $regular_price != $tier['price']): ?>
+                                <span class="regular-price"><?php echo wp_kses_post(wc_price($regular_price)); ?></span>
+                            <?php endif; ?>
+                            <span class="sale-price"><?php echo wp_kses_post(wc_price($price)); ?></span>
+                        </div>
 
-                            <div class="tier-right">
-                                <?php if ($savings > 0): ?>
-                                    <div class="savings-badge">
-                                        <span class="save-amount"><?php echo esc_html(round($savings_percent)); ?>%</span>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
+                        <div class="tier-right">
+                            <?php if ($savings > 0): ?>
+                                <div class="savings-badge">
+                                    <span class="save-amount"><?php echo esc_html(round($savings_percent)); ?>%</span>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 
