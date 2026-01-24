@@ -69,7 +69,17 @@
     border-radius: 50%;
 }
 
-.tier-info {
+        .tier-variation-name {
+            display: block;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: var(--wtp-primary-color, #7f54b3);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tier-info {
     flex: 1;
     display: flex;
     flex-direction: column;
