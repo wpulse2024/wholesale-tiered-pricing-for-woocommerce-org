@@ -5,7 +5,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: woocommerce, wholesale, pricing, role-based, tiered pricing 
 Requires at least: 4.5  
 Tested up to: 6.8.3  
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 Requires PHP: 7.1  
 
 **Beautiful volume pricing tables with role-based discounts for wholesale, B2B & bulk sellers offering tiered pricing by quantity and user role.**
@@ -105,6 +105,15 @@ Yes, any role created by a membership or user role plugin is supported.
 ---
 
 ## Changelog
+
+= 1.0.8 – 2025-01-24 =
+- Enhanced variable product support across all pricing table templates.
+- Added dynamic variation filtering - pricing tables now show only tiers applicable to the selected variation.
+- Improved pricing-table-view.php template to fully support variable products with variation-specific pricing.
+- Enhanced pricing-table-view-compact-list.php template with variation name display and variable product compatibility.
+- Added automatic price updates when customers select different variations on variable products.
+- Improved tier filtering logic to show only relevant pricing tiers for the currently selected variation.
+- Enhanced user experience with real-time price recalculation based on variation selection.
 
 = 1.0.7 – 2025-01-23 =
 - Added support for assigning tiered pricing rules to multiple user roles using a normalized roles array.

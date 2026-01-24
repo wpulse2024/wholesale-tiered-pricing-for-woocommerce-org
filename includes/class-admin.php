@@ -153,8 +153,8 @@ class WHTPRole_Pricing_Admin
         $also_for_guest = isset($rule['also_for_guest']) ? ($rule['also_for_guest'] === true || $rule['also_for_guest'] === 'true' || $rule['also_for_guest'] === 1 || $rule['also_for_guest'] === '1') : false;
         $has_global = in_array('guest', $rule_roles);
         
-        // Get selected variations
-        $selected_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : array();
+        // Note: Rule-level variations are stored for backward compatibility only
+        // New logic uses tier-level variations (handled in render_tier_rule)
     ?>
         <div class="pricing-rule-row" data-index="<?php echo esc_attr($index); ?>">
             <a href="#" class="remove-pricing-rule"><?php esc_html_e('Remove', 'wholesale-tiered-pricing-for-woocommerce'); ?></a>
@@ -241,12 +241,37 @@ class WHTPRole_Pricing_Admin
     private function render_tier_rule($parent_index, $tier_index, $tier_rule = array(), $is_variable = false, $variations = array())
     {
         // Get selected variation for this tier (single select)
-        $selected_variation = isset($tier_rule['variation']) ? $tier_rule['variation'] : 'all';
-        // Backward compatibility: check old variations array format
-        if ($selected_variation === 'all' && isset($tier_rule['variations']) && is_array($tier_rule['variations']) && !empty($tier_rule['variations'])) {
-            if (!in_array('all', $tier_rule['variations'])) {
-                $selected_variation = $tier_rule['variations'][0]; // Use first variation
+        // Priority: new 'variation' field > old 'variations' array > default to 'all'
+        $selected_variation = 'all';
+        
+        // Check new single variation format first
+        if (isset($tier_rule['variation'])) {
+            $tier_variation = $tier_rule['variation'];
+            // If it's null, empty, or 'all', use 'all'
+            if ($tier_variation === null || $tier_variation === '' || $tier_variation === 'all') {
+                $selected_variation = 'all';
+            } else {
+                // Convert to integer for consistent comparison
+                $selected_variation = intval($tier_variation);
             }
+        }
+        // Backward compatibility: check old variations array format
+        elseif (isset($tier_rule['variations']) && is_array($tier_rule['variations']) && !empty($tier_rule['variations'])) {
+            // If 'all' is in the array or array is empty, use 'all'
+            if (in_array('all', $tier_rule['variations']) || empty($tier_rule['variations'])) {
+                $selected_variation = 'all';
+            } else {
+                // Use first variation from array
+                $selected_variation = intval($tier_rule['variations'][0]);
+            }
+        }
+        
+        // Normalize selected_variation for comparison (ensure it's either 'all' or an integer)
+        $is_all_variations = ($selected_variation === 'all' || $selected_variation === null || $selected_variation === '');
+        if (!$is_all_variations) {
+            $selected_variation = intval($selected_variation);
+        } else {
+            $selected_variation = 'all';
         }
     ?>
         <div class="tier-rule-row" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; padding: 15px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px;">
@@ -280,12 +305,12 @@ class WHTPRole_Pricing_Admin
                         style="width: 100%;"
                         data-parent-index="<?php echo esc_attr($parent_index); ?>"
                         data-tier-index="<?php echo esc_attr($tier_index); ?>">
-                    <option value="all" <?php selected($selected_variation === 'all' || empty($selected_variation), true); ?>>
+                    <option value="all" <?php selected($is_all_variations, true); ?>>
                         <?php esc_html_e('All Variations', 'wholesale-tiered-pricing-for-woocommerce'); ?>
                     </option>
                     <?php foreach ($variations as $variation_id => $variation_name): ?>
                         <option value="<?php echo esc_attr($variation_id); ?>"
-                            <?php selected($selected_variation == $variation_id, true); ?>>
+                            <?php selected($selected_variation === intval($variation_id), true); ?>>
                             <?php echo esc_html($variation_name); ?>
                         </option>
                     <?php endforeach; ?>
@@ -337,14 +362,23 @@ class WHTPRole_Pricing_Admin
                 if (isset($rule['tiered_pricing']) && is_array($rule['tiered_pricing'])) {
                     foreach ($rule['tiered_pricing'] as $tier) {
                         // Handle variation for each tier (single select)
+                        // Priority: new 'variation' field > old 'variations' array > default to null (all variations)
                         $tier_variation = null;
-                        if (isset($tier['variation']) && !empty($tier['variation']) && $tier['variation'] !== 'all') {
-                            $tier_variation = intval($tier['variation']);
+                        
+                        // Check new single variation format first
+                        if (isset($tier['variation'])) {
+                            $variation_value = $tier['variation'];
+                            // If it's 'all', empty, or null, store as null (means all variations)
+                            if ($variation_value !== 'all' && $variation_value !== '' && $variation_value !== null) {
+                                $tier_variation = intval($variation_value);
+                            }
                         }
                         // Backward compatibility: check for old 'variations' array format
                         elseif (isset($tier['variations']) && is_array($tier['variations']) && !empty($tier['variations'])) {
+                            // If 'all' is in the array, store as null (means all variations)
                             if (!in_array('all', $tier['variations'])) {
-                                $tier_variation = intval($tier['variations'][0]); // Use first variation
+                                // Use first variation from array
+                                $tier_variation = intval($tier['variations'][0]);
                             }
                         }
                         
