@@ -48,21 +48,15 @@ class WHTPRole_Pricing_Show_Message {
             return;
         }
 
-        $product_id   = $product->get_id();
-        $helper       = new WHTPRole_Pricing_Helper();
-        $rules        = get_post_meta($product_id, '_role_pricing_rules', true);
-        $globalRules  = get_option('whtprole_pricing_global_rules', []);
-        if (empty($rules) || !$helper->enableToShowsTable($product_id)) {
-            if (empty($globalRules)) {
-                return;
-            }
-            $rules = $globalRules;
+        $parent_id = WHTPRole_Pricing_Helper::get_parent_product_id($product);
+        $rules     = WHTPRole_Pricing_Helper::get_rules_for_product($parent_id);
+        if (empty($rules)) {
+            return;
         }
 
         $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
         $is_guest          = ($current_user_role === 'guest');
         $original_price    = (float) $product->get_regular_price();
-        $rules             = is_array($rules) ? $rules : json_decode($rules, true);
 
         foreach ($rules as $rule) {
             $rule_roles    = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());

@@ -293,7 +293,23 @@ class WHTPRole_Pricing_Helper
             $rules = json_decode($rules, true);
         }
 
-        return is_array($rules) ? $rules : [];
+        if (!is_array($rules)) {
+            return [];
+        }
+
+        // Filter out rules that are outside their scheduled date window.
+        $today = gmdate('Y-m-d');
+        $rules = array_values(array_filter($rules, function ($rule) use ($today) {
+            if (!empty($rule['date_from']) && $today < $rule['date_from']) {
+                return false; // Rule hasn't started yet
+            }
+            if (!empty($rule['date_to']) && $today > $rule['date_to']) {
+                return false; // Rule has expired
+            }
+            return true;
+        }));
+
+        return $rules;
     }
 
     /**

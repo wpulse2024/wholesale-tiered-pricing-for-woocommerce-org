@@ -219,6 +219,26 @@ class WHTPRole_Pricing_Admin
                         min="0" placeholder="<?php esc_html_e('Unlimited', 'wholesale-tiered-pricing-for-woocommerce'); ?>" style="width: 100%" />
                 </p>
 
+                <p class="form-field">
+                    <label><?php esc_html_e('Schedule: Active From', 'wholesale-tiered-pricing-for-woocommerce'); ?></label>
+                    <input type="date" name="role_pricing_rules[<?php echo esc_attr($index); ?>][date_from]"
+                        value="<?php echo isset($rule['date_from']) ? esc_attr($rule['date_from']) : ''; ?>"
+                        style="width: 100%" />
+                    <span class="description" style="display: block; margin-top: 5px; font-size: 12px; color: #666;">
+                        <?php esc_html_e('Leave blank for no start restriction.', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                    </span>
+                </p>
+
+                <p class="form-field">
+                    <label><?php esc_html_e('Schedule: Active Until', 'wholesale-tiered-pricing-for-woocommerce'); ?></label>
+                    <input type="date" name="role_pricing_rules[<?php echo esc_attr($index); ?>][date_to]"
+                        value="<?php echo isset($rule['date_to']) ? esc_attr($rule['date_to']) : ''; ?>"
+                        style="width: 100%" />
+                    <span class="description" style="display: block; margin-top: 5px; font-size: 12px; color: #666;">
+                        <?php esc_html_e('Leave blank for no end restriction.', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                    </span>
+                </p>
+
             </div>
 
             <div class="tiered-pricing-section">
@@ -406,6 +426,23 @@ class WHTPRole_Pricing_Admin
                     $variations = array_map('intval', array_filter($rule['variations']));
                 }
                 
+                // Sanitize schedule dates (YYYY-MM-DD or empty)
+                $date_from = '';
+                $date_to   = '';
+                if (!empty($rule['date_from'])) {
+                    $date_from = sanitize_text_field($rule['date_from']);
+                    // Validate format
+                    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_from)) {
+                        $date_from = '';
+                    }
+                }
+                if (!empty($rule['date_to'])) {
+                    $date_to = sanitize_text_field($rule['date_to']);
+                    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_to)) {
+                        $date_to = '';
+                    }
+                }
+
                 $rules[] = array(
                     'roles' => $roles, // New: always store as array
                     'role' => !empty($roles) ? $roles[0] : 'customer', // Keep for backward compatibility
@@ -414,7 +451,9 @@ class WHTPRole_Pricing_Admin
                     'step_qty' => isset($rule['step_qty']) ? intval($rule['step_qty']) : 1,
                     'tiered_pricing' => $tiered_pricing,
                     'also_for_guest' => $also_for_guest,
-                    'variations' => $variations // Store selected variation IDs
+                    'variations' => $variations, // Store selected variation IDs
+                    'date_from' => $date_from,
+                    'date_to'   => $date_to,
                 );
             }
             update_post_meta($post_id, '_role_pricing_rules', $rules);

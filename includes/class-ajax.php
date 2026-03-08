@@ -242,6 +242,22 @@ class WHTPRole_Pricing_Ajax {
                 $also_for_guest = in_array($rule['also_for_guest'], [true, 'true', 1, '1'], true);
             }
 
+            // Sanitize schedule dates (YYYY-MM-DD or empty string)
+            $date_from = '';
+            $date_to   = '';
+            if (!empty($rule['date_from'])) {
+                $candidate = sanitize_text_field($rule['date_from']);
+                if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $candidate)) {
+                    $date_from = $candidate;
+                }
+            }
+            if (!empty($rule['date_to'])) {
+                $candidate = sanitize_text_field($rule['date_to']);
+                if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $candidate)) {
+                    $date_to = $candidate;
+                }
+            }
+
             $sanitized[] = [
                 'id'             => sanitize_text_field($rule['id'] ?? ''),
                 'roles'          => $roles,
@@ -251,6 +267,8 @@ class WHTPRole_Pricing_Ajax {
                 'step_qty'       => intval($rule['step_qty'] ?? 1),
                 'tiered_pricing' => $this->sanitizeTieredPricingData($rule['tiered_pricing'] ?? []),
                 'also_for_guest' => $also_for_guest,
+                'date_from'      => $date_from,
+                'date_to'        => $date_to,
             ];
         }
 

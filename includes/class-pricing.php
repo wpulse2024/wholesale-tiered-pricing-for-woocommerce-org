@@ -25,22 +25,9 @@ class WHTPRole_Pricing_Engine {
             $parent_id = $product->get_parent_id();
         }
         
-        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
-        
+        $rules = WHTPRole_Pricing_Helper::get_rules_for_product($parent_id);
+
         if (empty($rules)) {
-            $globalRules = get_option('whtprole_pricing_global_rules', []);
-            if (empty($globalRules)) {
-                return $price;
-            } else {
-                $rules = $globalRules;
-            }
-        }
-        
-        if (!is_array($rules)) {
-            $rules = json_decode($rules, true);
-        }
-        
-        if (empty($rules) || !is_array($rules)) {
             return $price;
         }
 
@@ -75,21 +62,9 @@ class WHTPRole_Pricing_Engine {
         if ($product->is_type('variation')) {
             $product_id = $product->get_parent_id();
         }
-        $rules = get_post_meta($product_id, '_role_pricing_rules', true);
+        $rules = WHTPRole_Pricing_Helper::get_rules_for_product($product_id);
 
         if (empty($rules)) {
-            $globalRules = get_option('whtprole_pricing_global_rules', []);
-            if (empty($globalRules)) {
-                return $price_html;
-            }
-            $rules = $globalRules;
-        }
-
-        if (!is_array($rules)) {
-            $rules = json_decode($rules, true);
-        }
-
-        if (empty($rules) || !is_array($rules)) {
             return $price_html;
         }
 
@@ -142,19 +117,9 @@ class WHTPRole_Pricing_Engine {
             }
             
             $quantity = $cart_item['quantity'];
-            $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
-            
+            $rules = WHTPRole_Pricing_Helper::get_rules_for_product($parent_id);
+
             if (empty($rules)) {
-                $globalRules = get_option('whtprole_pricing_global_rules', []);
-                if (empty($globalRules)) {
-                    continue;
-                } else {
-                    $rules = $globalRules;
-                }
-            }
-            $rules = is_array($rules) ? $rules : json_decode($rules, true);
-            
-            if (empty($rules) || !is_array($rules)) {
                 continue;
             }
 

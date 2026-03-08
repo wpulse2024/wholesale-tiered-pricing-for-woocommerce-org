@@ -85,6 +85,20 @@
                             </div>
                         </div>
 
+                        <!-- Scheduled / Flash Pricing -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Active From <span style="font-weight:400; color:#999;">(optional)</span></label>
+                                <input type="date" v-model="rule.date_from" class="form-control" />
+                                <p class="description" style="font-size:12px; color:#999; margin-top:4px;">Leave blank for no start restriction.</p>
+                            </div>
+                            <div class="form-group">
+                                <label>Active Until <span style="font-weight:400; color:#999;">(optional)</span></label>
+                                <input type="date" v-model="rule.date_to" class="form-control" />
+                                <p class="description" style="font-size:12px; color:#999; margin-top:4px;">Leave blank for no end restriction.</p>
+                            </div>
+                        </div>
+
                         <!-- Tiered Pricing Section -->
                         <div class="tiers-section">
                             <div class="tiers-header">
@@ -229,7 +243,9 @@ export default {
                         ...rule,
                         roles: roles, // Always use roles array
                         role: roles.length > 0 ? roles[0] : 'customer', // Keep for backward compatibility
-                        also_for_guest: rule.also_for_guest === true || rule.also_for_guest === 'true' || rule.also_for_guest === 1 || rule.also_for_guest === '1'
+                        also_for_guest: rule.also_for_guest === true || rule.also_for_guest === 'true' || rule.also_for_guest === 1 || rule.also_for_guest === '1',
+                        date_from: rule.date_from || '',
+                        date_to: rule.date_to || ''
                     }
                 })
                 this.loading = false
@@ -257,7 +273,9 @@ export default {
                 min_qty: 1,
                 max_qty: '',
                 tiered_pricing: [],
-                also_for_guest: false
+                also_for_guest: false,
+                date_from: '',
+                date_to: ''
             }
             // In Vue 3, reactivity is automatic - no need for $set
             this.pricingRules.push(newRule)

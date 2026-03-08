@@ -43,17 +43,13 @@ class WHTPRole_Pricing_Frontend {
             $parent_id = $product->get_parent_id();
         }
         
-        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
-        $globalRules = get_option('whtprole_pricing_global_rules', []);
-        if (empty($rules) || !$helper->enableToShowsTable($parent_id)) {
-            if (empty($globalRules)) {
-                return;
-            }
-            $rules = $globalRules;
+        if (!$helper->enableToShowsTable($parent_id)) {
+            return;
         }
 
-        if(!is_array($rules)) {
-            $rules = json_decode($rules, true);
+        $rules = WHTPRole_Pricing_Helper::get_rules_for_product($parent_id);
+        if (empty($rules)) {
+            return;
         }
 
         $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
@@ -126,17 +122,17 @@ class WHTPRole_Pricing_Frontend {
             $parent_id = $product->get_parent_id();
         }
         
-        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
+        $rules = WHTPRole_Pricing_Helper::get_rules_for_product($parent_id);
         if (empty($rules)) {
             return $args;
         }
 
         $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
-        
+
         // Get variation ID if product is a variation
         $variation_id = $product->is_type('variation') ? $product->get_id() : null;
-        
+
         foreach ($rules as $rule) {
             // Check if rule applies to this variation (if product is a variation)
             if ($variation_id) {
@@ -182,31 +178,30 @@ class WHTPRole_Pricing_Frontend {
             $parent_id = $product->get_parent_id();
         }
         
-        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
+        $rules = WHTPRole_Pricing_Helper::get_rules_for_product($parent_id);
         if (empty($rules)) {
             return;
         }
 
         $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
-        
+
         // Get variation ID if product is a variation
         $variation_id = $product->is_type('variation') ? $product->get_id() : null;
-        
+
         foreach ($rules as $rule) {
             // Check if rule applies to this variation (if product is a variation)
             if ($variation_id) {
                 $rule_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : array();
-                // If variations are specified and current variation is not in the list, skip this rule
                 if (!empty($rule_variations) && !in_array($variation_id, $rule_variations)) {
                     continue;
                 }
             }
-            
+
             // Use helper to check if rule applies
             $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
             $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
-            
+
             if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
                 $messages = array();
                 
@@ -249,13 +244,9 @@ class WHTPRole_Pricing_Frontend {
             $parent_id = $product_obj->get_parent_id();
         }
         
-        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
+        $rules = WHTPRole_Pricing_Helper::get_rules_for_product($parent_id);
         if (empty($rules)) {
-            $globalRules = get_option('whtprole_pricing_global_rules', []);
-            if (empty($globalRules)) {
-                return $passed;
-            }
-            $rules = $globalRules;
+            return $passed;
         }
 
         $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
@@ -341,23 +332,11 @@ class WHTPRole_Pricing_Frontend {
             $parent_id = $product->get_parent_id();
         }
         
-        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
-        $globalRules = get_option('whtprole_pricing_global_rules', []);
+        $rules = WHTPRole_Pricing_Helper::get_rules_for_product($parent_id);
         if (empty($rules)) {
-            if (empty($globalRules)) {
-                return;
-            }
-            $rules = $globalRules;
-        }
-        
-        if (!is_array($rules)) {
-            $rules = json_decode($rules, true);
-        }
-        
-        if (empty($rules) || !is_array($rules)) {
             return;
         }
-        
+
         $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
         $has_applicable_rules = false;
