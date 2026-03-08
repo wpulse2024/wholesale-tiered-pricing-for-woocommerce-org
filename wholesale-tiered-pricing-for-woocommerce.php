@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Wholesale & Tiered Pricing for WooCommerce
  * Description: Set role-based prices and quantity rules in WooCommerce. Show tiered pricing tables for wholesale, B2B, and bulk discounts.
- * Version: 1.0.8
+ * Version: 1.1.0
  * Author: WPulse
  * Author URI: https://profiles.wordpress.org/wpulse/
  * Text Domain: wholesale-tiered-pricing-for-woocommerce
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('WHTPROLE_PRICING_VERSION', '1.0.8');
+define('WHTPROLE_PRICING_VERSION', '1.1.0');
 define('WHTPROLE_PRICING_PLUGIN_FILE', __FILE__);
 define('WHTPROLE_PRICING_PLUGIN_BASENAME', plugin_basename(__FILE__));
 define('WHTPROLE_PRICING_PLUGIN_PATH', plugin_dir_path(__FILE__));
@@ -33,12 +33,13 @@ add_action( 'before_woocommerce_init', function() {
     }
 });
 
-// add_action('admin_head', function () {
-//     $screen = get_current_screen();
-//     if ($screen && $screen->id === 'woocommerce_page_wc-settings') {
-//         echo '<style>.woocommerce-save-button {display:none !important;}</style>';
-//     }
-// });
+register_activation_hook(__FILE__, function() {
+    WHTPRole_Based_Pricing::get_instance()->activate();
+});
+
+register_deactivation_hook(__FILE__, function() {
+    flush_rewrite_rules();
+});
 
 class WHTPRole_Based_Pricing
 {
@@ -76,6 +77,7 @@ class WHTPRole_Based_Pricing
         require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-pricing.php';
         require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-ajax.php';
         require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-global-settings.php';
+        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-wholesale-menu.php';
         require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/helper/class-helper.php';
         require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-shows-message.php';
     }
@@ -87,9 +89,7 @@ class WHTPRole_Based_Pricing
         new WHTPRole_Pricing_Engine();
         new WHTPRole_Pricing_Ajax();
         new WHTPRole_Pricing_Show_Message();
-
-        register_activation_hook(__FILE__, array($this, 'activate'));
-        register_deactivation_hook(__FILE__, array($this, 'deactivate'));
+        new WHTPRole_Wholesale_Menu();
     }
 
     public function activate()
@@ -144,17 +144,17 @@ function whtprole_pricing_init()
 }
 
 //get role=================================
-add_action('wp_ajax_whtprole_get_user_roles', 'get_wp_user_roles');
-function get_wp_user_roles()
+add_action('wp_ajax_whtprole_get_user_roles', 'whtprole_get_wp_user_roles');
+function whtprole_get_wp_user_roles()
 {
-    global $wp_roles;
+    check_ajax_referer('wholesale-tiered-pricing-for-woocommerce-ajax', 'nonce');
 
-    if (!isset($wp_roles)) {
-        $wp_roles = new WP_Roles();
+    if (!current_user_can('manage_woocommerce')) {
+        wp_send_json_error(array('message' => 'Unauthorized'), 403);
+        exit;
     }
 
-    $roles = $wp_roles->get_names();
-
+    $roles = wp_roles()->get_names();
     wp_send_json_success($roles);
 }
 

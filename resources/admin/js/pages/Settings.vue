@@ -117,6 +117,20 @@
                     <el-switch v-model="settings.responsiveTable" active-color="#303133" />
                 </div>
             </div>
+
+            <!-- Show Savings Calculator -->
+            <div class="setting-item">
+                <label class="setting-label">Show savings calculator</label>
+                <div class="setting-content">
+                    <div class="toggle-wrapper">
+                        <el-switch v-model="settings.showSavingsCalculator" active-color="#303133" size="default" />
+                        <span class="toggle-status">{{ settings.showSavingsCalculator ? 'On' : 'Off' }}</span>
+                    </div>
+                    <p class="help-text">
+                        Display a live savings calculator widget on the product page that updates as customers change the quantity.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <!-- Bottom Actions -->
@@ -154,7 +168,8 @@ export default {
                 activePricingColor: '#ff9a00',
                 quantityLabel: 'Quantity',
                 discountLabel: 'Discount',
-                priceLabel: 'Price'
+                priceLabel: 'Price',
+                showSavingsCalculator: true
             },
             templates: [
                 { value: 'table', label: 'Table' },
@@ -213,7 +228,8 @@ export default {
                     activePricingColor: '#ff9a00',
                     quantityLabel: 'Quantity',
                     discountLabel: 'Discount',
-                    priceLabel: 'Price'
+                    priceLabel: 'Price',
+                    showSavingsCalculator: true
                 }
                 this.$message.success('Settings reset to defaults')
             }).catch(() => { })

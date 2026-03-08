@@ -56,7 +56,7 @@ class WHTPRole_Pricing_Frontend {
             $rules = json_decode($rules, true);
         }
 
-        $current_user_role = $this->get_current_user_role();
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
         $applicable_rules = array();
         
@@ -131,7 +131,7 @@ class WHTPRole_Pricing_Frontend {
             return $args;
         }
 
-        $current_user_role = $this->get_current_user_role();
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
         
         // Get variation ID if product is a variation
@@ -187,7 +187,7 @@ class WHTPRole_Pricing_Frontend {
             return;
         }
 
-        $current_user_role = $this->get_current_user_role();
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
         
         // Get variation ID if product is a variation
@@ -254,13 +254,11 @@ class WHTPRole_Pricing_Frontend {
             $globalRules = get_option('whtprole_pricing_global_rules', []);
             if (empty($globalRules)) {
                 return $passed;
-            } else {
-                $rules = $globalRules;
             }
-            return $passed;
+            $rules = $globalRules;
         }
 
-        $current_user_role = $this->get_current_user_role();
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
         
         // Get variation ID if product is a variation
@@ -324,8 +322,13 @@ class WHTPRole_Pricing_Frontend {
         if (!$product) {
             return;
         }
-        
+
         $helper = new WHTPRole_Pricing_Helper();
+        $generalSettings = $helper->getGeneralSettings();
+        if (isset($generalSettings['showSavingsCalculator']) && $generalSettings['showSavingsCalculator'] === false) {
+            return;
+        }
+
         if (!$helper->validation($product->get_id())) {
             return;
         }
@@ -355,7 +358,7 @@ class WHTPRole_Pricing_Frontend {
             return;
         }
         
-        $current_user_role = $this->get_current_user_role();
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
         $has_applicable_rules = false;
         
@@ -416,12 +419,4 @@ class WHTPRole_Pricing_Frontend {
         echo '</div>';
     }
 
-    private function get_current_user_role() {
-        if (!is_user_logged_in()) {
-            return 'guest';
-        }
-        
-        $user = wp_get_current_user();
-        return !empty($user->roles) ? $user->roles[0] : 'customer';
-    }
 }

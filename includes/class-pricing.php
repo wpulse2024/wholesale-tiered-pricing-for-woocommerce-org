@@ -44,7 +44,7 @@ class WHTPRole_Pricing_Engine {
             return $price;
         }
 
-        $current_user_role = $this->get_current_user_role();
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
         $quantity = 1;
         
@@ -71,19 +71,29 @@ class WHTPRole_Pricing_Engine {
         }
 
         $product_id = $product->get_id();
+        // For variations, get rules from parent product
+        if ($product->is_type('variation')) {
+            $product_id = $product->get_parent_id();
+        }
         $rules = get_post_meta($product_id, '_role_pricing_rules', true);
-        
+
         if (empty($rules)) {
             $globalRules = get_option('whtprole_pricing_global_rules', []);
             if (empty($globalRules)) {
                 return $price_html;
-            } else {
-                $rules = $globalRules;
             }
+            $rules = $globalRules;
+        }
+
+        if (!is_array($rules)) {
+            $rules = json_decode($rules, true);
+        }
+
+        if (empty($rules) || !is_array($rules)) {
             return $price_html;
         }
 
-        $current_user_role = $this->get_current_user_role();
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
         $is_guest = ($current_user_role === 'guest');
         $original_price = $product->get_price();
         
@@ -118,7 +128,7 @@ class WHTPRole_Pricing_Engine {
     }
 
     public function update_cart_prices($cart) {
-        if (is_admin() && !defined('DOING_AJAX')) {
+        if (is_admin() && !wp_doing_ajax()) {
             return;
         }
         foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
@@ -148,7 +158,7 @@ class WHTPRole_Pricing_Engine {
                 continue;
             }
 
-            $current_user_role = $this->get_current_user_role();
+            $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
             $is_guest = ($current_user_role === 'guest');
             $original_price = $product->get_price();
             
@@ -171,16 +181,6 @@ class WHTPRole_Pricing_Engine {
                     break;
                 }
             }
-        }
-    }
-
-    public static function getPrice($price, $discount_type, $base_price ) {
-        if ($discount_type === 'percentage') {
-            return $base_price - ($base_price * $price / 100);
-        } else if ($discount_type === 'fixed') {
-            return $base_price - $price;
-        } else {
-            return $price;
         }
     }
 
@@ -257,31 +257,4 @@ class WHTPRole_Pricing_Engine {
         return $base_price;
     }
 
-    private function find_applicable_tier($tiers, $quantity) {
-        $applicable_tier = null;
-        $highest_min_qty = 0;
-        foreach ($tiers as $tier) {
-            if (empty($tier['min_qty']) || empty($tier['price'])) {
-                continue;
-            }
-            
-            $tier_min_qty = intval($tier['min_qty']);
-            
-            if ($quantity >= $tier_min_qty && $tier_min_qty > $highest_min_qty) {
-                $applicable_tier = $tier;
-                $highest_min_qty = $tier_min_qty;
-            }
-        }
-        
-        return $applicable_tier;
-    }
-
-    private function get_current_user_role() {
-        if (!is_user_logged_in()) {
-            return 'guest';
-        }
-        
-        $user = wp_get_current_user();
-        return !empty($user->roles) ? $user->roles[0] : 'customer';
-    }
 }

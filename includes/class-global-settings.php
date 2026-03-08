@@ -14,20 +14,19 @@ add_filter('woocommerce_settings_tabs_array', function($tabs) {
 // -----------------------------
 add_action('woocommerce_settings_tabs_tiered_pricing', function() {
     $rules = get_option('whtprole_pricing_global_rules', []);
-    $products = wc_get_products(['limit' => -1]); // Get all products
+    $products = wc_get_products(['limit' => 200, 'status' => 'publish']);
     $products_array = [];
     foreach ( $products as $product ) {
         $products_array[] = [
-            'id'          => $product->get_id(),
-            'name'        => $product->get_name(),
-            // 'categories'  => wp_get_post_terms( $product->get_id(), 'product_cat', ['fields' => 'names'] ),
+            'id'   => $product->get_id(),
+            'name' => $product->get_name(),
         ];
     }
 
-    $categories = get_terms(['taxonomy' => 'product_cat', 'hide_empty' => false]);
-    
-    include_once WHTPROLE_PRICING_PLUGIN_PATH . 'templates/admin/global-settings.php';
+    $categories = get_terms(['taxonomy' => 'product_cat', 'hide_empty' => false, 'number' => 200]);
     $userRoles = wp_roles()->roles;
+
+    include_once WHTPROLE_PRICING_PLUGIN_PATH . 'templates/admin/global-settings.php';
 
 
     wp_enqueue_script('wholesale-tiered-pricing-for-woocommerce-admin', WHTPROLE_PRICING_PLUGIN_URL . 'plugin-assets/global-settings.js', array('jquery'), WHTPROLE_PRICING_VERSION, true);

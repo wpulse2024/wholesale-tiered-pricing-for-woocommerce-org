@@ -10,749 +10,664 @@ if (!defined('ABSPATH')) {
 class WHTPRole_Pricing_Ajax {
 
     public function __construct() {
-        // when plugin activate save save_pricing_rules
-        add_action('admin_init', array($this, 'save_pricing_global_settings_on_activation')); 
-        add_action('wp_ajax_whtprole_get_role_based_price', array($this, 'whtprole_get_role_based_price'));
-        add_action('wp_ajax_nopriv_whtprole_get_role_based_price', array($this, 'whtprole_get_role_based_price'));
-        add_action('wp_ajax_whtprole_get_variation_pricing_rules', array($this, 'whtprole_get_variation_pricing_rules'));
+        add_action('admin_init', array($this, 'save_pricing_global_settings_on_activation'));
+
+        // --- Frontend (public) handlers — nopriv is intentional ---
+        add_action('wp_ajax_whtprole_get_role_based_price',               array($this, 'whtprole_get_role_based_price'));
+        add_action('wp_ajax_nopriv_whtprole_get_role_based_price',        array($this, 'whtprole_get_role_based_price'));
+
+        add_action('wp_ajax_whtprole_get_variation_pricing_rules',        array($this, 'whtprole_get_variation_pricing_rules'));
         add_action('wp_ajax_nopriv_whtprole_get_variation_pricing_rules', array($this, 'whtprole_get_variation_pricing_rules'));
-        add_action('wp_ajax_whtprole_validate_quantity_rules', array($this, 'whtprole_validate_quantity_rules'));
-        add_action('wp_ajax_nopriv_whtprole_validate_quantity_rules', array($this, 'whtprole_validate_quantity_rules'));
-        add_action('wp_ajax_whtprole_pricing_get_pricing_rules', array($this, 'get_pricing_rules'));
-        add_action('wp_ajax_nopriv_whtprole_pricing_get_pricing_rules', array($this, 'get_pricing_rules'));
-        add_action('wp_ajax_whtprole_pricing_save_pricing_rules', array($this, 'save_pricing_rules'));
-        add_action('wp_ajax_nopriv_whtprole_pricing_save_pricing_rules', array($this, 'save_pricing_rules'));
-        add_action('wp_ajax_whtprole_pricing_get_product_settings', array($this, 'get_product_settings'));
-        add_action('wp_ajax_nopriv_whtprole_pricing_get_product_settings', array($this, 'get_product_settings'));
-        add_action('wp_ajax_whtprole_pricing_save_product_settings', array($this, 'save_product_settings'));
-        add_action('wp_ajax_nopriv_whtprole_pricing_save_product_settings', array($this, 'save_product_settings'));
-        add_action('wp_ajax_whtprole_pricing_save_general_settings', array($this, 'save_general_settings'));
-        add_action('wp_ajax_nopriv_whtprole_pricing_save_general_settings', array($this, 'save_general_settings'));
-        add_action('wp_ajax_whtprole_pricing_get_general_settings', array($this, 'get_general_settings'));
-        add_action('wp_ajax_nopriv_whtprole_pricing_get_general_settings', array($this, 'get_general_settings'));
-        add_action('wp_ajax_whtprole_calculate_savings', array($this, 'calculate_savings'));
-        add_action('wp_ajax_nopriv_whtprole_calculate_savings', array($this, 'calculate_savings'));
-        add_action('wp_ajax_whtprole_get_variation_price', array($this, 'whtprole_get_variation_price'));
-        add_action('wp_ajax_nopriv_whtprole_get_variation_price', array($this, 'whtprole_get_variation_price'));
+
+        add_action('wp_ajax_whtprole_validate_quantity_rules',            array($this, 'whtprole_validate_quantity_rules'));
+        add_action('wp_ajax_nopriv_whtprole_validate_quantity_rules',     array($this, 'whtprole_validate_quantity_rules'));
+
+        add_action('wp_ajax_whtprole_calculate_savings',                  array($this, 'calculate_savings'));
+        add_action('wp_ajax_nopriv_whtprole_calculate_savings',           array($this, 'calculate_savings'));
+
+        add_action('wp_ajax_whtprole_get_variation_price',                array($this, 'whtprole_get_variation_price'));
+        add_action('wp_ajax_nopriv_whtprole_get_variation_price',         array($this, 'whtprole_get_variation_price'));
+
+        // --- Admin-only handlers — FIX [CRIT-03]: nopriv registrations removed ---
+        add_action('wp_ajax_whtprole_pricing_get_pricing_rules',          array($this, 'get_pricing_rules'));
+        add_action('wp_ajax_whtprole_pricing_save_pricing_rules',         array($this, 'save_pricing_rules'));
+        add_action('wp_ajax_whtprole_pricing_get_product_settings',       array($this, 'get_product_settings'));
+        add_action('wp_ajax_whtprole_pricing_save_product_settings',      array($this, 'save_product_settings'));
+        add_action('wp_ajax_whtprole_pricing_save_general_settings',      array($this, 'save_general_settings'));
+        add_action('wp_ajax_whtprole_pricing_get_general_settings',       array($this, 'get_general_settings'));
     }
+
+    // -------------------------------------------------------------------------
+    // Capability guard — shared by all admin handlers  FIX [CRIT-03]
+    // -------------------------------------------------------------------------
+    private function require_admin_capability(): void
+    {
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error(['message' => 'Unauthorized'], 403);
+            exit;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // General settings
+    // -------------------------------------------------------------------------
+
     public function get_general_settings() {
-        $nonce = sanitize_text_field($_POST['nonce']);
-        if (!wp_verify_nonce(wp_unslash($nonce), 'whtprole_pricing_get_pricing_rules')) {
-            wp_send_json_error(array('message' => 'Invalid nonce'));
+        $this->require_admin_capability();
+
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'whtprole_pricing_get_pricing_rules')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+            return;
         }
 
         $settings = get_option('whtprole_pricing_save_general_settings', []);
-        $settings = is_array($settings) ? $settings : json_decode($settings, true);
+        if (!is_array($settings)) {
+            $settings = json_decode($settings, true) ?? [];
+        }
         wp_send_json_success($settings);
     }
+
     public function save_general_settings() {
-        $nonce = sanitize_text_field($_POST['nonce']);
-        if (!wp_verify_nonce(wp_unslash($nonce), 'whtprole_pricing_get_pricing_rules')) {
-            wp_send_json_error(array('message' => 'Invalid nonce'));
+        $this->require_admin_capability();
+
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'whtprole_pricing_get_pricing_rules')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+            return;
         }
 
-        $settings = is_array($_POST['settings']) ? $_POST['settings'] : json_decode(stripslashes($_POST['settings']), true);
-        $settings = array(
-            'showTieredPricing' => isset($settings['showTieredPricing']) && $settings['showTieredPricing'] == true ? true : false,
-            'defaultTemplate' => sanitize_text_field($settings['defaultTemplate']),
-            'pricingTitle' => sanitize_text_field($settings['pricingTitle']),
-            'position' => sanitize_text_field($settings['position']),
-            'showQuantityColumn' => isset($settings['showQuantityColumn']) && $settings['showQuantityColumn'] == true ? true : false,
-            'showDiscountColumn' => isset($settings['showDiscountColumn']) && $settings['showDiscountColumn'] == true ? true : false,
-            'responsiveTable' => isset($settings['responsiveTable']) && $settings['responsiveTable'] == true ? true : false,
-            'activePricingColor' => sanitize_text_field($settings['activePricingColor']),
-            'quantityLabel' => sanitize_text_field($settings['quantityLabel']),
-            'discountLabel' => sanitize_text_field($settings['discountLabel']),
-            'priceLabel' => sanitize_text_field($settings['priceLabel'])
-        );
-        update_option('whtprole_pricing_save_general_settings', sanitize_text_field(json_encode($settings)));
-        wp_send_json_success(array('message' => 'General settings saved successfully'));
+        $raw      = isset($_POST['settings']) ? $_POST['settings'] : [];
+        $settings = is_array($raw) ? $raw : json_decode(stripslashes($raw), true);
+        if (!is_array($settings)) {
+            wp_send_json_error(['message' => 'Invalid settings data']);
+            return;
+        }
+
+        $clean = [
+            'showTieredPricing'  => !empty($settings['showTieredPricing']),
+            'defaultTemplate'    => sanitize_text_field($settings['defaultTemplate'] ?? 'table'),
+            'pricingTitle'       => sanitize_text_field($settings['pricingTitle'] ?? ''),
+            'position'           => sanitize_text_field($settings['position'] ?? 'above_add_to_cart'),
+            'showQuantityColumn' => !empty($settings['showQuantityColumn']),
+            'showDiscountColumn' => !empty($settings['showDiscountColumn']),
+            'responsiveTable'    => !empty($settings['responsiveTable']),
+            'activePricingColor' => sanitize_text_field($settings['activePricingColor'] ?? '#ff9a00'),
+            'quantityLabel'      => sanitize_text_field($settings['quantityLabel'] ?? ''),
+            'discountLabel'      => sanitize_text_field($settings['discountLabel'] ?? ''),
+            'priceLabel'         => sanitize_text_field($settings['priceLabel'] ?? ''),
+        ];
+
+        // FIX [CRIT-01]: wp_json_encode replaces sanitize_text_field(json_encode()) which
+        // was stripping JSON structural characters and corrupting stored data.
+        update_option('whtprole_pricing_save_general_settings', wp_json_encode($clean));
+        wp_send_json_success(['message' => 'General settings saved successfully']);
     }
 
     public function save_pricing_global_settings_on_activation() {
-        $getGeneralSettings = get_option('whtprole_pricing_save_general_settings', []);
-        if (empty($getGeneralSettings)) {
-            $default_settings = [
-                'showTieredPricing'   => true,
-                'defaultTemplate'     => 'table',
-                'pricingTitle'        => __('Buy more save more!', 'wholesale-tiered-pricing-for-woocommerce'),
-                'position'            => 'above_add_to_cart',
-                'showQuantityColumn'  => true,
-                'showDiscountColumn'  => true,
-                'responsiveTable'     => true,
-                'activePricingColor'  => '#ff9a00',
-                'quantityLabel'       => __('Quantity', 'wholesale-tiered-pricing-for-woocommerce'),
-                'discountLabel'       => __('Discount', 'wholesale-tiered-pricing-for-woocommerce'),
-                'priceLabel'          => __('Price', 'wholesale-tiered-pricing-for-woocommerce'),
-            ];
-            update_option('whtprole_pricing_save_general_settings', sanitize_text_field(json_encode($default_settings)));
+        $existing = get_option('whtprole_pricing_save_general_settings', []);
+        if (!empty($existing)) {
+            return;
         }
+        $default = [
+            'showTieredPricing'  => true,
+            'defaultTemplate'    => 'table',
+            'pricingTitle'       => __('Buy more save more!', 'wholesale-tiered-pricing-for-woocommerce'),
+            'position'           => 'above_add_to_cart',
+            'showQuantityColumn' => true,
+            'showDiscountColumn' => true,
+            'responsiveTable'    => true,
+            'activePricingColor' => '#ff9a00',
+            'quantityLabel'      => __('Quantity', 'wholesale-tiered-pricing-for-woocommerce'),
+            'discountLabel'      => __('Discount', 'wholesale-tiered-pricing-for-woocommerce'),
+            'priceLabel'         => __('Price', 'wholesale-tiered-pricing-for-woocommerce'),
+        ];
+        update_option('whtprole_pricing_save_general_settings', wp_json_encode($default)); // FIX [CRIT-01]
     }
 
+    // -------------------------------------------------------------------------
+    // Product settings
+    // -------------------------------------------------------------------------
+
     public function get_product_settings() {
-        $nonce = sanitize_text_field($_POST['nonce']);
-        if (!wp_verify_nonce(wp_unslash($nonce), 'whtprole_pricing_get_pricing_rules')) {
-            wp_send_json_error(array('message' => 'Invalid nonce'));
+        $this->require_admin_capability();
+
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'whtprole_pricing_get_pricing_rules')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+            return;
         }
 
         $settings = get_option('whtprole_global_product_settings', []);
-        $settings = is_array($settings) ? $settings : json_decode($settings, true);
+        if (!is_array($settings)) {
+            $settings = json_decode($settings, true) ?? [];
+        }
         wp_send_json_success($settings);
     }
+
     public function save_product_settings() {
-        $nonce = sanitize_text_field($_POST['nonce']);
-        if (!wp_verify_nonce(wp_unslash($nonce), 'whtprole_pricing_get_pricing_rules')) {
-            wp_send_json_error(array('message' => 'Invalid nonce'));
+        $this->require_admin_capability();
+
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'whtprole_pricing_get_pricing_rules')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+            return;
         }
 
-        $settings = is_array($_POST['settings']) ? $_POST['settings'] : json_decode(stripslashes($_POST['settings']), true);
-        $settings =array(
-            'include_products' => !empty($settings['include_products']) ? array_map('intval', $settings['include_products']) : [],
+        $raw      = isset($_POST['settings']) ? $_POST['settings'] : [];
+        $settings = is_array($raw) ? $raw : json_decode(stripslashes($raw), true);
+        if (!is_array($settings)) {
+            wp_send_json_error(['message' => 'Invalid settings data']);
+            return;
+        }
+
+        $clean = [
+            'include_products'   => !empty($settings['include_products'])   ? array_map('intval', $settings['include_products'])   : [],
             'include_categories' => !empty($settings['include_categories']) ? array_map('intval', $settings['include_categories']) : [],
-            'exclude_products' => !empty($settings['exclude_products']) ? array_map('intval', $settings['exclude_products']) : [],
+            'exclude_products'   => !empty($settings['exclude_products'])   ? array_map('intval', $settings['exclude_products'])   : [],
             'exclude_categories' => !empty($settings['exclude_categories']) ? array_map('intval', $settings['exclude_categories']) : [],
-            'apply_type' => sanitize_text_field($settings['apply_type'])
-        );
-        update_option('whtprole_global_product_settings', sanitize_text_field(json_encode($settings)));
-        wp_send_json_success(array('message' => 'Product settings saved successfully'));
+            'apply_type'         => sanitize_text_field($settings['apply_type'] ?? 'include'),
+        ];
+
+        update_option('whtprole_global_product_settings', wp_json_encode($clean)); // FIX [CRIT-01]
+        wp_send_json_success(['message' => 'Product settings saved successfully']);
     }
 
-    
+    // -------------------------------------------------------------------------
+    // Global pricing rules
+    // -------------------------------------------------------------------------
 
     public function get_pricing_rules() {
+        $this->require_admin_capability();
 
-        $nonce = sanitize_text_field($_POST['nonce']);
-        if (!wp_verify_nonce(wp_unslash($nonce), 'whtprole_pricing_get_pricing_rules')) {
-            wp_send_json_error(array('message' => 'Invalid nonce'));
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'whtprole_pricing_get_pricing_rules')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+            return;
         }
 
         $rules = get_option('whtprole_pricing_global_rules', []);
-        $rules = is_array($rules) ? $rules : json_decode($rules, true);
+        if (!is_array($rules)) {
+            $rules = json_decode($rules, true) ?? [];
+        }
         wp_send_json_success($rules);
     }
 
     public function save_pricing_rules() {
-        $nonce = sanitize_text_field( $_POST['nonce'] );
-        if (!wp_verify_nonce(wp_unslash($nonce), 'whtprole_pricing_get_pricing_rules')) {
-            wp_send_json_error(array('message' => 'Invalid nonce'));
+        $this->require_admin_capability();
+
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'whtprole_pricing_get_pricing_rules')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+            return;
         }
 
-        $rules = is_array($_POST['rules']) ? $this->sanitizeRulesData($_POST['rules']) : $this->sanitizeRulesData(stripslashes($_POST['rules']));
-        $sanitized_rules = array();
-        $rules = is_array($rules) ? $rules : json_decode(stripslashes($rules), true);
-        foreach ($rules as $rule) {
-            // Normalize roles: support both legacy 'role' (string) and new 'roles' (array)
-            $roles = array();
-            if (isset($rule['roles']) && is_array($rule['roles'])) {
-                // New format: array of roles
-                $roles = array_map('sanitize_text_field', array_filter($rule['roles']));
-            } elseif (isset($rule['role']) && !empty($rule['role'])) {
-                // Legacy format: single role string
-                $roles = array(sanitize_text_field($rule['role']));
-            }
-            
-            // If Global is in roles, it should be the only role (wildcard behavior)
-            if (in_array('guest', $roles)) {
-                $roles = array('guest');
-            }
-            
-            // Handle also_for_guest field (only for Global/guest role)
-            $also_for_guest = false;
-            if (in_array('guest', $roles) && isset($rule['also_for_guest'])) {
-                $also_for_guest = ($rule['also_for_guest'] === true || 
-                                  $rule['also_for_guest'] === 'true' || 
-                                  $rule['also_for_guest'] === 1 || 
-                                  $rule['also_for_guest'] === '1');
-            }
-            
-            $sanitized_rules[] = array(
-                'id' => sanitize_text_field($rule['id']),
-                'roles' => $roles, // New: always store as array
-                'role' => !empty($roles) ? $roles[0] : 'customer', // Keep for backward compatibility
-                'min_qty' => intval($rule['min_qty']),
-                'max_qty' => !empty($rule['max_qty']) ? intval($rule['max_qty']) : 0,
-                'step_qty' => intval($rule['step_qty']),
-                'tiered_pricing' => $this->sanitizeTieredPricingData($rule['tiered_pricing']),
-                'also_for_guest' => $also_for_guest
-            );
+        $raw   = isset($_POST['rules']) ? $_POST['rules'] : [];
+        $input = is_array($raw) ? $raw : json_decode(stripslashes($raw), true);
+        if (!is_array($input)) {
+            wp_send_json_error(['message' => 'Invalid rules data']);
+            return;
         }
 
-        update_option('whtprole_pricing_global_rules', sanitize_text_field(json_encode($sanitized_rules)));
-        wp_send_json_success(array('message' => 'Pricing rules saved successfully'));
+        // FIX [DUP-07]: sanitizeRulesData result was previously discarded and the
+        // identical loop was repeated inline. Now we call it once and use the result.
+        $sanitized_rules = $this->sanitizeRulesData($input);
+
+        update_option('whtprole_pricing_global_rules', wp_json_encode($sanitized_rules)); // FIX [CRIT-01]
+        wp_send_json_success(['message' => 'Pricing rules saved successfully']);
     }
 
-    private function sanitizeRulesData($rules) {
-        $sanitized_rules = array();
-        $rules = is_array($rules) ? $rules : json_decode(stripslashes($rules), true);
+    private function sanitizeRulesData(array $rules): array
+    {
+        $sanitized = [];
+
         foreach ($rules as $rule) {
-            // Normalize roles: support both legacy 'role' (string) and new 'roles' (array)
-            $roles = array();
+            $roles = [];
             if (isset($rule['roles']) && is_array($rule['roles'])) {
-                // New format: array of roles
                 $roles = array_map('sanitize_text_field', array_filter($rule['roles']));
-            } elseif (isset($rule['role']) && !empty($rule['role'])) {
-                // Legacy format: single role string
-                $roles = array(sanitize_text_field($rule['role']));
+            } elseif (!empty($rule['role'])) {
+                $roles = [sanitize_text_field($rule['role'])];
             }
-            
-            // If Global is in roles, it should be the only role (wildcard behavior)
-            if (in_array('guest', $roles)) {
-                $roles = array('guest');
+
+            if (empty($roles)) {
+                continue;
             }
-            
-            // Handle also_for_guest field (only for Global/guest role)
+
+            if (in_array('guest', $roles, true)) {
+                $roles = ['guest'];
+            }
+
             $also_for_guest = false;
-            if (in_array('guest', $roles) && isset($rule['also_for_guest'])) {
-                $also_for_guest = ($rule['also_for_guest'] === true || 
-                                  $rule['also_for_guest'] === 'true' || 
-                                  $rule['also_for_guest'] === 1 || 
-                                  $rule['also_for_guest'] === '1');
+            if (in_array('guest', $roles, true) && isset($rule['also_for_guest'])) {
+                $also_for_guest = in_array($rule['also_for_guest'], [true, 'true', 1, '1'], true);
             }
-            
-            $sanitized_rules[] = array(
-                'id' => sanitize_text_field($rule['id']),
-                'roles' => $roles, // New: always store as array
-                'role' => !empty($roles) ? $roles[0] : 'customer', // Keep for backward compatibility
-                'min_qty' => intval($rule['min_qty']),
-                'max_qty' => !empty($rule['max_qty']) ? intval($rule['max_qty']) : 0,
-                'step_qty' => intval($rule['step_qty']),
-                'tiered_pricing' => $this->sanitizeTieredPricingData($rule['tiered_pricing']),
-                'also_for_guest' => $also_for_guest
-            );
+
+            $sanitized[] = [
+                'id'             => sanitize_text_field($rule['id'] ?? ''),
+                'roles'          => $roles,
+                'role'           => $roles[0],
+                'min_qty'        => intval($rule['min_qty'] ?? 0),
+                'max_qty'        => !empty($rule['max_qty']) ? intval($rule['max_qty']) : 0,
+                'step_qty'       => intval($rule['step_qty'] ?? 1),
+                'tiered_pricing' => $this->sanitizeTieredPricingData($rule['tiered_pricing'] ?? []),
+                'also_for_guest' => $also_for_guest,
+            ];
         }
-        return $sanitized_rules;
+
+        return $sanitized;
     }
 
-    private function sanitizeTieredPricingData($tiers) {
-        $sanitized_tiers = array();
+    private function sanitizeTieredPricingData(array $tiers): array
+    {
+        // FIX [HIGH-10]: whitelist discount_type.
+        $valid_types = ['fixed', 'percentage'];
+        $sanitized   = [];
+
         foreach ($tiers as $tier) {
-            $sanitized_tiers[] = array(
-                'id' => sanitize_text_field($tier['id']),
-                'min_qty' => intval($tier['min_qty']),
-                'discount_type' => sanitize_text_field($tier['discount_type']),
-                'price' => floatval($tier['price'])
-            );
+            $discount_type = sanitize_text_field($tier['discount_type'] ?? 'fixed');
+            if (!in_array($discount_type, $valid_types, true)) {
+                $discount_type = 'fixed';
+            }
+
+            $sanitized[] = [
+                'id'            => sanitize_text_field($tier['id'] ?? ''),
+                'min_qty'       => intval($tier['min_qty'] ?? 0),
+                'discount_type' => $discount_type,
+                'price'         => floatval($tier['price'] ?? 0),
+            ];
         }
-        return $sanitized_tiers;
+
+        return $sanitized;
     }
 
-    /**
-     * Get role-based price for a product and quantity
-     */
+    // -------------------------------------------------------------------------
+    // Frontend: role-based price lookup
+    // -------------------------------------------------------------------------
+
     public function whtprole_get_role_based_price() {
-        // Check nonce - support both WooCommerce and custom nonce
-        if (isset($_POST['nonce'])) {
-            $nonce = sanitize_text_field($_POST['nonce']);
-            if (!wp_verify_nonce($nonce, 'wholesale-tiered-pricing-for-woocommerce-ajax') && 
-                !wp_verify_nonce($nonce, 'wc_add_to_cart_nonce')) {
-                wp_send_json_error(array('message' => 'Invalid nonce'));
-                return;
-            }
+        // FIX [HIGH-01]: nonce is now always required — removed the isset() bypass that
+        // allowed callers to skip nonce verification by simply omitting the field.
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'wholesale-tiered-pricing-for-woocommerce-ajax') &&
+            !wp_verify_nonce($nonce, 'wc_add_to_cart_nonce')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+            return;
         }
-        
-        $product_id = intval($_POST['product_id']);
+
+        $product_id   = intval($_POST['product_id'] ?? 0);
         $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : null;
-        $quantity = intval($_POST['quantity']);
-        
+        $quantity     = intval($_POST['quantity'] ?? 0);
+
         if (!$product_id || !$quantity) {
-            wp_die();
+            wp_send_json_error(['message' => 'Invalid parameters']);
+            return;
         }
-        
+
         $product = wc_get_product($product_id);
         if (!$product) {
-            wp_die();
+            wp_send_json_error(['message' => 'Product not found']);
+            return;
         }
-        
-        // If variation_id is provided, get the variation product instead
+
         $variation_product = null;
         if ($variation_id) {
             $variation_product = wc_get_product($variation_id);
             if ($variation_product && $variation_product->is_type('variation')) {
-                // Use the variation product for price calculations
                 $product = $variation_product;
             }
         }
-        
-        // For variations, get rules from parent product
-        $parent_id = $product_id;
-        if ($product->is_type('variation')) {
-            $parent_id = $product->get_parent_id();
-            // Use product ID as variation_id if not provided
-            if ($variation_id === null) {
-                $variation_id = $product->get_id();
-            }
+
+        $parent_id = WHTPRole_Pricing_Helper::get_parent_product_id($product);
+
+        if ($product->is_type('variation') && $variation_id === null) {
+            $variation_id = $product->get_id();
         } elseif ($variation_id && $variation_product) {
-            // If variation_id is provided and we have the variation product, use parent
             $parent_id = $variation_product->get_parent_id();
         }
-        
-        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
-        $globalRules = get_option('whtprole_pricing_global_rules', []);
+
+        $rules = WHTPRole_Pricing_Helper::get_rules_for_product($parent_id);
         if (empty($rules)) {
-            if (empty($globalRules)) {
-                wp_send_json_success(array('price_html' => $product->get_price_html()));
-                return;
-            } else {
-                $rules = $globalRules;
-            }
+            wp_send_json_success(['price_html' => $product->get_price_html()]);
+            return;
         }
-        
-        if (!is_array($rules)) {
-            $rules = json_decode($rules, true);
-        }
-        
-        $current_user_role = $this->get_current_user_role();
-        $is_guest = ($current_user_role === 'guest');
-        
-        // Use the variation's price if available, otherwise use product price
-        $base_price = $product->get_price();
-        if ($variation_id && $variation_product) {
-            $base_price = $variation_product->get_price();
-        }
-        $new_price = $base_price;
-        
+
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
+        $is_guest          = ($current_user_role === 'guest');
+        $base_price        = $variation_product ? floatval($variation_product->get_price()) : floatval($product->get_price());
+        $new_price         = $base_price;
+
         foreach ($rules as $rule) {
-            // Check if rule applies to this variation (if product is a variation)
             if ($variation_id) {
-                $rule_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : array();
-                // If variations are specified and current variation is not in the list, skip this rule
-                if (!empty($rule_variations) && !in_array($variation_id, $rule_variations)) {
+                $rule_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : [];
+                if (!empty($rule_variations) && !in_array($variation_id, $rule_variations, true)) {
                     continue;
                 }
             }
-            
-            // Use helper to check if rule applies
-            $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
-            $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
-            
+
+            $rule_roles     = isset($rule['roles']) ? $rule['roles'] : ($rule['role'] ?? []);
+            $also_for_guest = $rule['also_for_guest'] ?? false;
+
             if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
-                $new_price = $this->calculate_price($base_price, $rule, $quantity, $variation_id);
+                $new_price = WHTPRole_Pricing_Helper::calculate_price($base_price, $rule, $quantity, $variation_id);
                 break;
             }
         }
-        
-        // Create a temporary product object with the new price
-        // Use variation product if available, otherwise use the main product
+
         $temp_product = ($variation_product && $variation_product->is_type('variation')) ? clone $variation_product : clone $product;
         $temp_product->set_price($new_price);
-        
-        wp_send_json_success(array(
+
+        wp_send_json_success([
             'price_html' => $temp_product->get_price_html(),
-            'price' => $new_price
-        ));
+            'price'      => $new_price,
+        ]);
     }
-    
-    /**
-     * Get pricing rules for a variation
-     */
+
+    // -------------------------------------------------------------------------
+    // Frontend: variation pricing rules table
+    // -------------------------------------------------------------------------
+
     public function whtprole_get_variation_pricing_rules() {
         check_ajax_referer('wc_add_to_cart_nonce', 'nonce');
-        
-        $variation_id = intval($_POST['variation_id']);
-        
+
+        $variation_id = intval($_POST['variation_id'] ?? 0);
         if (!$variation_id) {
-            wp_die();
-        }
-        
-        $variation = wc_get_product($variation_id);
-        if (!$variation) {
-            wp_die();
-        }
-        
-        // Get parent product ID
-        $parent_id = $variation->get_parent_id();
-        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
-        
-        if (empty($rules)) {
-            wp_send_json_success(array('pricing_table' => ''));
+            wp_send_json_error(['message' => 'Invalid variation ID']);
             return;
         }
-        
-        $current_user_role = $this->get_current_user_role();
-        $applicable_rules = array();
-        
+
+        $variation = wc_get_product($variation_id);
+        if (!$variation) {
+            wp_send_json_error(['message' => 'Variation not found']);
+            return;
+        }
+
+        $parent_id = $variation->get_parent_id();
+        $rules     = WHTPRole_Pricing_Helper::get_rules_for_product($parent_id);
+
+        if (empty($rules)) {
+            wp_send_json_success(['pricing_table' => '']);
+            return;
+        }
+
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
+        $is_guest          = ($current_user_role === 'guest');
+        $applicable_rules  = [];
+
         foreach ($rules as $rule) {
-            if ($rule['role'] === $current_user_role || empty($current_user_role)) {
+            // FIX [CRIT-04]: was `$rule['role'] === $current_user_role` — old single-role
+            // format only. Now uses helper that handles both formats.
+            $rule_roles     = isset($rule['roles']) ? $rule['roles'] : ($rule['role'] ?? []);
+            $also_for_guest = $rule['also_for_guest'] ?? false;
+
+            if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
                 $applicable_rules[] = $rule;
             }
         }
-        
+
         if (empty($applicable_rules)) {
-            wp_send_json_success(array('pricing_table' => ''));
+            wp_send_json_success(['pricing_table' => '']);
             return;
         }
-        
+
         ob_start();
         $this->render_pricing_table($applicable_rules);
         $pricing_table = ob_get_clean();
-        
-        wp_send_json_success(array('pricing_table' => $pricing_table));
+
+        wp_send_json_success(['pricing_table' => $pricing_table]);
     }
-    
-    /**
-     * Validate quantity rules
-     */
+
+    // -------------------------------------------------------------------------
+    // Frontend: quantity validation
+    // -------------------------------------------------------------------------
+
     public function whtprole_validate_quantity_rules() {
         check_ajax_referer('wc_add_to_cart_nonce', 'nonce');
-        
-        $product_id = intval($_POST['product_id']);
-        $quantity = intval($_POST['quantity']);
-        
+
+        $product_id = intval($_POST['product_id'] ?? 0);
+        $quantity   = intval($_POST['quantity'] ?? 0);
+
         if (!$product_id || !$quantity) {
-            wp_send_json_error(array('message' => 'Invalid parameters'));
+            wp_send_json_error(['message' => 'Invalid parameters']);
             return;
         }
-        
-        $rules = get_post_meta($product_id, '_role_pricing_rules', true);
+
+        // FIX [HIGH-06]: now uses get_rules_for_product which includes global-rule fallback.
+        $product   = wc_get_product($product_id);
+        $parent_id = $product ? WHTPRole_Pricing_Helper::get_parent_product_id($product) : $product_id;
+        $rules     = WHTPRole_Pricing_Helper::get_rules_for_product($parent_id);
+
         if (empty($rules)) {
-            wp_send_json_success(array('valid' => true));
+            wp_send_json_success(['valid' => true]);
             return;
         }
-        
-        $current_user_role = $this->get_current_user_role();
-        
+
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
+        $is_guest          = ($current_user_role === 'guest');
+
         foreach ($rules as $rule) {
-            if ($rule['role'] === $current_user_role) {
+            // FIX [CRIT-04]: same old-format bug as whtprole_get_variation_pricing_rules.
+            $rule_roles     = isset($rule['roles']) ? $rule['roles'] : ($rule['role'] ?? []);
+            $also_for_guest = $rule['also_for_guest'] ?? false;
+
+            if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
                 $validation = $this->validate_quantity($quantity, $rule);
                 if (!$validation['valid']) {
                     wp_send_json_error($validation);
                     return;
                 }
+                break;
             }
         }
-        
-        wp_send_json_success(array('valid' => true));
+
+        wp_send_json_success(['valid' => true]);
     }
-    
-    /**
-     * Validate quantity against rules
-     */
+
     private function validate_quantity($quantity, $rule) {
-        $messages = array();
-        
-        // Check minimum quantity
         if ($rule['min_qty'] > 0 && $quantity < $rule['min_qty']) {
-            return array(
-                'valid' => false,
-                /* translators: %s = the savings amount formatted as a price */
-                'message' => sprintf(__('Minimum quantity required: %d', 'wholesale-tiered-pricing-for-woocommerce'), $rule['min_qty'])
-            );
+            return [
+                'valid'   => false,
+                /* translators: %d = minimum quantity */
+                'message' => sprintf(__('Minimum quantity required: %d', 'wholesale-tiered-pricing-for-woocommerce'), $rule['min_qty']),
+            ];
         }
-        
-        // Check maximum quantity
+
         if ($rule['max_qty'] > 0 && $quantity > $rule['max_qty']) {
-            return array(
-                'valid' => false,
-                /* translators: %s = the savings amount formatted as a price */
-                'message' => sprintf(__('Maximum quantity allowed: %d', 'wholesale-tiered-pricing-for-woocommerce'), $rule['max_qty'])
-            );
+            return [
+                'valid'   => false,
+                /* translators: %d = maximum quantity */
+                'message' => sprintf(__('Maximum quantity allowed: %d', 'wholesale-tiered-pricing-for-woocommerce'), $rule['max_qty']),
+            ];
         }
-        
-        // Check step quantity
+
         if ($rule['step_qty'] > 1 && ($quantity - $rule['min_qty']) % $rule['step_qty'] !== 0) {
-            return array(
-                'valid' => false,
-                /* translators: %s = the savings amount formatted as a price */
-                'message' => sprintf(__('Quantity must be in multiples of %d', 'wholesale-tiered-pricing-for-woocommerce'), $rule['step_qty'])
-            );
+            return [
+                'valid'   => false,
+                /* translators: %d = step quantity */
+                'message' => sprintf(__('Quantity must be in multiples of %d', 'wholesale-tiered-pricing-for-woocommerce'), $rule['step_qty']),
+            ];
         }
-        
-        return array('valid' => true);
+
+        return ['valid' => true];
     }
-    
-    /**
-     * Render pricing table
-     */
+
     private function render_pricing_table($rules) {
-        echo '<h3>' . esc_html(__('Pricing Information', 'wholesale-tiered-pricing-for-woocommerce')) . '</h3>';
-        
+        echo '<h3>' . esc_html__('Pricing Information', 'wholesale-tiered-pricing-for-woocommerce') . '</h3>';
+
         foreach ($rules as $rule) {
-            if (!empty($rule['tiered_pricing'])) {
-                echo '<table class="pricing-table">';
-                echo '<thead><tr><th>' .esc_html(__('Quantity', 'wholesale-tiered-pricing-for-woocommerce')) . '</th><th>' . esc_html(__('Price', 'wholesale-tiered-pricing-for-woocommerce')) . '</th></tr></thead>';
-                echo '<tbody>';
-                
-                // Sort tiered pricing by quantity
-                usort($rule['tiered_pricing'], function($a, $b) {
-                    return $a['min_qty'] - $b['min_qty'];
-                });
-                
-                foreach ($rule['tiered_pricing'] as $tier) {
-                    if (!empty($tier['min_qty']) && !empty($tier['price'])) {
-                        echo '<tr>';
-                        echo '<td>' . esc_html($tier['min_qty']) . '+</td>';
-                        echo '<td>' . esc_html(wc_price($tier['price'])) . '</td>';
-                        echo '</tr>';
-                    }
-                }
-                
-                echo '</tbody></table>';
+            if (empty($rule['tiered_pricing'])) {
+                continue;
             }
-        }
-    }
-    
-    /**
-     * Calculate price based on rule and quantity (Improved with better edge case handling)
-     */
-    private function calculate_price($base_price, $rule, $quantity, $variation_id = null) {
-        // Validate inputs
-        if (empty($base_price) || $base_price <= 0) {
-            return $base_price;
-        }
-        
-        if (empty($quantity) || $quantity <= 0) {
-            $quantity = 1;
-        }
-        
-        // Check tiered pricing first
-        if (!empty($rule['tiered_pricing']) && is_array($rule['tiered_pricing'])) {
-            $applicable_tier = null;
-            // Sort tiers by quantity descending to find the highest applicable tier
-            usort($rule['tiered_pricing'], function($a, $b) {
-                $qty_a = isset($a['min_qty']) ? intval($a['min_qty']) : 0;
-                $qty_b = isset($b['min_qty']) ? intval($b['min_qty']) : 0;
-                return $qty_b - $qty_a;
+
+            usort($rule['tiered_pricing'], function ($a, $b) {
+                return intval($a['min_qty'] ?? 0) - intval($b['min_qty'] ?? 0);
             });
-            
+
+            echo '<table class="pricing-table">';
+            echo '<thead><tr><th>' . esc_html__('Quantity', 'wholesale-tiered-pricing-for-woocommerce') . '</th><th>' . esc_html__('Price', 'wholesale-tiered-pricing-for-woocommerce') . '</th></tr></thead>';
+            echo '<tbody>';
+
             foreach ($rule['tiered_pricing'] as $tier) {
-                // Check if tier applies to this variation (if viewing a variation)
-                if ($variation_id) {
-                    // Check new single variation format first
-                    $tier_variation = isset($tier['variation']) ? $tier['variation'] : null;
-                    // Backward compatibility: check old variations array format
-                    if ($tier_variation === null && isset($tier['variations']) && is_array($tier['variations'])) {
-                        $tier_variations = $tier['variations'];
-                        // If variations are specified and current variation is not in the list, skip this tier
-                        if (!empty($tier_variations) && !in_array($variation_id, $tier_variations)) {
-                            continue;
-                        }
-                    } elseif ($tier_variation !== null && $tier_variation !== 'all' && intval($tier_variation) !== $variation_id) {
-                        // If a specific variation is set and it doesn't match, skip this tier
-                        continue;
-                    }
+                if (empty($tier['min_qty']) || empty($tier['price'])) {
+                    continue;
                 }
-                
-                if (!empty($tier['min_qty']) && !empty($tier['price']) && $quantity >= intval($tier['min_qty'])) {
-                    // Check max_qty constraint if set
-                    if (!empty($tier['max_qty']) && $quantity > intval($tier['max_qty'])) {
-                        continue;
-                    }
-                    $applicable_tier = $tier;
-                    break;
-                }
+                echo '<tr>';
+                echo '<td>' . esc_html($tier['min_qty']) . '+</td>';
+                echo '<td>' . wp_kses_post(wc_price($tier['price'])) . '</td>';
+                echo '</tr>';
             }
-            
-            if ($applicable_tier) {
-                $discount_type = isset($applicable_tier['discount_type']) ? $applicable_tier['discount_type'] : 'fixed';
-                $tier_price = floatval($applicable_tier['price']);
-                
-                switch ($discount_type) {
-                    case 'percentage':
-                        $calculated_price = $base_price - ($base_price * $tier_price / 100);
-                        // Ensure price doesn't go negative
-                        return max(0, $calculated_price);
-                    case 'fixed':
-                        $calculated_price = $base_price - $tier_price;
-                        // Ensure price doesn't go negative
-                        return max(0, $calculated_price);
-                    default:
-                        // Direct price override
-                        return max(0, $tier_price);
-                }
-            } else {
-                return $base_price;
-            }
+
+            echo '</tbody></table>';
         }
-        
-        return $base_price;
     }
-    
-    /**
-     * Calculate savings for a given quantity (Dynamic Savings Calculator)
-     */
+
+    // -------------------------------------------------------------------------
+    // Frontend: savings calculator
+    // -------------------------------------------------------------------------
+
     public function calculate_savings() {
-        // Accept both plugin nonce and WooCommerce nonce
-        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
-        if (!wp_verify_nonce($nonce, 'wholesale-tiered-pricing-for-woocommerce-ajax') && 
+        // FIX [HIGH-01 + CRIT-05]: nonce always required; return after every error.
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'wholesale-tiered-pricing-for-woocommerce-ajax') &&
             !wp_verify_nonce($nonce, 'wc_add_to_cart_nonce')) {
-            wp_send_json_error(array('message' => __('Security check failed', 'wholesale-tiered-pricing-for-woocommerce')));
+            wp_send_json_error(['message' => __('Security check failed', 'wholesale-tiered-pricing-for-woocommerce')]);
+            return; // FIX [CRIT-05]: was missing — execution continued after security failure
         }
-        
-        $product_id = intval($_POST['product_id']);
+
+        $product_id   = intval($_POST['product_id'] ?? 0);
         $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : null;
-        $quantity = intval($_POST['quantity']);
-        
+        $quantity     = intval($_POST['quantity'] ?? 0);
+
         if (!$product_id || !$quantity) {
-            wp_send_json_error(array('message' => 'Invalid parameters'));
+            wp_send_json_error(['message' => 'Invalid parameters']);
             return;
         }
-        
+
         $product = wc_get_product($product_id);
         if (!$product) {
-            wp_send_json_error(array('message' => 'Product not found'));
+            wp_send_json_error(['message' => 'Product not found']);
             return;
         }
-        
-        // If variation_id is provided, get the variation product instead
+
         $variation_product = null;
         if ($variation_id) {
             $variation_product = wc_get_product($variation_id);
             if ($variation_product && $variation_product->is_type('variation')) {
-                // Use the variation product for price calculations
                 $product = $variation_product;
             }
         }
-        
-        // For variations, get rules from parent product
-        $parent_id = $product_id;
-        if ($product->is_type('variation')) {
-            $parent_id = $product->get_parent_id();
-            // Use product ID as variation_id if not provided
-            if ($variation_id === null) {
-                $variation_id = $product->get_id();
-            }
+
+        $parent_id = WHTPRole_Pricing_Helper::get_parent_product_id($product);
+
+        if ($product->is_type('variation') && $variation_id === null) {
+            $variation_id = $product->get_id();
         } elseif ($variation_id && $variation_product) {
-            // If variation_id is provided and we have the variation product, use parent
             $parent_id = $variation_product->get_parent_id();
         }
-        
-        $rules = get_post_meta($parent_id, '_role_pricing_rules', true);
+
+        $rules      = WHTPRole_Pricing_Helper::get_rules_for_product($parent_id);
+        $base_price = $variation_product ? floatval($variation_product->get_price()) : floatval($product->get_price());
+
         if (empty($rules)) {
-            $globalRules = get_option('whtprole_pricing_global_rules', []);
-            if (empty($globalRules)) {
-                $base_price = $product->get_price();
-                wp_send_json_success(array(
-                    'has_discount' => false,
-                    'regular_price' => $base_price,
-                    'discounted_price' => $base_price,
-                    'savings' => 0,
-                    'savings_percent' => 0,
-                    'total_regular' => $base_price * $quantity,
-                    'total_discounted' => $base_price * $quantity,
-                    'total_savings' => 0
-                ));
-                return;
-            } else {
-                $rules = $globalRules;
-            }
+            wp_send_json_success([
+                'has_discount'               => false,
+                'regular_price'              => $base_price,
+                'discounted_price'           => $base_price,
+                'savings'                    => 0,
+                'savings_percent'            => 0,
+                'total_regular'              => $base_price * $quantity,
+                'total_discounted'           => $base_price * $quantity,
+                'total_savings'              => 0,
+                'formatted_regular_total'    => wc_price($base_price * $quantity),
+                'formatted_discounted_total' => wc_price($base_price * $quantity),
+                'formatted_total_savings'    => wc_price(0),
+            ]);
+            return;
         }
-        
-        if (!is_array($rules)) {
-            $rules = json_decode($rules, true);
-        }
-        
-        $current_user_role = $this->get_current_user_role();
-        $is_guest = ($current_user_role === 'guest');
-        
-        // Use the variation's price if available, otherwise use product price
-        $base_price = $product->get_price();
-        if ($variation_id && $variation_product) {
-            $base_price = $variation_product->get_price();
-        }
-        $regular_price = floatval($base_price);
-        $discounted_price = $regular_price;
-        $applicable_rule = null;
-        
+
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
+        $is_guest          = ($current_user_role === 'guest');
+        $regular_price     = $base_price;
+        $discounted_price  = $regular_price;
+
         foreach ($rules as $rule) {
-            // Check if rule applies to this variation (if product is a variation)
-            // Note: We removed rule-level variations, so this check is for backward compatibility only
             if ($variation_id) {
-                $rule_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : array();
-                // If variations are specified and current variation is not in the list, skip this rule
-                if (!empty($rule_variations) && !in_array($variation_id, $rule_variations)) {
+                $rule_variations = isset($rule['variations']) && is_array($rule['variations']) ? $rule['variations'] : [];
+                if (!empty($rule_variations) && !in_array($variation_id, $rule_variations, true)) {
                     continue;
                 }
             }
-            
-            // Use helper to check if rule applies
-            $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
-            $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
-            
+
+            $rule_roles     = isset($rule['roles']) ? $rule['roles'] : ($rule['role'] ?? []);
+            $also_for_guest = $rule['also_for_guest'] ?? false;
+
             if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
-                $applicable_rule = $rule;
-                $discounted_price = $this->calculate_price($regular_price, $rule, $quantity, $variation_id);
+                $discounted_price = WHTPRole_Pricing_Helper::calculate_price($regular_price, $rule, $quantity, $variation_id);
                 break;
             }
         }
-        
-        $savings = $regular_price - $discounted_price;
-        $savings_percent = $regular_price > 0 ? ($savings / $regular_price) * 100 : 0;
-        $total_regular = $regular_price * $quantity;
+
+        $savings          = $regular_price - $discounted_price;
+        $savings_percent  = $regular_price > 0 ? ($savings / $regular_price) * 100 : 0;
+        $total_regular    = $regular_price * $quantity;
         $total_discounted = $discounted_price * $quantity;
-        $total_savings = $total_regular - $total_discounted;
-        
-        wp_send_json_success(array(
-            'has_discount' => $savings > 0,
-            'regular_price' => $regular_price,
-            'discounted_price' => $discounted_price,
-            'savings' => $savings,
-            'savings_percent' => round($savings_percent, 2),
-            'total_regular' => $total_regular,
-            'total_discounted' => $total_discounted,
-            'total_savings' => $total_savings,
-            'quantity' => $quantity,
-            'formatted_regular_total' => wc_price($total_regular),
+        $total_savings    = $total_regular - $total_discounted;
+
+        wp_send_json_success([
+            'has_discount'               => $savings > 0,
+            'regular_price'              => $regular_price,
+            'discounted_price'           => $discounted_price,
+            'savings'                    => $savings,
+            'savings_percent'            => round($savings_percent, 2),
+            'total_regular'              => $total_regular,
+            'total_discounted'           => $total_discounted,
+            'total_savings'              => $total_savings,
+            'quantity'                   => $quantity,
+            'formatted_regular_total'    => wc_price($total_regular),
             'formatted_discounted_total' => wc_price($total_discounted),
-            'formatted_total_savings' => wc_price($total_savings)
-        ));
+            'formatted_total_savings'    => wc_price($total_savings),
+        ]);
     }
-    
-    /**
-     * Get variation regular price
-     */
+
+    // -------------------------------------------------------------------------
+    // Frontend: variation base price lookup
+    // -------------------------------------------------------------------------
+
     public function whtprole_get_variation_price() {
-        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
-        if (!wp_verify_nonce($nonce, 'wholesale-tiered-pricing-for-woocommerce-ajax') && 
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'wholesale-tiered-pricing-for-woocommerce-ajax') &&
             !wp_verify_nonce($nonce, 'wc_add_to_cart_nonce')) {
-            wp_send_json_error(array('message' => __('Security check failed', 'wholesale-tiered-pricing-for-woocommerce')));
+            wp_send_json_error(['message' => __('Security check failed', 'wholesale-tiered-pricing-for-woocommerce')]);
             return;
         }
-        
+
         $variation_id = isset($_POST['variation_id']) ? intval($_POST['variation_id']) : 0;
-        
         if (!$variation_id) {
-            wp_send_json_error(array('message' => __('Invalid variation ID', 'wholesale-tiered-pricing-for-woocommerce')));
+            wp_send_json_error(['message' => __('Invalid variation ID', 'wholesale-tiered-pricing-for-woocommerce')]);
             return;
         }
-        
+
         $variation = wc_get_product($variation_id);
         if (!$variation || !$variation->is_type('variation')) {
-            wp_send_json_error(array('message' => __('Invalid variation', 'wholesale-tiered-pricing-for-woocommerce')));
+            wp_send_json_error(['message' => __('Invalid variation', 'wholesale-tiered-pricing-for-woocommerce')]);
             return;
         }
-        
-        // Get sale price if available, otherwise use regular price
-        $sale_price = $variation->get_sale_price();
+
+        $sale_price    = $variation->get_sale_price();
         $regular_price = $variation->get_regular_price();
-        
-        // Use sale price if available, otherwise fall back to regular price
-        $base_price = ($sale_price && $sale_price > 0) ? $sale_price : $regular_price;
-        
-        // Final fallback to current price if both are empty
-        if (!$base_price || $base_price <= 0) {
+        $base_price    = ($sale_price && floatval($sale_price) > 0) ? $sale_price : $regular_price;
+
+        if (!$base_price || floatval($base_price) <= 0) {
             $base_price = $variation->get_price();
         }
-        
-        wp_send_json_success(array(
-            'base_price' => floatval($base_price),
-            'sale_price' => $sale_price ? floatval($sale_price) : null,
-            'regular_price' => $regular_price ? floatval($regular_price) : null,
-            'formatted_price' => wc_price($base_price)
-        ));
-    }
-    
-    /**
-     * Get current user role
-     */
-    private function get_current_user_role() {
-        if (!is_user_logged_in()) {
-            return 'guest';
-        }
-        
-        $user = wp_get_current_user();
-        return !empty($user->roles) ? $user->roles[0] : 'customer';
+
+        wp_send_json_success([
+            'base_price'      => floatval($base_price),
+            'sale_price'      => $sale_price ? floatval($sale_price) : null,
+            'regular_price'   => $regular_price ? floatval($regular_price) : null,
+            'formatted_price' => wc_price($base_price),
+        ]);
     }
 }
 
-// Initialize AJAX handlers
-new WHTPRole_Pricing_Ajax();
+// FIX [MED-01]: removed `new WHTPRole_Pricing_Ajax()` that was here — it caused every
+// AJAX hook to be registered twice. Single instantiation is in WHTPRole_Based_Pricing::hooks().

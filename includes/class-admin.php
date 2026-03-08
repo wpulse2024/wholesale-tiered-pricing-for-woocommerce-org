@@ -90,6 +90,7 @@ class WHTPRole_Pricing_Admin
         }
     ?>
         <div id="role_pricing_data" class="panel woocommerce_options_panel">
+            <?php wp_nonce_field('whtprole_save_product_data', 'whtprole_product_nonce'); ?>
             <div class="options_group">
                 <h3><?php esc_html_e('Role-Based Pricing Rules', 'wholesale-tiered-pricing-for-woocommerce'); ?></h3>
                 
@@ -114,7 +115,7 @@ class WHTPRole_Pricing_Admin
                 </div>
 
                 <p>
-                    <button type="button" class="button" id="add-pricing-rule" data-is-variable="<?php echo $is_variable ? '1' : '0'; ?>" data-variations='<?php echo json_encode($variations); ?>'>
+                    <button type="button" class="button" id="add-pricing-rule" data-is-variable="<?php echo $is_variable ? '1' : '0'; ?>" data-variations='<?php echo esc_attr(wp_json_encode($variations)); ?>'>
                         <?php esc_html_e('Add Pricing Rule', 'wholesale-tiered-pricing-for-woocommerce'); ?>
                     </button>
                 </p>
@@ -230,7 +231,7 @@ class WHTPRole_Pricing_Admin
                     }
                     ?>
                 </div>
-                <button type="button" class="button add-tier-rule" data-parent="<?php echo esc_attr($index); ?>" data-is-variable="<?php echo $is_variable ? '1' : '0'; ?>" data-variations='<?php echo json_encode($variations); ?>'>
+                <button type="button" class="button add-tier-rule" data-parent="<?php echo esc_attr($index); ?>" data-is-variable="<?php echo $is_variable ? '1' : '0'; ?>" data-variations='<?php echo esc_attr(wp_json_encode($variations)); ?>'>
                     <?php esc_html_e('Add Tier', 'wholesale-tiered-pricing-for-woocommerce'); ?>
                 </button>
             </div>
@@ -326,8 +327,16 @@ class WHTPRole_Pricing_Admin
 
     public function save_product_data($post_id)
     {
+        if (!isset($_POST['whtprole_product_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['whtprole_product_nonce'])), 'whtprole_save_product_data')) {
+            return;
+        }
+
+        if (!current_user_can('edit_post', $post_id)) {
+            return;
+        }
+
         delete_post_meta($post_id, '_role_pricing_rules');
-        
+
         if (isset($_POST['role_pricing_rules'])) {
             $rules = array();
             foreach ($_POST['role_pricing_rules'] as $rule) {

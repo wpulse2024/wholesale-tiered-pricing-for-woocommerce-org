@@ -44,34 +44,37 @@ class WHTPRole_Pricing_Show_Message {
 
     /* ----------------- CORE MESSAGE ------------------ */
     private function show_discount_message($product, $echo = true, $for_admin = false, $quantity = 1) {
-        global $helper;
-
         if (!$product) {
             return;
         }
 
         $product_id   = $product->get_id();
+        $helper       = new WHTPRole_Pricing_Helper();
         $rules        = get_post_meta($product_id, '_role_pricing_rules', true);
         $globalRules  = get_option('whtprole_pricing_global_rules', []);
-        if (empty($rules) || (isset($helper) && !$helper->enableToShowsTable($product_id))) {
+        if (empty($rules) || !$helper->enableToShowsTable($product_id)) {
             if (empty($globalRules)) {
                 return;
             }
             $rules = $globalRules;
         }
 
-        $current_user_role = $this->get_current_user_role();
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
+        $is_guest          = ($current_user_role === 'guest');
         $original_price    = (float) $product->get_regular_price();
         $rules             = is_array($rules) ? $rules : json_decode($rules, true);
 
         foreach ($rules as $rule) {
-            if ($rule['role'] === $current_user_role) {
+            $rule_roles    = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
+            $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
+
+            if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
                 $new_price = $this->calculate_price($original_price, $rule, $quantity);
                 if ($new_price < $original_price) {
                     $savings          = ($original_price - $new_price);
                     $savings_percent  = ($savings / $original_price) * 100;
 
-                    $role_label = ucfirst($rule['role']);
+                    $role_label = ucfirst(is_array($rule_roles) ? implode(', ', $rule_roles) : $rule_roles);
                     $discount_text = sprintf(
                         esc_html__('Applied Tier: %s – Save %s (%.1f%%)', 'wholesale-tiered-pricing-for-woocommerce'),
                         esc_html($role_label),
@@ -121,15 +124,11 @@ class WHTPRole_Pricing_Show_Message {
                 return $base_price;
             }
         }
+        return $base_price;
     }
 
     /* ----------------- USER ROLE ------------------ */
     private function get_current_user_role() {
-        if (!is_user_logged_in()) {
-            return 'guest';
-        }
-
-        $user = wp_get_current_user();
-        return !empty($user->roles) ? $user->roles[0] : 'customer';
+        return WHTPRole_Pricing_Helper::get_current_user_role();
     }
 }

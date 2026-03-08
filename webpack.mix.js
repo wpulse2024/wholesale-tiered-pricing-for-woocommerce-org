@@ -13,6 +13,8 @@ mix.js('resources/admin/js/app.js', 'plugin-assets/admin/app.js')
    .sass('resources/scss/template/options-table.scss', 'plugin-assets/options-table.css')
    .js('resources/admin.js', 'plugin-assets/admin.js')
    .js('resources/options-table.js', 'plugin-assets/options-table.js')
+   .js('resources/report.js', 'plugin-assets/report.js')
+   .sass('resources/scss/report.scss', 'plugin-assets/report.css')
 //    .copy('resources/images', 'plugin-assets/images')
    .sourceMaps(false);
 
