@@ -5,7 +5,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: woocommerce, wholesale, pricing, role-based, tiered pricing 
 Requires at least: 4.5  
 Tested up to: 6.9.1 
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 Requires PHP: 7.1  
 
 **Beautiful volume pricing tables with role-based discounts for wholesale, B2B & bulk sellers offering tiered pricing by quantity and user role.**
@@ -105,6 +105,21 @@ Yes, any role created by a membership or user role plugin is supported.
 ---
 
 ## Changelog
+
+= 1.1.1 – 2026-03-08 =
+- Fixed critical data corruption bug where JSON settings were mangled on save, silently breaking all pricing rules on every product page.
+- Fixed admin-only AJAX handlers that were incorrectly registered as publicly accessible, exposing pricing rule reads and writes to unauthenticated users.
+- Fixed pricing table not appearing for users matched by global rules due to role format mismatch between old single-role and new multi-role rule formats.
+- Fixed variable product pricing table throwing a fatal `foreach` error when rules were stored as a JSON string instead of a decoded array.
+- Fixed early-return bug in cart validation and price HTML filter that loaded global rules but then discarded them and returned without applying them.
+- Fixed missing `return` after security error in savings calculation handler, allowing code execution to continue after an auth failure.
+- Added nonce verification and capability check to product data save handler.
+- Added `Show savings calculator` toggle in Template Options settings — admins can now enable or disable the savings calculator widget per store.
+- Improved performance: added transient caching to the wholesale reports page (5-minute TTL) and pre-warm post meta cache to eliminate N+1 queries.
+- Replaced unbounded `wc_get_products(limit: -1)` and `get_terms` calls in global settings with capped queries (limit: 200) to prevent timeouts on large stores.
+- Moved activation hook registration to plugin load time (outside `plugins_loaded`) for correct WordPress lifecycle behavior.
+- Renamed global `get_wp_user_roles` function to prefixed `whtprole_get_wp_user_roles` to avoid namespace collision with other plugins.
+- Removed dead code: unused `find_applicable_tier()` and `getPrice()` methods, stray second class instantiation that caused all hooks to register twice, and commented-out `admin_head` block.
 
 = 1.1.0 - 2026-02-10 =
 - Adds Report Page
