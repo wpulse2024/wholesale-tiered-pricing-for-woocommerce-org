@@ -5,7 +5,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: wholesale pricing, bulk discount, tiered pricing, role based pricing, b2b
 Requires at least: 5.0
 Tested up to: 6.9.1
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 
@@ -167,6 +167,16 @@ Yes, all frontend strings are fully translatable. The plugin is compatible with 
 
 ## Changelog
 
+= 1.2.1 – 2026-03-15 =
+- Redesigned Wholesale Reports admin page: summary cards now show a coloured icon badge (blue / purple / green / orange) for each metric; section headings include contextual SVG icons (cart, trend, box, gear).
+- Reports filter bar restructured: date labels stacked above inputs, calendar icon overlaid on each date field, preset buttons (7d / 30d / 90d) highlight the active selection with a dark fill, Apply and Edit buttons use a high-contrast dark style.
+- Report tables now use uppercase column headers and subtle row-hover styling instead of the WP `striped` class.
+- Revamped Volume Pricing card (`minimal-template`): replaced old premium wrapper markup with `wtp-volume-card` / `wtp-tier-row` structure; savings shown as a plain "Save N% / $X off" label; removed "Best" featured-tier badge and progress bar.
+- Pricing table (`frontend.scss`): column headers changed to muted uppercase on a transparent background, removing the coloured primary-colour header fill; `.quantity-badge`, `.price-unit`, and `.savings-info` cell classes introduced for cleaner markup; table border changed from box-shadow to a solid border with rounded corners.
+- Radio tier selector (`minimal-template.scss`): active tier now uses an inset box-shadow instead of background fill; colour palette updated to neutral tones (`#2d3748`, `#718096`, `#a0aec0`, green `#3a8a4a`); responsive breakpoint tightened from 768 px to 480 px.
+- Added Dashicons lightbulb icon before the "See Your Savings" savings-calculator heading.
+- Quantity field now defaults to the first tier's `min_qty` on page load (when > 1), so the lowest eligible tier price is immediately visible without the customer adjusting quantity manually.
+
 = 1.2.0 – 2026-03-12 =
 - Added Scheduled / Flash Pricing — pricing rules now support `Active From` and `Active Until` date fields; rules outside their scheduled window are automatically excluded everywhere (product page, cart, checkout, quantity validation, discount messages).
 - Added date pickers to the product editor (PHP) and the global pricing rules form (Vue) for per-rule scheduling.
@@ -236,6 +246,9 @@ Yes, all frontend strings are fully translatable. The plugin is compatible with 
 ---
 
 ## Upgrade Notice
+
+### 1.2.1
+UI overhaul of the Wholesale Reports admin page and all frontend pricing templates (volume pricing card, pricing table, radio tier selector). Quantity field now pre-selects the first tier on page load.
 
 ### 1.2.0
 Adds Scheduled / Flash Pricing — set start and end dates on any pricing rule. Also fixes expired rules being applied to prices, tables, and cart validation, and fixes discount messages on variable products.
