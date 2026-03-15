@@ -151,15 +151,30 @@ class WHTPRole_Pricing_Frontend {
                 if ($rule['min_qty'] > 0) {
                     $args['min_value'] = $rule['min_qty'];
                 }
-                
+
                 if ($rule['max_qty'] > 0) {
                     $args['max_value'] = $rule['max_qty'];
                 }
-                
+
                 if ($rule['step_qty'] > 1) {
                     $args['step'] = $rule['step_qty'];
                 }
-                
+
+                // Set the default qty field value to the first tier's min_qty
+                // so the first tier is pre-selected on page load.
+                if (!empty($rule['tiered_pricing']) && is_array($rule['tiered_pricing'])) {
+                    $tiers = array_filter($rule['tiered_pricing'], function($t) {
+                        return !empty($t['min_qty']) && !empty($t['price']);
+                    });
+                    usort($tiers, function($a, $b) {
+                        return intval($a['min_qty']) - intval($b['min_qty']);
+                    });
+                    $first_tier = reset($tiers);
+                    if ($first_tier && intval($first_tier['min_qty']) > 1) {
+                        $args['input_value'] = intval($first_tier['min_qty']);
+                    }
+                }
+
                 break;
             }
         }
@@ -379,6 +394,7 @@ class WHTPRole_Pricing_Frontend {
         
         echo '<div class="whtprole-savings-calculator" data-product-id="' . esc_attr($product_id) . '" data-regular-price="' . esc_attr($regular_price) . '">';
         echo '<div class="savings-calculator-header">';
+        echo '<span class="dashicons dashicons-lightbulb"></span>';
         echo '<h4>' . esc_html__('See Your Savings', 'wholesale-tiered-pricing-for-woocommerce') . '</h4>';
         echo '</div>';
         echo '<div class="savings-calculator-content">';

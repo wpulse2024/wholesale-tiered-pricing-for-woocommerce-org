@@ -1,42 +1,56 @@
+/* ── Compact Bulk Pricing Table ───────────────────────────────────────────── */
+
 .wholesale-tiered-pricing-for-woocommerce-compact {
-    margin: 15px 0;
+    margin: 16px 0;
 }
 
 .woocommerce-bulk-pricing {
-    background: #f7f7f7;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 12px 15px;
+    background: #ffffff;
+    border: 1px solid #e8ecef;
+    border-radius: 10px;
+    padding: 16px 20px;
     font-size: 14px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
+/* Header */
 .bulk-pricing-header {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 10px;
-    color: #555;
-    font-size: 13px;
+    gap: 7px;
+    margin-bottom: 14px;
+    color: #1a1a2e;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
 }
 
 .bulk-pricing-header .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #4a5568;
 }
 
+/* List */
 .bulk-pricing-list {
     list-style: none;
     margin: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
+/* Each tier row */
 .pricing-tier {
-    display: flex;
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
     align-items: center;
-    gap: 10px;
-    padding: 6px 0;
-    border-bottom: 1px solid #e5e5e5;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f2f4;
+    transition: background 0.15s ease;
 }
 
 .pricing-tier:last-child {
@@ -44,48 +58,81 @@
     padding-bottom: 0;
 }
 
-.tier-qty {
-    flex: 0 0 50px;
-    font-weight: 600;
-    color: #333;
-}
-
-.tier-price {
-    flex: 1;
-    font-weight: 500;
-}
-
-.tier-price .woocommerce-Price-amount {
-    color: #77a464;
-}
-
-.tier-save {
-    flex: 0 0 auto;
-    background: #77a464;
-    color: #fff;
-    padding: 2px 8px;
-    border-radius: 3px;
+/* Variation label (full-width row above tier data) */
+.tier-variation-name {
+    grid-column: 1 / -1;
     font-size: 12px;
-    font-weight: 500;
+    color: #718096;
+    font-style: italic;
+    margin-bottom: -4px;
 }
 
-/* WooCommerce integration */
+/* Quantity */
+.tier-qty {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2d3748;
+    white-space: nowrap;
+}
+
+/* Price */
+.tier-price {
+    font-size: 15px;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.tier-price .woocommerce-Price-amount,
+.tier-price bdi {
+    color: #3a8a4a;
+    font-weight: 600;
+}
+
+/* Savings badge */
+.tier-save {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #3a8a4a;
+    color: #ffffff;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+}
+
+/* WC context tweaks */
 .single-product .wholesale-tiered-pricing-for-woocommerce-compact {
-    margin-top: 10px;
+    margin-top: 12px;
 }
 
 .woocommerce-variation .wholesale-tiered-pricing-for-woocommerce-compact {
-    margin-top: 8px;
+    margin-top: 10px;
 }
 
-@media (max-width: 768px) {
-    .tier-qty {
-        flex: 0 0 40px;
-        font-size: 13px;
+/* Responsive */
+@media (max-width: 480px) {
+    .woocommerce-bulk-pricing {
+        padding: 14px 16px;
     }
-    
+
+    .pricing-tier {
+        grid-template-columns: 48px 1fr auto;
+        gap: 8px;
+    }
+
+    .tier-qty {
+        font-size: 14px;
+    }
+
+    .tier-price {
+        font-size: 14px;
+    }
+
     .tier-save {
-        font-size: 11px;
-        padding: 2px 6px;
+        font-size: 12px;
+        padding: 3px 9px;
     }
 }

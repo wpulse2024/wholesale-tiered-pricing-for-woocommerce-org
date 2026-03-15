@@ -1,304 +1,326 @@
 /* Frontend Styles for Role-Based Pricing */
 
+// ── Pricing table ─────────────────────────────────────────────────────────────
+
 .wholesale-tiered-pricing-for-woocommerce-table {
-    margin: 20px 0;
-    border-radius: 8px;
+    margin: 16px 0;
 
     .pricing-table {
         width: 100%;
         border-collapse: collapse;
-        margin: 15px 0;
-        background-color: #fff;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 4px;
+        background: #fff;
+        border: 1px solid #e8ecef;
+        border-radius: 10px;
         overflow: hidden;
+        font-size: 14px;
     }
 
-    .pricing-table th,
-    .pricing-table td {
-        padding: 15px;
-        text-align: left;
-        border-bottom: 1px solid #e1e1e1;
+    // Header row
+    .pricing-table thead tr {
+        border-bottom: 1px solid #e8ecef;
     }
 
     .pricing-table th {
-        background-color: var(--wtp-primary-color, #7f54b3);
-        color: #fff;
-        font-weight: 600;
+        padding: 11px 18px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        color: #9aa5b4;
         text-transform: uppercase;
-        font-size: 12px;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.6px;
+        background: transparent;
     }
 
-    .pricing-table tbody tr {
-        transition: background-color 0.2s;
+    // Body cells
+    .pricing-table td {
+        padding: 14px 18px;
+        border-bottom: 1px solid #f0f2f4;
+        vertical-align: middle;
     }
 
-    .pricing-table tbody tr:hover {
-        background-color: #f5f5f5;
-        cursor: pointer;
-    }
-
-    .pricing-table tr:last-child td {
+    .pricing-table tbody tr:last-child td {
         border-bottom: none;
     }
 
-    .pricing-table .savings {
-        color: #27ae60;
-        font-weight: 600;
+    .pricing-table tbody tr {
+        transition: background 0.15s ease;
     }
 
-    .role-pricing-savings {
-        display: inline-block;
-        margin-left: 10px;
-        padding: 4px 10px;
-        background-color: #27ae60;
-        color: white;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 600;
+    .pricing-table tbody tr:hover {
+        background: #fafbfc;
     }
 
+    // ── Quantity cell ───────────────────────────────────────────────────────
+    .quantity-badge {
+        white-space: nowrap;
+
+        > span {
+            display: block;
+            font-size: 17px;
+            font-weight: 700;
+            color: #2d3748;
+            line-height: 1.2;
+        }
+
+        .items-text {
+            font-size: 11px;
+            color: #b0b8c4;
+            margin-top: 2px;
+        }
+    }
+
+    // ── Discount / price-per-unit cell ──────────────────────────────────────
+    .price-unit {
+        del.tier-regular-price {
+            display: block;
+            font-size: 12px;
+            color: #b0b8c4;
+            text-decoration: line-through;
+            font-style: normal;
+
+            .woocommerce-Price-amount {
+                color: inherit;
+            }
+        }
+
+        ins.tier-sale-price {
+            display: block;
+            font-size: 16px;
+            font-weight: 700;
+            color: #2d3748;
+            text-decoration: none;
+            margin-top: 3px;
+
+            .woocommerce-Price-amount {
+                color: #3a8a4a;
+            }
+        }
+    }
+
+    // ── Savings cell ────────────────────────────────────────────────────────
+    .savings-info {
+        .savings-badge {
+            display: block;
+        }
+
+        .save-amount {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .savings-detail {
+            display: block;
+            font-size: 12px;
+            color: #b0b8c4;
+            margin-top: 3px;
+        }
+    }
+
+    // ── Notice ──────────────────────────────────────────────────────────────
     .wholesale-tiered-pricing-for-woocommerce-notice {
-        background-color: #e7f3fe;
-        border-left: 4px solid #2196F3;
-        padding: 12px 15px;
-        margin: 15px 0;
-        border-radius: 4px;
+        background-color: #eef6ff;
+        border-left: 3px solid #4a90d9;
+        padding: 10px 14px;
+        margin: 12px 0;
+        border-radius: 6px;
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        li {
+            padding: 4px 0;
+            color: #2d3748;
+            font-size: 13px;
+
+            &::before {
+                content: "ℹ ";
+                margin-right: 6px;
+                color: #4a90d9;
+                font-weight: bold;
+            }
+        }
     }
 
-    .wholesale-tiered-pricing-for-woocommerce-notice ul {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
+    // ── Responsive ──────────────────────────────────────────────────────────
+    @media (max-width: 480px) {
+        .pricing-table th {
+            padding: 10px 12px;
+            font-size: 10px;
+        }
 
-    .wholesale-tiered-pricing-for-woocommerce-notice li {
-        padding: 5px 0;
-        color: #333;
-    }
+        .pricing-table td {
+            padding: 12px 12px;
+        }
 
-    .wholesale-tiered-pricing-for-woocommerce-notice li:before {
-        content: "ℹ ";
-        margin-right: 8px;
-        color: #2196F3;
-        font-weight: bold;
-    }
+        .quantity-badge > span {
+            font-size: 15px;
+        }
 
-    .quantity .qty {
-        width: 150px;
-        padding: 10px;
-        text-align: center;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 16px;
-    }
-
-    @media (max-width: 768px) {
-        .pricing-table {
+        .price-unit ins.tier-sale-price {
             font-size: 14px;
         }
 
-        .pricing-table th,
-        .pricing-table td {
-            padding: 10px 8px;
+        .save-amount {
+            font-size: 13px;
         }
 
-        .wholesale-tiered-pricing-for-woocommerce-table {
-            padding: 15px;
-        }
-
-        .wholesale-tiered-pricing-for-woocommerce-table h3 {
-            font-size: 18px;
+        .savings-detail {
+            font-size: 11px;
         }
     }
 }
 
 .wholesale-tiered-pricing-for-woocommerce-table h3 {
-    margin: 0 0 15px 0;
-    color: #333;
-    font-size: 20px;
-    font-weight: 600;
+    margin: 0 0 12px 0;
+    color: #1a1a2e;
+    font-size: 18px;
+    font-weight: 700;
 }
 
-/* Dynamic Savings Calculator Styles - WordPress Notice Style */
+// ── Savings Calculator ────────────────────────────────────────────────────────
+
 .whtprole-savings-calculator {
-    background-color: #f9f9f9;
-    border-left: 4px solid var(--wtp-primary-color, #000);
-    border-radius: 4px;
-    padding: 16px 20px;
-    margin: 20px 0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    animation: slideInNotice 0.4s ease-out;
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 16px 0;
 
-    @keyframes slideInNotice {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 100%;
-        background-color: var(--wtp-primary-color, #000);
-        transition: background-color 0.3s ease;
-    }
-
-    &.has-savings {
-        background-color: #f5f5f5;
-        border-left-color: var(--wtp-primary-color, #000);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-
-        &::before {
-            background-color: var(--wtp-primary-color, #000);
-        }
-
-        .savings-calculator-header {
-            h4 {
-                color: var(--wtp-primary-color, #000);
-
-                &::before {
-                    content: '💰 ';
-                    margin-right: 8px;
-                }
-            }
-        }
-
-        .savings-highlight {
-            background-color: rgba(0, 0, 0, 0.05);
-            border-left: 3px solid var(--wtp-primary-color, #000);
-        }
-    }
-
+    // ── Header ───────────────────────────────────────────────────────────────
     .savings-calculator-header {
-        margin-bottom: 12px;
         display: flex;
         align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+
+        .dashicons {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            color: #4a5568;
+        }
 
         h4 {
             margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--wtp-primary-color, #000);
-            display: flex;
-            align-items: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a1a2e;
 
             &::before {
-                content: '💡 ';
-                margin-right: 8px;
-                font-size: 18px;
+                display: none; // icon is in HTML now
             }
         }
     }
 
+    // ── Rows ─────────────────────────────────────────────────────────────────
     .savings-calculator-content {
         display: flex;
         flex-direction: column;
-        gap: 8px;
     }
 
     .savings-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 8px 0;
-        color: #000;
+        padding: 10px 0;
         font-size: 14px;
 
-        &:not(:last-child) {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        &.savings-highlight {
-            background-color: rgba(0, 0, 0, 0.03);
-            border-left: 3px solid var(--wtp-primary-color, #000);
-            padding: 12px 15px;
-            border-radius: 4px;
-            margin-top: 8px;
-            font-weight: 600;
-            font-size: 15px;
-            color: #000;
+        &:last-child {
             border-bottom: none;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            padding-bottom: 0;
         }
     }
 
     .savings-label {
         font-size: 14px;
-        color: #000;
+        color: #718096;
         font-weight: 500;
     }
 
+    // ── Values ───────────────────────────────────────────────────────────────
     .savings-value {
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 600;
-        color: #000;
+        color: #2d3748;
 
         &.regular-total {
-            color: #666;
+            color: #b0b8c4;
             text-decoration: line-through;
+            font-weight: 400;
         }
 
         &.discounted-total {
-            color: var(--wtp-primary-color, #000);
+            color: #2d3748;
+            font-weight: 700;
         }
 
         &.total-savings {
-            color: var(--wtp-primary-color, #000);
-            font-size: 18px;
+            color: #3a8a4a;
+            font-weight: 700;
+            font-size: 14px;
 
             .savings-percent {
-                font-size: 14px;
-                color: var(--wtp-primary-color, #000);
-                margin-left: 8px;
-                font-weight: 600;
-                background-color: rgba(0, 0, 0, 0.05);
-                padding: 2px 8px;
-                border-radius: 12px;
+                font-size: 13px;
+                color: #718096;
+                font-weight: 400;
+                margin-left: 5px;
+                background: none;
+                padding: 0;
+                border-radius: 0;
             }
-        }
-
-        .savings-percent {
-            font-size: 13px;
-            color: #666;
-            margin-left: 5px;
         }
     }
 
-    @media (max-width: 768px) {
-        padding: 14px 16px;
-        margin: 15px 0;
-        
+    // ── "You Save" row — bolder label ─────────────────────────────────────────
+    .savings-highlight {
+        border-top: 1px solid #e8ecef;
+        border-bottom: none;
+        padding-top: 12px;
+        background: none;
+        border-left: none;
+        border-radius: 0;
+        margin-top: 2px;
+
+        .savings-label {
+            color: #2d3748;
+            font-weight: 700;
+            font-size: 14px;
+        }
+    }
+
+    // Remove legacy has-savings complexity
+    &.has-savings {
+        background: #fff;
+        border-color: #e8ecef;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+
+        &::before { display: none; }
+
         .savings-calculator-header h4 {
-            font-size: 15px;
+            color: #1a1a2e;
+            &::before { display: none; }
+        }
+
+        .savings-highlight {
+            background: none;
+            border-left: none;
+        }
+    }
+
+    // ── Responsive ───────────────────────────────────────────────────────────
+    @media (max-width: 480px) {
+        padding: 14px 16px;
+
+        .savings-calculator-header h4 {
+            font-size: 14px;
         }
 
         .savings-label,
         .savings-value {
             font-size: 13px;
-        }
-
-        .savings-row.savings-highlight {
-            padding: 10px 12px;
-            font-size: 14px;
-        }
-
-        .savings-value.total-savings {
-            font-size: 16px;
         }
     }
 }
