@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
 class WHTPRole_Pricing_Engine {
 
     public function __construct() {
-        add_filter('woocommerce_product_get_price', array($this, 'whtprole_get_role_based_price'), 99, 2);
+        // add_filter('woocommerce_product_get_price', array($this, 'whtprole_get_role_based_price'), 99, 2);
         add_filter('woocommerce_product_variation_get_price', array($this, 'whtprole_get_role_based_price'), 99, 2);
         add_filter('woocommerce_get_price_html', array($this, 'get_price_html'), 99, 2);
         add_action('woocommerce_before_calculate_totals', array($this, 'update_cart_prices'), 99);
@@ -125,7 +125,10 @@ class WHTPRole_Pricing_Engine {
 
             $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
             $is_guest = ($current_user_role === 'guest');
-            $original_price = $product->get_price();
+            $original_price = $product->get_regular_price();
+            if (empty($original_price)) {
+                $original_price = $product->get_price();
+            }
             
             // Get variation ID from cart item data or product type
             $variation_id = null;
