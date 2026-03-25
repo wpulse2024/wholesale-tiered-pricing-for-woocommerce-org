@@ -259,16 +259,17 @@ class WHTPRole_Pricing_Ajax {
             }
 
             $sanitized[] = [
-                'id'             => sanitize_text_field($rule['id'] ?? ''),
-                'roles'          => $roles,
-                'role'           => $roles[0],
-                'min_qty'        => intval($rule['min_qty'] ?? 0),
-                'max_qty'        => !empty($rule['max_qty']) ? intval($rule['max_qty']) : 0,
-                'step_qty'       => intval($rule['step_qty'] ?? 1),
-                'tiered_pricing' => $this->sanitizeTieredPricingData($rule['tiered_pricing'] ?? []),
-                'also_for_guest' => $also_for_guest,
-                'date_from'      => $date_from,
-                'date_to'        => $date_to,
+                'id'              => sanitize_text_field($rule['id'] ?? ''),
+                'roles'           => $roles,
+                'role'            => $roles[0],
+                'min_qty'         => intval($rule['min_qty'] ?? 0),
+                'max_qty'         => !empty($rule['max_qty']) ? intval($rule['max_qty']) : 0,
+                'step_qty'        => intval($rule['step_qty'] ?? 1),
+                'min_order_value' => !empty($rule['min_order_value']) ? floatval($rule['min_order_value']) : 0,
+                'tiered_pricing'  => $this->sanitizeTieredPricingData($rule['tiered_pricing'] ?? []),
+                'also_for_guest'  => $also_for_guest,
+                'date_from'       => $date_from,
+                'date_to'         => $date_to,
             ];
         }
 

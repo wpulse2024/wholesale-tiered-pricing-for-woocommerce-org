@@ -142,8 +142,14 @@ class WHTPRole_Pricing_Engine {
                 // Use helper to check if rule applies
                 $rule_roles = isset($rule['roles']) ? $rule['roles'] : (isset($rule['role']) ? $rule['role'] : array());
                 $also_for_guest = isset($rule['also_for_guest']) ? $rule['also_for_guest'] : false;
-                
+
                 if (WHTPRole_Pricing_Helper::rule_applies_to_user($rule_roles, $current_user_role, $is_guest, $also_for_guest)) {
+                    // Check minimum order value — only activate pricing if cart subtotal meets threshold
+                    $min_order_value = isset($rule['min_order_value']) ? floatval($rule['min_order_value']) : 0;
+                    if ($min_order_value > 0 && $cart->get_subtotal() < $min_order_value) {
+                        break; // MOV not met; leave price unchanged
+                    }
+
                     $new_price = $this->calculate_price($original_price, $rule, $quantity, $variation_id);
                     $cart_item['data']->set_price($new_price);
                     break;

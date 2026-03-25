@@ -85,6 +85,15 @@
                             </div>
                         </div>
 
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Min Order Value <span style="font-weight:400; color:#999;">(optional)</span></label>
+                                <input type="number" v-model.number="rule.min_order_value" class="form-control"
+                                    min="0" step="0.01" placeholder="No minimum" />
+                                <p class="description" style="font-size:12px; color:#999; margin-top:4px;">Minimum cart subtotal before this pricing rule activates. Leave blank for no minimum.</p>
+                            </div>
+                        </div>
+
                         <!-- Scheduled / Flash Pricing -->
                         <div class="form-row">
                             <div class="form-group">
@@ -244,6 +253,7 @@ export default {
                         roles: roles, // Always use roles array
                         role: roles.length > 0 ? roles[0] : 'customer', // Keep for backward compatibility
                         also_for_guest: rule.also_for_guest === true || rule.also_for_guest === 'true' || rule.also_for_guest === 1 || rule.also_for_guest === '1',
+                        min_order_value: rule.min_order_value ? parseFloat(rule.min_order_value) : 0,
                         date_from: rule.date_from || '',
                         date_to: rule.date_to || ''
                     }
@@ -272,6 +282,7 @@ export default {
                 step_qty: 1,
                 min_qty: 1,
                 max_qty: '',
+                min_order_value: 0,
                 tiered_pricing: [],
                 also_for_guest: false,
                 date_from: '',

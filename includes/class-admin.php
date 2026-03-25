@@ -220,6 +220,16 @@ class WHTPRole_Pricing_Admin
                 </p>
 
                 <p class="form-field">
+                    <label><?php esc_html_e('Min Order Value', 'wholesale-tiered-pricing-for-woocommerce'); ?></label>
+                    <input type="number" name="role_pricing_rules[<?php echo esc_attr($index); ?>][min_order_value]"
+                        value="<?php echo isset($rule['min_order_value']) ? esc_attr($rule['min_order_value']) : ''; ?>"
+                        min="0" step="0.01" placeholder="<?php esc_html_e('No minimum', 'wholesale-tiered-pricing-for-woocommerce'); ?>" style="width: 100%" />
+                    <span class="description" style="display: block; margin-top: 5px; font-size: 12px; color: #666;">
+                        <?php esc_html_e('Minimum cart subtotal required before this pricing rule activates. Leave blank for no minimum.', 'wholesale-tiered-pricing-for-woocommerce'); ?>
+                    </span>
+                </p>
+
+                <p class="form-field">
                     <label><?php esc_html_e('Schedule: Active From', 'wholesale-tiered-pricing-for-woocommerce'); ?></label>
                     <input type="date" name="role_pricing_rules[<?php echo esc_attr($index); ?>][date_from]"
                         value="<?php echo isset($rule['date_from']) ? esc_attr($rule['date_from']) : ''; ?>"
@@ -449,6 +459,7 @@ class WHTPRole_Pricing_Admin
                     'min_qty' => isset($rule['min_qty']) ? intval($rule['min_qty']) : 0,
                     'max_qty' => !empty($rule['max_qty']) ? intval($rule['max_qty']) : 0,
                     'step_qty' => isset($rule['step_qty']) ? intval($rule['step_qty']) : 1,
+                    'min_order_value' => !empty($rule['min_order_value']) ? floatval($rule['min_order_value']) : 0,
                     'tiered_pricing' => $tiered_pricing,
                     'also_for_guest' => $also_for_guest,
                     'variations' => $variations, // Store selected variation IDs

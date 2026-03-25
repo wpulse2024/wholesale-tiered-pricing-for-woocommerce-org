@@ -5,7 +5,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: wholesale pricing, bulk discount, tiered pricing, role based pricing, b2b
 Requires at least: 5.0
 Tested up to: 6.9.1
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 
@@ -162,6 +162,9 @@ Please open a support thread in the WordPress.org plugin support forum. We typic
 
 == Changelog ==
 
+= 1.2.2 – 2026-03-25 =
+- Added Minimum Order Value (MOV) per pricing rule — set a minimum cart subtotal that must be reached before a role's pricing rule activates (e.g. "wholesale price only if order is at least $200").
+
 = 1.2.1 – 2026-03-15 =
 - Redesigned Wholesale Reports admin page: summary cards now show a coloured icon badge (blue / purple / green / orange) for each metric; section headings include contextual SVG icons (cart, trend, box, gear).
 - Reports filter bar restructured: date labels stacked above inputs, calendar icon overlaid on each date field, preset buttons (7d / 30d / 90d) highlight the active selection with a dark fill, Apply and Edit buttons use a high-contrast dark style.
@@ -241,6 +244,9 @@ Please open a support thread in the WordPress.org plugin support forum. We typic
 ---
 
 == Upgrade Notice ==
+
+= 1.2.2 =
+Adds Minimum Order Value (MOV) per pricing rule. Wholesale pricing is withheld until the cart subtotal meets the threshold. Product and cart pages show a clear "Add $X more to unlock wholesale pricing" notice.
 
 = 1.2.1 =
 UI overhaul of the Wholesale Reports admin page and all frontend pricing templates (volume pricing card, pricing table, radio tier selector). Quantity field now pre-selects the first tier on page load.

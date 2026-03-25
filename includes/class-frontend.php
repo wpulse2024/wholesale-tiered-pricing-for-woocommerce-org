@@ -12,6 +12,8 @@ class WHTPRole_Pricing_Frontend {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('woocommerce_before_add_to_cart_button', array($this, 'display_quantity_messages'));
         add_action('woocommerce_before_add_to_cart_button', array($this, 'display_savings_calculator'), 5);
+        add_action('woocommerce_before_add_to_cart_button', array($this, 'display_product_mov_notice'), 8);
+        add_action('woocommerce_before_cart', array($this, 'display_mov_notice'));
     }
 
     public function enqueue_scripts() {
@@ -320,6 +322,103 @@ class WHTPRole_Pricing_Frontend {
         }
 
         return $passed;
+    }
+
+    public function display_product_mov_notice() {
+        global $product;
+        if ( ! $product ) {
+            return;
+        }
+
+        $parent_id = $product->is_type( 'variation' ) ? $product->get_parent_id() : $product->get_id();
+        $rules     = WHTPRole_Pricing_Helper::get_rules_for_product( $parent_id );
+        if ( empty( $rules ) ) {
+            return;
+        }
+
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
+        $is_guest          = ( $current_user_role === 'guest' );
+        $cart_subtotal     = WC()->cart ? WC()->cart->get_subtotal() : 0;
+
+        foreach ( $rules as $rule ) {
+            $min_order_value = isset( $rule['min_order_value'] ) ? floatval( $rule['min_order_value'] ) : 0;
+            if ( $min_order_value <= 0 ) {
+                continue;
+            }
+
+            $rule_roles     = isset( $rule['roles'] ) ? $rule['roles'] : ( isset( $rule['role'] ) ? $rule['role'] : array() );
+            $also_for_guest = isset( $rule['also_for_guest'] ) ? $rule['also_for_guest'] : false;
+
+            if ( WHTPRole_Pricing_Helper::rule_applies_to_user( $rule_roles, $current_user_role, $is_guest, $also_for_guest ) ) {
+                if ( $cart_subtotal < $min_order_value ) {
+                    $needed = $min_order_value - $cart_subtotal;
+                    echo '<div class="wholesale-tiered-pricing-for-woocommerce-notice whtprole-mov-notice">';
+                    echo '<ul><li>';
+                    printf(
+                        /* translators: 1: formatted price needed, 2: formatted threshold */
+                        esc_html__( 'Add %1$s more to your cart to unlock wholesale pricing (minimum order: %2$s).', 'wholesale-tiered-pricing-for-woocommerce' ),
+                        wp_kses_post( wc_price( $needed ) ),
+                        wp_kses_post( wc_price( $min_order_value ) )
+                    );
+                    echo '</li></ul>';
+                    echo '</div>';
+                }
+                break;
+            }
+        }
+    }
+
+    public function display_mov_notice() {
+        $cart = WC()->cart;
+        if ( ! $cart || $cart->is_empty() ) {
+            return;
+        }
+
+        $current_user_role = WHTPRole_Pricing_Helper::get_current_user_role();
+        $is_guest          = ( $current_user_role === 'guest' );
+        $cart_subtotal     = $cart->get_subtotal();
+
+        $shown = array(); // deduplicate notices per product + threshold
+
+        foreach ( $cart->get_cart() as $cart_item ) {
+            $product   = $cart_item['data'];
+            $parent_id = $product->is_type( 'variation' ) ? $product->get_parent_id() : $product->get_id();
+
+            $rules = WHTPRole_Pricing_Helper::get_rules_for_product( $parent_id );
+            if ( empty( $rules ) ) {
+                continue;
+            }
+
+            foreach ( $rules as $rule ) {
+                $min_order_value = isset( $rule['min_order_value'] ) ? floatval( $rule['min_order_value'] ) : 0;
+                if ( $min_order_value <= 0 ) {
+                    continue;
+                }
+
+                $rule_roles    = isset( $rule['roles'] ) ? $rule['roles'] : ( isset( $rule['role'] ) ? $rule['role'] : array() );
+                $also_for_guest = isset( $rule['also_for_guest'] ) ? $rule['also_for_guest'] : false;
+
+                if ( WHTPRole_Pricing_Helper::rule_applies_to_user( $rule_roles, $current_user_role, $is_guest, $also_for_guest ) ) {
+                    if ( $cart_subtotal < $min_order_value ) {
+                        $notice_key = $parent_id . '_' . $min_order_value;
+                        if ( ! isset( $shown[ $notice_key ] ) ) {
+                            $shown[ $notice_key ] = true;
+                            $needed = $min_order_value - $cart_subtotal;
+                            wc_print_notice(
+                                sprintf(
+                                    /* translators: 1: formatted price needed, 2: product name */
+                                    __( 'Add %1$s more to unlock wholesale pricing on %2$s.', 'wholesale-tiered-pricing-for-woocommerce' ),
+                                    wc_price( $needed ),
+                                    '<strong>' . esc_html( get_the_title( $parent_id ) ) . '</strong>'
+                                ),
+                                'notice'
+                            );
+                        }
+                    }
+                    break; // only first matching rule per product
+                }
+            }
+        }
     }
 
     public function display_savings_calculator() {
