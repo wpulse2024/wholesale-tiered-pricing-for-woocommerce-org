@@ -5,15 +5,13 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: wholesale pricing, bulk discount, tiered pricing, role based pricing, b2b
 Requires at least: 5.0
 Tested up to: 6.9.1
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 
 Set role-based wholesale prices, volume discounts, and quantity rules in WooCommerce. Display beautiful tiered pricing tables for B2B, wholesale, and bulk buyers.
 
----
-
-## Description
+== Description ==
 
 **Wholesale & Tiered Pricing for WooCommerce** is the most flexible **wholesale pricing plugin** for WooCommerce stores. Designed for **B2B shops, wholesale distributors, and bulk sellers**, it lets you define custom prices, tiered volume discounts, and quantity purchase rules for any user role — including custom roles created by membership or access-control plugins.
 
@@ -38,32 +36,32 @@ Whether you run a **wholesale WooCommerce store**, sell to **B2B customers**, or
 
 ---
 
-## Key Features
+== Key Features ==
 
-### Role-Based Wholesale Pricing
+= Role-Based Wholesale Pricing =
 * Assign **different product prices per user role** — wholesale, retailer, B2B customer, VIP, vendor, or any custom role.
 * Full backward compatibility with both single-role and multi-role rule formats.
 * **Global pricing rules** act as a wildcard and apply to all logged-in users or guest users.
 * Works with any custom role created by plugins like WooCommerce Memberships, Ultimate Member, or User Role Editor.
 
-### Tiered / Volume Discount Pricing
+= Tiered / Volume Discount Pricing =
 * Create **quantity-based pricing tiers**: the more a customer buys, the lower the price per unit.
 * Set tiers as a **fixed discount** (e.g., $5 off per item) or a **percentage discount** (e.g., 15% off).
 * Apply tiers to all variations or target a specific variation of a variable product.
 * Multiple tier levels per rule — unlimited pricing bands.
 
-### Scheduled & Flash Pricing
+= Scheduled & Flash Pricing =
 * Set an **Active From** and **Active Until** date on any pricing rule.
 * Rules outside their date window are automatically excluded from pricing, tables, cart validation, and discount messages — no manual toggling needed.
 * Perfect for **flash sales**, seasonal wholesale pricing, and time-limited B2B promotions.
 
-### Quantity Rules per Role
+= Quantity Rules per Role =
 * **Minimum quantity** — require wholesale buyers to purchase at least N units.
 * **Maximum quantity** — limit retail customers to a maximum order size.
 * **Step/increment quantity** — force orders in multiples of 2, 5, 10, etc.
 * Quantity enforcement applies on the product page, in the cart, and at checkout.
 
-### Beautiful Pricing Table Templates
+= Beautiful Pricing Table Templates =
 * Six ready-made table layouts: **Table**, **Options**, **Minimal Table**, **Compact List**, **Plain Text**, **Horizontal**.
 * Choose the default template globally and override it per product.
 * Control which columns appear: Quantity, Price, Discount.
@@ -71,42 +69,33 @@ Whether you run a **wholesale WooCommerce store**, sell to **B2B customers**, or
 * Responsive layout option for mobile shoppers.
 * Choose where the table appears: above/below add-to-cart, before/after product meta, or after product summary.
 
-### Live Savings Calculator
+= Live Savings Calculator =
 * Displays a **real-time savings widget** on the product page.
 * Updates automatically as the customer changes the quantity input.
 * Shows regular price, discounted price, total savings amount, and discount percentage.
 * Can be enabled or disabled from Template Options settings.
 
-### Discount Badges in Cart, Checkout & Orders
+= Discount Badges in Cart, Checkout & Orders =
 * Applied wholesale tier is shown beside each line item in the **cart**, **checkout**, **customer order details**, and **admin order screen**.
 * Customers see exactly which discount tier was applied and how much they saved.
 
-### Variable Product Support
+= Variable Product Support =
 * Full support for **WooCommerce variable products** — rules and tiers can target all variations or a specific variation.
 * Pricing tables update dynamically when the customer switches between variations.
 
-### Performance & Security
+= Performance & Security =
 * Transient caching on the wholesale reports page (5-minute TTL).
 * Pre-warmed post meta cache to eliminate N+1 database queries.
 * Capped product and category queries (limit: 200) to prevent timeouts on large stores.
 * All AJAX handlers protected with nonce verification and capability checks.
 * Admin-only handlers are never registered as publicly accessible.
 
-### Wholesale Reports
+= Wholesale Reports =
 * Dedicated **Wholesale Reports** page inside WooCommerce showing revenue, order counts, and top wholesale buyers.
 
 ---
 
-## Upcoming Features
-
-* Role-based shipping & payment method restrictions.
-* Shortcodes & Gutenberg blocks for pricing tables.
-* Import/export pricing rules via CSV.
-* Elementor & Divi widget compatibility.
-
----
-
-## Installation
+== Installation ==
 
 1. Upload the plugin folder to `/wp-content/plugins/`, or install directly from **WordPress → Plugins → Add New**.
 2. Activate the plugin through the **Plugins** screen.
@@ -116,41 +105,47 @@ Whether you run a **wholesale WooCommerce store**, sell to **B2B customers**, or
 
 ---
 
-## Frequently Asked Questions
+== Frequently Asked Questions ==
 
-**Q: Can I set different prices for wholesale customers vs retail customers?**
+= Can I set different prices for wholesale customers vs retail customers? =
 Yes. Create separate pricing rules — one for your wholesale role (e.g., "Wholesale Customer") and one for standard customers. Each role sees only its own price.
 
-**Q: Does it support WooCommerce variable products?**
+= Does it support WooCommerce variable products? =
 Yes, fully. You can apply pricing rules to all variations or to a specific variation. The pricing table on the product page updates in real time when the customer selects a variation.
 
-**Q: Can I offer volume discounts that increase with quantity?**
-Yes. Each rule supports unlimited pricing tiers. Define as many quantity breakpoints as you need, using either a fixed dollar discount or a percentage discount per tier.
+= Can I offer volume discounts that increase with quantity? =
+Yes. Each rule supports unlimited pricing tiers. You can define as many quantity breakpoints as you need, using either a fixed dollar discount or a percentage discount per tier.
 
-**Q: Can I set minimum or maximum order quantities per role?**
+= Can I set minimum or maximum order quantities per role? =
 Yes. Each rule has optional Minimum Quantity, Maximum Quantity, and Step Quantity fields. These are enforced on the product page, in the cart, and at checkout.
 
-**Q: Does it work with custom user roles from membership plugins?**
+= Does it work with custom user roles from membership plugins? =
 Yes. Any role registered in WordPress — including those created by WooCommerce Memberships, Paid Memberships Pro, Ultimate Member, or User Role Editor — is automatically available in the role selector.
 
-**Q: Can I schedule pricing rules to run during a specific date range?**
+= Can I schedule pricing rules to run during a specific date range? =
 Yes. Every pricing rule has optional "Active From" and "Active Until" date fields. Rules outside their scheduled window are automatically skipped — no manual toggling needed. Use this for flash sales, seasonal wholesale rates, or limited-time B2B promotions.
 
-**Q: Can guest (non-logged-in) users see wholesale prices?**
+= Can guest (non-logged-in) users see wholesale prices? =
 Yes. Create a Global rule and enable the "Make it for guest user also" option. Guest users will see those prices and discounts without needing to log in.
 
-**Q: Can I show the pricing table on some products but hide it on others?**
-Yes. There is a "Show Pricing Table" toggle on every product's Tiered Pricing panel. You can also control the default behavior globally from Template Options.
+= Can I show the pricing table on some products but hide it on others? =
+Yes. There is a "Show Pricing Table" toggle on every product's Tiered Pricing panel. You can also control the default behavior globally from the Template Options settings.
 
-**Q: Will this plugin slow down my store?**
+= Will this plugin slow down my store? =
 No. The plugin uses transient caching for reports, pre-warms meta cache to eliminate N+1 queries, and uses bounded database queries to avoid timeouts on large catalogs.
 
-**Q: Does it support multiple languages?**
-Yes, all frontend strings are fully translatable. The plugin is compatible with WPML, Polylang, and Loco Translate.
+= Does it support multiple languages? =
+Yes, all frontend strings are fully translatable. The plugin ships with a .pot file and is compatible with WPML, Polylang, and Loco Translate.
+
+= Will this work with my theme? =
+Yes. The pricing table templates use minimal HTML/CSS and inherit your theme's base styles. You can also override templates in your child theme.
+
+= Where can I get support? =
+Please open a support thread in the WordPress.org plugin support forum. We typically respond within 1–2 business days.
 
 ---
 
-## Screenshots
+== Screenshots ==
 
 1. Role-based and tiered pricing rules setup in the product editor.
 2. Tiered pricing table (Table template) displayed on the product page.
@@ -165,17 +160,20 @@ Yes, all frontend strings are fully translatable. The plugin is compatible with 
 
 ---
 
-## Changelog
+== Changelog ==
+
+= 1.2.2 – 2026-03-25 =
+- Added Minimum Order Value (MOV) per pricing rule — set a minimum cart subtotal that must be reached before a role's pricing rule activates (e.g. "wholesale price only if order is at least $200").
 
 = 1.2.1 – 2026-03-15 =
 - Redesigned Wholesale Reports admin page: summary cards now show a coloured icon badge (blue / purple / green / orange) for each metric; section headings include contextual SVG icons (cart, trend, box, gear).
 - Reports filter bar restructured: date labels stacked above inputs, calendar icon overlaid on each date field, preset buttons (7d / 30d / 90d) highlight the active selection with a dark fill, Apply and Edit buttons use a high-contrast dark style.
-- Report tables now use uppercase column headers and subtle row-hover styling instead of the WP `striped` class.
-- Revamped Volume Pricing card (`minimal-template`): replaced old premium wrapper markup with `wtp-volume-card` / `wtp-tier-row` structure; savings shown as a plain "Save N% / $X off" label; removed "Best" featured-tier badge and progress bar.
-- Pricing table (`frontend.scss`): column headers changed to muted uppercase on a transparent background, removing the coloured primary-colour header fill; `.quantity-badge`, `.price-unit`, and `.savings-info` cell classes introduced for cleaner markup; table border changed from box-shadow to a solid border with rounded corners.
-- Radio tier selector (`minimal-template.scss`): active tier now uses an inset box-shadow instead of background fill; colour palette updated to neutral tones (`#2d3748`, `#718096`, `#a0aec0`, green `#3a8a4a`); responsive breakpoint tightened from 768 px to 480 px.
+- Report tables now use uppercase column headers and subtle row-hover styling instead of the WP striped class.
+- Revamped Volume Pricing card (minimal template): replaced old premium wrapper markup with `wtp-volume-card` / `wtp-tier-row` structure; savings shown as a plain "Save N% / $X off" label; removed "Best" featured-tier badge and progress bar.
+- Pricing table: column headers changed to muted uppercase on a transparent background, removing the coloured primary-colour header fill; `.quantity-badge`, `.price-unit`, and `.savings-info` cell classes introduced for cleaner markup; table border changed from box-shadow to a solid border with rounded corners.
+- Radio tier selector: active tier now uses an inset box-shadow instead of background fill; colour palette updated to neutral tones; responsive breakpoint tightened from 768 px to 480 px.
 - Added Dashicons lightbulb icon before the "See Your Savings" savings-calculator heading.
-- Quantity field now defaults to the first tier's `min_qty` on page load (when > 1), so the lowest eligible tier price is immediately visible without the customer adjusting quantity manually.
+- Quantity field now defaults to the first tier's minimum quantity on page load (when greater than 1), so the eligible tier price is immediately visible without the customer adjusting quantity manually.
 
 = 1.2.0 – 2026-03-12 =
 - Added Scheduled / Flash Pricing — pricing rules now support `Active From` and `Active Until` date fields; rules outside their scheduled window are automatically excluded everywhere (product page, cart, checkout, quantity validation, discount messages).
@@ -245,13 +243,16 @@ Yes, all frontend strings are fully translatable. The plugin is compatible with 
 
 ---
 
-## Upgrade Notice
+== Upgrade Notice ==
 
-### 1.2.1
+= 1.2.2 =
+Adds Minimum Order Value (MOV) per pricing rule. Wholesale pricing is withheld until the cart subtotal meets the threshold. Product and cart pages show a clear "Add $X more to unlock wholesale pricing" notice.
+
+= 1.2.1 =
 UI overhaul of the Wholesale Reports admin page and all frontend pricing templates (volume pricing card, pricing table, radio tier selector). Quantity field now pre-selects the first tier on page load.
 
-### 1.2.0
+= 1.2.0 =
 Adds Scheduled / Flash Pricing — set start and end dates on any pricing rule. Also fixes expired rules being applied to prices, tables, and cart validation, and fixes discount messages on variable products.
 
-### 1.1.1
+= 1.1.1 =
 Critical security and stability release. Fixes unauthenticated access to pricing rule AJAX handlers, a JSON corruption bug that silently broke all pricing rules on save, and a fatal error on variable product pages. Upgrade immediately.
