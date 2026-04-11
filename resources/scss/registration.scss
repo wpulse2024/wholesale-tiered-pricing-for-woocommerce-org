@@ -1,0 +1,171 @@
+// Wholesale Registration Form — Frontend Styles
+
+.whtprole-registration-wrap {
+    max-width: 680px;
+    margin: 24px 0;
+    font-family: inherit;
+
+    .whtprole-reg-title {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+    }
+
+    .whtprole-registration-response {
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        line-height: 1.5;
+
+        &.whtprole-reg-success {
+            background-color: #edf7ed;
+            border: 1px solid #4caf50;
+            color: #1e4620;
+        }
+
+        &.whtprole-reg-error {
+            background-color: #fdecea;
+            border: 1px solid #f44336;
+            color: #611a15;
+        }
+    }
+
+    // Status notices (pending/approved/rejected)
+    .whtprole-reg-status {
+        padding: 16px 20px;
+        border-radius: 4px;
+        line-height: 1.6;
+
+        p {
+            margin: 0;
+        }
+
+        &--pending {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            color: #5d4037;
+        }
+
+        &--approved {
+            background-color: #edf7ed;
+            border-left: 4px solid #4caf50;
+            color: #1e4620;
+        }
+
+        &--rejected {
+            background-color: #fdecea;
+            border-left: 4px solid #f44336;
+            color: #611a15;
+        }
+    }
+
+    #whtprole-registration-form {
+        .whtprole-reg-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+
+            @media (max-width: 600px) {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+
+        .whtprole-reg-field {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            margin-bottom: 0;
+
+            @media (max-width: 600px) {
+                margin-bottom: 14px;
+            }
+
+            &.whtprole-reg-full {
+                flex: none;
+                width: 100%;
+            }
+
+            label {
+                font-weight: 600;
+                margin-bottom: 5px;
+                font-size: 0.9em;
+            }
+
+            input[type="text"],
+            input[type="email"],
+            input[type="tel"],
+            select,
+            textarea {
+                width: 100%;
+                padding: 8px 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 0.95em;
+                font-family: inherit;
+                box-sizing: border-box;
+                transition: border-color 0.15s ease;
+
+                &:focus {
+                    outline: none;
+                    border-color: #007cba;
+                    box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.15);
+                }
+            }
+
+            select {
+                background-color: #fff;
+                cursor: pointer;
+            }
+
+            textarea {
+                resize: vertical;
+                min-height: 90px;
+            }
+        }
+    }
+
+    .whtprole-required {
+        color: #c00;
+        margin-left: 2px;
+    }
+
+    .whtprole-optional {
+        color: #777;
+        font-weight: normal;
+        font-size: 0.875em;
+        margin-left: 4px;
+    }
+
+    .whtprole-reg-required-note {
+        font-size: 0.85em;
+        color: #666;
+        margin: 4px 0 16px;
+    }
+
+    .whtprole-reg-submit-row {
+        margin-top: 8px;
+    }
+
+    .whtprole-reg-submit {
+        display: inline-block;
+        padding: 10px 24px;
+        font-size: 0.95em;
+        cursor: pointer;
+        border-radius: 4px;
+        border: none;
+        background-color: #333;
+        color: #fff;
+        transition: background-color 0.15s ease;
+
+        &:hover,
+        &:focus {
+            background-color: #555;
+            color: #fff;
+        }
+
+        &:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+    }
+}

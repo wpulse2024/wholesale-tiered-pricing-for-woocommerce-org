@@ -5,7 +5,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Tags: wholesale pricing, bulk discount, tiered pricing, role based pricing, b2b
 Requires at least: 5.0
 Tested up to: 6.9.1
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 
@@ -90,6 +90,17 @@ Whether you run a **wholesale WooCommerce store**, sell to **B2B customers**, or
 * All AJAX handlers protected with nonce verification and capability checks.
 * Admin-only handlers are never registered as publicly accessible.
 
+= Wholesale Registration Form =
+* Add the shortcode `[whtprole_registration_form]` to any page to let customers **apply for wholesale access**.
+* Collects company name, business type, VAT/tax number, phone, and a free-text message.
+* Guest applicants get a WooCommerce customer account created automatically — no extra step required.
+* Logged-in users who already submitted see their **application status** (pending / approved / rejected) instead of the form.
+* Admin receives an **email notification** for every new application.
+* Approved and rejected applicants are notified by email with WooCommerce-branded messages.
+* Manage all applications from **Wholesale → Applications** in the WordPress admin.
+* One-click Approve (assigns the configured role) or Reject (with optional reason).
+* Configurable: choose which WordPress role is assigned on approval, set the notification email, and optionally require users to be logged in before applying.
+
 = Wholesale Reports =
 * Dedicated **Wholesale Reports** page inside WooCommerce showing revenue, order counts, and top wholesale buyers.
 
@@ -140,6 +151,15 @@ Yes, all frontend strings are fully translatable. The plugin ships with a .pot f
 = Will this work with my theme? =
 Yes. The pricing table templates use minimal HTML/CSS and inherit your theme's base styles. You can also override templates in your child theme.
 
+= Can customers apply for wholesale access themselves? =
+Yes. Add the shortcode `[whtprole_registration_form]` to any page. Customers fill in their company details and submit an application. You review it under **Wholesale → Applications** and approve or reject it with one click. Approved applicants are automatically assigned the wholesale role you configure and are notified by email.
+
+= Can I choose which role is assigned when I approve an application? =
+Yes. Go to **Wholesale → Applications → Registration Settings** and pick any WordPress role from the dropdown. The default is the first role whose slug contains "wholesale", or "Customer" if none is found.
+
+= Do applicants need an account before they can apply? =
+No (by default). If a guest submits the form, a WooCommerce customer account is created for them automatically and the standard "New Account" email is sent. You can require login first by enabling the option in Registration Settings.
+
 = Where can I get support? =
 Please open a support thread in the WordPress.org plugin support forum. We typically respond within 1–2 business days.
 
@@ -157,10 +177,23 @@ Please open a support thread in the WordPress.org plugin support forum. We typic
 8. Minimal table template for pricing display.
 9. Compact list template for pricing display.
 10. Wholesale Reports page inside WooCommerce.
+11. Wholesale Registration Form displayed on the frontend via shortcode.
+12. Wholesale Applications admin page with approve / reject workflow.
 
 ---
 
 == Changelog ==
+
+= 1.2.3 – 2026-04-11 =
+- Added Wholesale Registration Form — customers can now apply for wholesale access directly on the frontend using the `[whtprole_registration_form]` shortcode.
+- Added Wholesale → Applications admin page: lists all pending, approved, and rejected applications with status filter tabs, an inline details panel, and one-click Approve / Reject actions.
+- Approve action automatically assigns the configured WordPress role to the applicant and sends an approval email.
+- Reject action stores an optional reason and sends a rejection email to the applicant.
+- Admin receives an email notification for every new application submitted.
+- Guest applicants get a WooCommerce customer account created automatically (configurable: can require login instead).
+- Logged-in users who already submitted an application see their current status (pending / approved / rejected) instead of the form.
+- Added Registration Settings panel (Wholesale → Applications): configure the approval role, admin notification email, login requirement, and form heading.
+- All AJAX handlers are nonce-verified; admin-only actions require the `manage_woocommerce` capability and are never registered as publicly accessible.
 
 = 1.2.2 – 2026-03-25 =
 - Added Minimum Order Value (MOV) per pricing rule — set a minimum cart subtotal that must be reached before a role's pricing rule activates (e.g. "wholesale price only if order is at least $200").
@@ -244,6 +277,9 @@ Please open a support thread in the WordPress.org plugin support forum. We typic
 ---
 
 == Upgrade Notice ==
+
+= 1.2.3 =
+Adds a self-service Wholesale Registration Form (shortcode `[whtprole_registration_form]`) and an Applications admin page with one-click approve / reject, automatic role assignment, and email notifications for both the admin and the applicant.
 
 = 1.2.2 =
 Adds Minimum Order Value (MOV) per pricing rule. Wholesale pricing is withheld until the cart subtotal meets the threshold. Product and cart pages show a clear "Add $X more to unlock wholesale pricing" notice.

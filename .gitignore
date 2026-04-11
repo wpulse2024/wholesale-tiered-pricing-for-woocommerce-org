@@ -1,5 +1,6 @@
 # Logs
 /.plugin-assets
+/.playwright-mcp
 logs
 *.log
 npm-debug.log*

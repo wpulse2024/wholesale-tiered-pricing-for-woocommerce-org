@@ -15,6 +15,10 @@ mix.js('resources/admin/js/app.js', 'plugin-assets/admin/app.js')
    .js('resources/options-table.js', 'plugin-assets/options-table.js')
    .js('resources/report.js', 'plugin-assets/report.js')
    .sass('resources/scss/report.scss', 'plugin-assets/report.css')
+   .js('resources/registration.js', 'plugin-assets/registration.js')
+   .sass('resources/scss/registration.scss', 'plugin-assets/registration.css')
+   .js('resources/applications.js', 'plugin-assets/applications.js')
+   .sass('resources/scss/applications.scss', 'plugin-assets/applications.css')
 //    .copy('resources/images', 'plugin-assets/images')
    .sourceMaps(false);
 
