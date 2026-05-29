@@ -86,6 +86,7 @@ class WHTPRole_Based_Pricing {
 		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/helper/class-helper.php';
 		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-shows-message.php';
 		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-registration.php';
+		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-tier-nudge.php';
 	}
 
 	private function hooks() {
@@ -96,6 +97,7 @@ class WHTPRole_Based_Pricing {
 		new WHTPRole_Pricing_Show_Message();
 		new WHTPRole_Wholesale_Menu();
 		new WHTPRole_Registration();
+		new WHTPRole_Tier_Nudge();
 	}
 
 	public function activate() {

@@ -63,3 +63,45 @@ add_action(
 		);
 	}
 );
+
+// -----------------------------
+// 3. Save Tiered Pricing Settings
+// -----------------------------
+add_action(
+	'woocommerce_update_options_tiered_pricing',
+	function () {
+		woocommerce_update_options( whtprole_nudge_settings_fields() );
+	}
+);
+
+// -----------------------------
+// 4. Show nudge toggle below Vue app
+// -----------------------------
+add_action(
+	'woocommerce_settings_tabs_tiered_pricing',
+	function () {
+		woocommerce_admin_fields( whtprole_nudge_settings_fields() );
+	},
+	20
+);
+
+function whtprole_nudge_settings_fields(): array {
+	return array(
+		array(
+			'title' => __( 'Tier Progress Nudge', 'wholesale-tiered-pricing-for-woocommerce' ),
+			'type'  => 'title',
+			'id'    => 'whtprole_nudge_section',
+		),
+		array(
+			'title'   => __( 'Enable tier progress nudge', 'wholesale-tiered-pricing-for-woocommerce' ),
+			'desc'    => __( 'Show "Add N more for X/unit" messages on product and cart pages.', 'wholesale-tiered-pricing-for-woocommerce' ),
+			'id'      => 'whtprole_nudge_enabled',
+			'type'    => 'checkbox',
+			'default' => 'yes',
+		),
+		array(
+			'type' => 'sectionend',
+			'id'   => 'whtprole_nudge_section',
+		),
+	);
+}
