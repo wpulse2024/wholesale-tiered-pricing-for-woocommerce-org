@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Brain\Monkey;
+use Brain\Monkey\Functions;
 use PHPUnit\Framework\TestCase;
 use WHTPRole_Pricing_Helper;
 
@@ -275,5 +276,88 @@ class HelperTest extends TestCase
         $this->assertTrue(
             WHTPRole_Pricing_Helper::tier_applies_to_variation(['min_qty' => 1, 'price' => '10'], 42)
         );
+    }
+
+    // --- get_rules_for_product ---
+
+    public function test_returns_product_rules_when_present(): void
+    {
+        $rules = [
+            ['roles' => ['wholesale'], 'tiered_pricing' => [
+                ['min_qty' => 1, 'price' => '10', 'discount_type' => 'fixed'],
+            ]],
+        ];
+        Functions\when('get_post_meta')->justReturn($rules);
+
+        $result = WHTPRole_Pricing_Helper::get_rules_for_product(42);
+
+        $this->assertCount(1, $result);
+        $this->assertSame(['wholesale'], $result[0]['roles']);
+    }
+
+    public function test_falls_back_to_global_rules_when_product_has_none(): void
+    {
+        $global_rules = [
+            ['roles' => ['global'], 'tiered_pricing' => [
+                ['min_qty' => 1, 'price' => '5', 'discount_type' => 'fixed'],
+            ]],
+        ];
+        Functions\when('get_post_meta')->justReturn([]);
+        Functions\when('get_option')->justReturn($global_rules);
+
+        $result = WHTPRole_Pricing_Helper::get_rules_for_product(42);
+
+        $this->assertCount(1, $result);
+        $this->assertSame(['global'], $result[0]['roles']);
+    }
+
+    public function test_returns_empty_array_when_no_rules_anywhere(): void
+    {
+        Functions\when('get_post_meta')->justReturn([]);
+        Functions\when('get_option')->justReturn([]);
+
+        $result = WHTPRole_Pricing_Helper::get_rules_for_product(42);
+
+        $this->assertSame([], $result);
+    }
+
+    public function test_filters_out_expired_rules(): void
+    {
+        $rules = [
+            ['roles' => ['wholesale'], 'date_to' => '2020-01-01', 'tiered_pricing' => []],
+            ['roles' => ['retail'],   'date_to' => '2099-12-31', 'tiered_pricing' => []],
+        ];
+        Functions\when('get_post_meta')->justReturn($rules);
+
+        $result = WHTPRole_Pricing_Helper::get_rules_for_product(42);
+
+        $this->assertCount(1, $result);
+        $this->assertSame(['retail'], $result[0]['roles']);
+    }
+
+    public function test_filters_out_rules_not_yet_started(): void
+    {
+        $rules = [
+            ['roles' => ['wholesale'], 'date_from' => '2099-01-01', 'tiered_pricing' => []],
+            ['roles' => ['retail'],   'date_from' => '2020-01-01', 'tiered_pricing' => []],
+        ];
+        Functions\when('get_post_meta')->justReturn($rules);
+
+        $result = WHTPRole_Pricing_Helper::get_rules_for_product(42);
+
+        $this->assertCount(1, $result);
+        $this->assertSame(['retail'], $result[0]['roles']);
+    }
+
+    public function test_decodes_json_string_rules(): void
+    {
+        $rules = json_encode([
+            ['roles' => ['wholesale'], 'tiered_pricing' => []],
+        ]);
+        Functions\when('get_post_meta')->justReturn($rules);
+
+        $result = WHTPRole_Pricing_Helper::get_rules_for_product(42);
+
+        $this->assertCount(1, $result);
     }
 }
