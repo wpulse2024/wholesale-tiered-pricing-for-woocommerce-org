@@ -22,4 +22,8 @@
     </rule>
 
     <config name="minimum_supported_wp_version" value="6.0"/>
+
+    <!-- PHPCompatibility: enforce PHP 7.4 minimum, guard against 8.x removals -->
+    <config name="testVersion" value="7.4-8.4"/>
+    <rule ref="PHPCompatibility"/>
 </ruleset>
