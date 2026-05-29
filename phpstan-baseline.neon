@@ -126,6 +126,26 @@ parameters:
 			path: includes/class-global-settings.php
 
 		-
+			message: "#^Function woocommerce_admin_fields not found\\.$#"
+			count: 1
+			path: includes/class-global-settings.php
+
+		-
+			message: "#^Function woocommerce_update_options not found\\.$#"
+			count: 1
+			path: includes/class-global-settings.php
+
+		-
+			message: "#^Constant WHTPROLE_PRICING_PLUGIN_URL not found\\.$#"
+			count: 2
+			path: includes/class-tier-nudge.php
+
+		-
+			message: "#^Function get_woocommerce_currency_symbol not found\\.$#"
+			count: 3
+			path: includes/class-tier-nudge.php
+
+		-
 			message: "#^Function wc_price not found\\.$#"
 			count: 3
 			path: includes/class-pricing.php
