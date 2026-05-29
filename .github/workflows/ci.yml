@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  ci:
+    name: PHP ${{ matrix.php }} — PHPCS + PHPStan + Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php: ['8.1']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml
+          coverage: none
+          ini-values: memory_limit=1G
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: PHPCS
+        run: composer phpcs
+
+      - name: PHPStan
+        run: composer phpstan
+
+      - name: PHPUnit
+        run: composer test
