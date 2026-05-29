@@ -407,4 +407,58 @@ class WHTPRole_Pricing_Helper {
 
 		return $base_price;
 	}
+
+	/**
+	 * Return the next tier above the given quantity for the current user.
+	 *
+	 * @param  int      $product_id
+	 * @param  int      $current_qty
+	 * @param  int|null $variation_id
+	 * @return array{qty_needed: int, tier_price: string, discount_type: string}|null
+	 */
+	public static function get_next_tier( int $product_id, int $current_qty, ?int $variation_id = null ): ?array {
+		$current_user_role = self::get_current_user_role();
+		$is_guest          = ( $current_user_role === 'guest' );
+		$rules             = self::get_rules_for_product( $product_id );
+
+		foreach ( $rules as $rule ) {
+			$rule_roles     = isset( $rule['roles'] ) ? $rule['roles'] : ( isset( $rule['role'] ) ? $rule['role'] : array() );
+			$also_for_guest = ! empty( $rule['also_for_guest'] );
+
+			if ( ! self::rule_applies_to_user( $rule_roles, $current_user_role, $is_guest, $also_for_guest ) ) {
+				continue;
+			}
+
+			if ( empty( $rule['tiered_pricing'] ) || ! is_array( $rule['tiered_pricing'] ) ) {
+				continue;
+			}
+
+			$tiers = $rule['tiered_pricing'];
+			usort(
+				$tiers,
+				function ( $a, $b ) {
+					return intval( $a['min_qty'] ?? 0 ) - intval( $b['min_qty'] ?? 0 );
+				}
+			);
+
+			foreach ( $tiers as $tier ) {
+				if ( $variation_id !== null && ! self::tier_applies_to_variation( $tier, $variation_id ) ) {
+					continue;
+				}
+				$tier_min = intval( $tier['min_qty'] ?? 0 );
+				if ( $tier_min > $current_qty ) {
+					return array(
+						'qty_needed'    => $tier_min - $current_qty,
+						'tier_price'    => strval( $tier['price'] ?? '0' ),
+						'discount_type' => $tier['discount_type'] ?? 'fixed',
+					);
+				}
+			}
+
+			// First matching rule wins — stop looking.
+			break;
+		}
+
+		return null;
+	}
 }

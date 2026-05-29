@@ -360,4 +360,125 @@ class HelperTest extends TestCase
 
         $this->assertCount(1, $result);
     }
+
+    // --- get_next_tier ---
+
+    public function test_get_next_tier_returns_null_when_no_rules(): void
+    {
+        Functions\when('is_user_logged_in')->justReturn(true);
+        $user = new \stdClass();
+        $user->roles = ['wholesale'];
+        Functions\when('wp_get_current_user')->justReturn($user);
+        Functions\when('get_post_meta')->justReturn([]);
+        Functions\when('get_option')->justReturn([]);
+
+        $this->assertNull(WHTPRole_Pricing_Helper::get_next_tier(1, 5));
+    }
+
+    public function test_get_next_tier_returns_null_when_role_does_not_match(): void
+    {
+        Functions\when('is_user_logged_in')->justReturn(true);
+        $user = new \stdClass();
+        $user->roles = ['customer'];
+        Functions\when('wp_get_current_user')->justReturn($user);
+        Functions\when('get_post_meta')->justReturn([
+            [
+                'roles' => ['wholesale'],
+                'tiered_pricing' => [
+                    ['min_qty' => 10, 'price' => '5.00', 'discount_type' => 'fixed'],
+                ],
+            ],
+        ]);
+        Functions\when('get_option')->justReturn([]);
+
+        $this->assertNull(WHTPRole_Pricing_Helper::get_next_tier(1, 5));
+    }
+
+    public function test_get_next_tier_returns_next_tier_data(): void
+    {
+        Functions\when('is_user_logged_in')->justReturn(true);
+        $user = new \stdClass();
+        $user->roles = ['wholesale'];
+        Functions\when('wp_get_current_user')->justReturn($user);
+        Functions\when('get_post_meta')->justReturn([
+            [
+                'roles' => ['wholesale'],
+                'tiered_pricing' => [
+                    ['min_qty' => 10, 'price' => '5.00', 'discount_type' => 'fixed'],
+                    ['min_qty' => 20, 'price' => '8.00', 'discount_type' => 'fixed'],
+                ],
+            ],
+        ]);
+        Functions\when('get_option')->justReturn([]);
+
+        $result = WHTPRole_Pricing_Helper::get_next_tier(1, 5);
+
+        $this->assertNotNull($result);
+        $this->assertSame(5, $result['qty_needed']);   // 10 - 5
+        $this->assertSame('5.00', $result['tier_price']);
+        $this->assertSame('fixed', $result['discount_type']);
+    }
+
+    public function test_get_next_tier_returns_null_when_at_max_tier(): void
+    {
+        Functions\when('is_user_logged_in')->justReturn(true);
+        $user = new \stdClass();
+        $user->roles = ['wholesale'];
+        Functions\when('wp_get_current_user')->justReturn($user);
+        Functions\when('get_post_meta')->justReturn([
+            [
+                'roles' => ['wholesale'],
+                'tiered_pricing' => [
+                    ['min_qty' => 10, 'price' => '5.00', 'discount_type' => 'fixed'],
+                ],
+            ],
+        ]);
+        Functions\when('get_option')->justReturn([]);
+
+        // qty=20 is above min_qty=10 — already at max tier
+        $this->assertNull(WHTPRole_Pricing_Helper::get_next_tier(1, 20));
+    }
+
+    public function test_get_next_tier_skips_tiers_for_wrong_variation(): void
+    {
+        Functions\when('is_user_logged_in')->justReturn(true);
+        $user = new \stdClass();
+        $user->roles = ['wholesale'];
+        Functions\when('wp_get_current_user')->justReturn($user);
+        Functions\when('get_post_meta')->justReturn([
+            [
+                'roles' => ['wholesale'],
+                'tiered_pricing' => [
+                    ['min_qty' => 10, 'price' => '5.00', 'discount_type' => 'fixed', 'variation' => 99],
+                ],
+            ],
+        ]);
+        Functions\when('get_option')->justReturn([]);
+
+        // variation_id=42 does not match tier variation=99
+        $this->assertNull(WHTPRole_Pricing_Helper::get_next_tier(1, 5, 42));
+    }
+
+    public function test_get_next_tier_percentage_discount_type_preserved(): void
+    {
+        Functions\when('is_user_logged_in')->justReturn(true);
+        $user = new \stdClass();
+        $user->roles = ['wholesale'];
+        Functions\when('wp_get_current_user')->justReturn($user);
+        Functions\when('get_post_meta')->justReturn([
+            [
+                'roles' => ['wholesale'],
+                'tiered_pricing' => [
+                    ['min_qty' => 10, 'price' => '15', 'discount_type' => 'percentage'],
+                ],
+            ],
+        ]);
+        Functions\when('get_option')->justReturn([]);
+
+        $result = WHTPRole_Pricing_Helper::get_next_tier(1, 3);
+
+        $this->assertNotNull($result);
+        $this->assertSame('percentage', $result['discount_type']);
+        $this->assertSame('15', $result['tier_price']);
+    }
 }
