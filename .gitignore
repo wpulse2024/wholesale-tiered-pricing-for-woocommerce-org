@@ -110,4 +110,3 @@ plugin-assets/
 src/images/.DS_Store
 .DS_Store
 vendor/
-phpstan-baseline.neon

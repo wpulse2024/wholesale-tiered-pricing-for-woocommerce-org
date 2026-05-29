@@ -1,0 +1,276 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Constant WC_VERSION not found\\.$#"
+			count: 1
+			path: includes/class-admin.php
+
+		-
+			message: "#^Constant WHTPROLE_PRICING_PLUGIN_URL not found\\.$#"
+			count: 2
+			path: includes/class-admin.php
+
+		-
+			message: "#^Function WC not found\\.$#"
+			count: 1
+			path: includes/class-admin.php
+
+		-
+			message: "#^Function wc_attribute_label not found\\.$#"
+			count: 2
+			path: includes/class-admin.php
+
+		-
+			message: "#^Function wc_get_product not found\\.$#"
+			count: 2
+			path: includes/class-admin.php
+
+		-
+			message: "#^Function woocommerce_wp_checkbox not found\\.$#"
+			count: 1
+			path: includes/class-admin.php
+
+		-
+			message: "#^Parameter \\#3 \\$single of function get_post_meta expects bool, string given\\.$#"
+			count: 1
+			path: includes/class-admin.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between int and '' will always evaluate to false\\.$#"
+			count: 1
+			path: includes/class-admin.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between int and null will always evaluate to false\\.$#"
+			count: 1
+			path: includes/class-admin.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between mixed and null will always evaluate to false\\.$#"
+			count: 1
+			path: includes/class-admin.php
+
+		-
+			message: "#^Variable \\$roles in empty\\(\\) always exists and is not falsy\\.$#"
+			count: 1
+			path: includes/class-admin.php
+
+		-
+			message: "#^Function wc_get_product not found\\.$#"
+			count: 7
+			path: includes/class-ajax.php
+
+		-
+			message: "#^Function wc_price not found\\.$#"
+			count: 8
+			path: includes/class-ajax.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 28
+			path: includes/class-ajax.php
+
+		-
+			message: "#^Constant WHTPROLE_PRICING_PLUGIN_URL not found\\.$#"
+			count: 1
+			path: includes/class-frontend.php
+
+		-
+			message: "#^Function WC not found\\.$#"
+			count: 3
+			path: includes/class-frontend.php
+
+		-
+			message: "#^Function is_product not found\\.$#"
+			count: 1
+			path: includes/class-frontend.php
+
+		-
+			message: "#^Function wc_add_notice not found\\.$#"
+			count: 3
+			path: includes/class-frontend.php
+
+		-
+			message: "#^Function wc_get_product not found\\.$#"
+			count: 1
+			path: includes/class-frontend.php
+
+		-
+			message: "#^Function wc_price not found\\.$#"
+			count: 6
+			path: includes/class-frontend.php
+
+		-
+			message: "#^Function wc_print_notice not found\\.$#"
+			count: 1
+			path: includes/class-frontend.php
+
+		-
+			message: "#^Parameter \\#1 \\$text of function esc_attr expects string, float given\\.$#"
+			count: 1
+			path: includes/class-frontend.php
+
+		-
+			message: "#^Constant WHTPROLE_PRICING_PLUGIN_PATH not found\\.$#"
+			count: 1
+			path: includes/class-global-settings.php
+
+		-
+			message: "#^Constant WHTPROLE_PRICING_PLUGIN_URL not found\\.$#"
+			count: 3
+			path: includes/class-global-settings.php
+
+		-
+			message: "#^Function wc_get_products not found\\.$#"
+			count: 1
+			path: includes/class-global-settings.php
+
+		-
+			message: "#^Function wc_price not found\\.$#"
+			count: 3
+			path: includes/class-pricing.php
+
+		-
+			message: "#^Constant WHTPROLE_PRICING_PLUGIN_PATH not found\\.$#"
+			count: 2
+			path: includes/class-registration.php
+
+		-
+			message: "#^Constant WHTPROLE_PRICING_PLUGIN_URL not found\\.$#"
+			count: 4
+			path: includes/class-registration.php
+
+		-
+			message: "#^Function wc_create_new_customer not found\\.$#"
+			count: 1
+			path: includes/class-registration.php
+
+		-
+			message: "#^Function wc_create_new_customer_username not found\\.$#"
+			count: 1
+			path: includes/class-registration.php
+
+		-
+			message: "#^Function wc_get_page_permalink not found\\.$#"
+			count: 1
+			path: includes/class-registration.php
+
+		-
+			message: "#^Function wc_get_template not found\\.$#"
+			count: 2
+			path: includes/class-registration.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 15
+			path: includes/class-registration.php
+
+		-
+			message: "#^Variable \\$business_type in empty\\(\\) always exists and is not falsy\\.$#"
+			count: 1
+			path: includes/class-registration.php
+
+		-
+			message: "#^Class WC_Product not found\\.$#"
+			count: 1
+			path: includes/class-shows-message.php
+
+		-
+			message: "#^Function wc_price not found\\.$#"
+			count: 1
+			path: includes/class-shows-message.php
+
+		-
+			message: "#^Method WHTPRole_Pricing_Show_Message\\:\\:get_current_user_role\\(\\) is unused\\.$#"
+			count: 1
+			path: includes/class-shows-message.php
+
+		-
+			message: "#^Cannot call method save\\(\\) on class\\-string\\|object\\.$#"
+			count: 1
+			path: includes/class-wholesale-menu.php
+
+		-
+			message: "#^Cannot call method update_meta_data\\(\\) on class\\-string\\|object\\.$#"
+			count: 1
+			path: includes/class-wholesale-menu.php
+
+		-
+			message: "#^Constant WHTPROLE_PRICING_PLUGIN_PATH not found\\.$#"
+			count: 1
+			path: includes/class-wholesale-menu.php
+
+		-
+			message: "#^Constant WHTPROLE_PRICING_PLUGIN_URL not found\\.$#"
+			count: 2
+			path: includes/class-wholesale-menu.php
+
+		-
+			message: "#^Function wc_get_order not found\\.$#"
+			count: 1
+			path: includes/class-wholesale-menu.php
+
+		-
+			message: "#^Function wc_get_orders not found\\.$#"
+			count: 2
+			path: includes/class-wholesale-menu.php
+
+		-
+			message: "#^Function wc_get_product not found\\.$#"
+			count: 2
+			path: includes/class-wholesale-menu.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between string and null will always evaluate to false\\.$#"
+			count: 3
+			path: includes/helper/Arr.php
+
+		-
+			message: "#^Call to method get_id\\(\\) on an unknown class WC_Product\\.$#"
+			count: 1
+			path: includes/helper/class-helper.php
+
+		-
+			message: "#^Call to method get_parent_id\\(\\) on an unknown class WC_Product\\.$#"
+			count: 1
+			path: includes/helper/class-helper.php
+
+		-
+			message: "#^Call to method is_type\\(\\) on an unknown class WC_Product\\.$#"
+			count: 1
+			path: includes/helper/class-helper.php
+
+		-
+			message: "#^Constant WHTPROLE_PRICING_PLUGIN_PATH not found\\.$#"
+			count: 5
+			path: includes/helper/class-helper.php
+
+		-
+			message: "#^Constant WHTPROLE_PRICING_PLUGIN_URL not found\\.$#"
+			count: 1
+			path: includes/helper/class-helper.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: includes/helper/class-helper.php
+
+		-
+			message: "#^Parameter \\$product of method WHTPRole_Pricing_Helper\\:\\:get_parent_product_id\\(\\) has invalid type WC_Product\\.$#"
+			count: 1
+			path: includes/helper/class-helper.php
+
+		-
+			message: "#^Static property WHTPRole_Pricing_Helper\\:\\:\\$global_rules_cache is never read, only written\\.$#"
+			count: 1
+			path: includes/helper/class-helper.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: includes/helper/class-helper.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: wholesale-tiered-pricing-for-woocommerce.php
