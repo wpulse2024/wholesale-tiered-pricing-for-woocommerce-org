@@ -23,7 +23,8 @@
 
     <config name="minimum_supported_wp_version" value="6.0"/>
 
-    <!-- PHPCompatibility: enforce PHP 7.4 minimum, guard against 8.x removals -->
-    <config name="testVersion" value="7.4-8.4"/>
+    <!-- PHPCompatibility: enforce PHP 7.4 minimum; covers up to 8.0 (9.3.x ceiling).
+         8.1+ coverage requires PHPCompatibility 10.x + WPCS 4.x (not yet released). -->
+    <config name="testVersion" value="7.4-8.0"/>
     <rule ref="PHPCompatibility"/>
 </ruleset>
