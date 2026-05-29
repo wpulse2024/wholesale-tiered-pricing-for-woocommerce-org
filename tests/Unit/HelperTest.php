@@ -196,7 +196,7 @@ class HelperTest extends TestCase
     public function test_calculation_discount_fixed_type(): void
     {
         $helper = new WHTPRole_Pricing_Helper();
-        $result = $helper->calculationDiscount(100.0, ['discount_type' => 'fixed', 'price' => '20']);
+        $result = $helper->calculation_discount(100.0, ['discount_type' => 'fixed', 'price' => '20']);
         $this->assertSame(80.0, $result['price']);
         $this->assertSame(20.0, $result['savings']);
         $this->assertSame(20.0, $result['savings_percent']);
@@ -205,7 +205,7 @@ class HelperTest extends TestCase
     public function test_calculation_discount_percentage_type(): void
     {
         $helper = new WHTPRole_Pricing_Helper();
-        $result = $helper->calculationDiscount(100.0, ['discount_type' => 'percentage', 'price' => '25']);
+        $result = $helper->calculation_discount(100.0, ['discount_type' => 'percentage', 'price' => '25']);
         $this->assertSame(75.0, $result['price']);
         $this->assertSame(25.0, $result['savings']);
         $this->assertSame(25.0, $result['savings_percent']);
@@ -214,7 +214,7 @@ class HelperTest extends TestCase
     public function test_calculation_discount_unknown_type_uses_direct_price(): void
     {
         $helper = new WHTPRole_Pricing_Helper();
-        $result = $helper->calculationDiscount(100.0, ['discount_type' => 'direct', 'price' => '60']);
+        $result = $helper->calculation_discount(100.0, ['discount_type' => 'direct', 'price' => '60']);
         $this->assertSame(60.0, $result['price']);
         $this->assertSame(40.0, $result['savings']);
     }
@@ -222,7 +222,7 @@ class HelperTest extends TestCase
     public function test_calculation_discount_price_cannot_go_negative(): void
     {
         $helper = new WHTPRole_Pricing_Helper();
-        $result = $helper->calculationDiscount(10.0, ['discount_type' => 'fixed', 'price' => '50']);
+        $result = $helper->calculation_discount(10.0, ['discount_type' => 'fixed', 'price' => '50']);
         $this->assertEquals(0, $result['price']);
         $this->assertSame(50.0, $result['savings']);
     }

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<ruleset name="wholesale-tiered-pricing">
+    <description>WordPress-Core coding standard with project-specific exclusions.</description>
+
+    <!-- Paths to scan -->
+    <file>includes</file>
+    <file>wholesale-tiered-pricing-for-woocommerce.php</file>
+
+    <!-- Paths to exclude -->
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>node_modules/*</exclude-pattern>
+    <exclude-pattern>plugin-assets/*</exclude-pattern>
+    <exclude-pattern>templates/*</exclude-pattern>
+
+    <rule ref="WordPress-Core">
+        <!-- Existing filenames use class- prefix; sniff fights WP plugin conventions -->
+        <exclude name="WordPress.Files.FileName"/>
+        <!-- Team preference; low bug-prevention value -->
+        <exclude name="WordPress.PHP.YodaConditions"/>
+        <!-- Hook names use whtprole_ vendor prefix; correct as-is -->
+        <exclude name="WordPress.NamingConventions.ValidHookName"/>
+    </rule>
+
+    <config name="minimum_supported_wp_version" value="6.0"/>
+</ruleset>

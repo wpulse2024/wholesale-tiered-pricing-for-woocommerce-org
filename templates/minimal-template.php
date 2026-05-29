@@ -97,7 +97,7 @@ if (!defined('ABSPATH')) {
             <div class="wtp-tiers-list">
                 <?php foreach ($rule['tiered_pricing'] as $index => $tier):
                     if (!empty($tier['min_qty']) && !empty($tier['price'])):
-                        $discount        = $helper->calculationDiscount($regular_price, $tier);
+                        $discount        = $helper->calculation_discount($regular_price, $tier);
                         $price           = $discount['price'];
                         $savings         = $discount['savings'];
                         $savings_percent = $discount['savings_percent'];

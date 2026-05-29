@@ -77,8 +77,8 @@ if (!defined('ABSPATH')) {
     $regular_price = $base_price;
     
     $helper = new WHTPRole_Pricing_Helper();
-    $generalSettings = $helper->getGeneralSettings();
-    $activePricingColor = !empty($generalSettings['activePricingColor']) ? $generalSettings['activePricingColor'] : '#7f54b3';
+    $general_settings = $helper->get_general_settings();
+    $activePricingColor = !empty($general_settings['activePricingColor']) ? $general_settings['activePricingColor'] : '#7f54b3';
     
     foreach ($applicable_rules as $rule) {
         if (!empty($rule['tiered_pricing'])):
@@ -113,7 +113,7 @@ if (!defined('ABSPATH')) {
             foreach ($rule['tiered_pricing'] as $index => $tier):
                 if (!empty($tier['min_qty']) && !empty($tier['price'])):
                     $min_qty = intval($tier['min_qty']);
-                    $discount = $helper->calculationDiscount($regular_price, $tier);
+                    $discount = $helper->calculation_discount($regular_price, $tier);
                     $tier_price = $discount['price'];
                     $savings = $discount['savings'];
                     $savings_percent = $discount['savings_percent'];

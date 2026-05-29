@@ -25,7 +25,7 @@ if (!defined('ABSPATH')) {
                 <?php
                 foreach ($rule['tiered_pricing'] as $tier):
                     if (!empty($tier['min_qty']) && !empty($tier['price'])):
-                        $discount = $helper->calculationDiscount($regular_price, $tier);
+                        $discount = $helper->calculation_discount($regular_price, $tier);
                         $savings = $discount['savings'];
                         $savings_percent = $discount['savings_percent'];
                         $price = $discount['price'];

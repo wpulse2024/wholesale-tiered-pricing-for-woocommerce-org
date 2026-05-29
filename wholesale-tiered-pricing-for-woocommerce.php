@@ -3,7 +3,7 @@
 /**
  * Plugin Name: Wholesale & Tiered Pricing for WooCommerce
  * Description: Set role-based prices and quantity rules in WooCommerce. Show tiered pricing tables for wholesale, B2B, and bulk discounts.
- * Version: 1.2.3
+ * Version: 1.2.4
  * Author: WPulse
  * Author URI: https://profiles.wordpress.org/wpulse/
  * Text Domain: wholesale-tiered-pricing-for-woocommerce
@@ -17,102 +17,103 @@
  * Requires Plugins: woocommerce
  */
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-define('WHTPROLE_PRICING_VERSION', '1.2.3');
-define('WHTPROLE_PRICING_PLUGIN_FILE', __FILE__);
-define('WHTPROLE_PRICING_PLUGIN_BASENAME', plugin_basename(__FILE__));
-define('WHTPROLE_PRICING_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('WHTPROLE_PRICING_PLUGIN_URL', plugin_dir_url(__FILE__));
+define( 'WHTPROLE_PRICING_VERSION', '1.2.4' );
+define( 'WHTPROLE_PRICING_PLUGIN_FILE', __FILE__ );
+define( 'WHTPROLE_PRICING_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+define( 'WHTPROLE_PRICING_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
+define( 'WHTPROLE_PRICING_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
-add_action( 'before_woocommerce_init', function() {
-    if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
-    }
-});
+add_action(
+	'before_woocommerce_init',
+	function () {
+		if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+		}
+	}
+);
 
-register_activation_hook(__FILE__, function() {
-    WHTPRole_Based_Pricing::get_instance()->activate();
-});
+register_activation_hook(
+	__FILE__,
+	function () {
+		WHTPRole_Based_Pricing::get_instance()->activate();
+	}
+);
 
-register_deactivation_hook(__FILE__, function() {
-    flush_rewrite_rules();
-});
+register_deactivation_hook(
+	__FILE__,
+	function () {
+		flush_rewrite_rules();
+	}
+);
 
-class WHTPRole_Based_Pricing
-{
+class WHTPRole_Based_Pricing {
 
-    private static $instance = null;
 
-    public static function get_instance()
-    {
-        if (null === self::$instance) {
-            self::$instance = new self();
-        }
-        return self::$instance;
-    }
+	private static $instance = null;
 
-    public function __construct()
-    {
-        add_action('plugins_loaded', array($this, 'init'));
-    }
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
 
-    public function init()
-    {
-        if (!class_exists('WooCommerce')) {
-            add_action('admin_notices', array($this, 'woocommerce_missing_notice'));
-            return;
-        }
+	public function __construct() {
+		add_action( 'plugins_loaded', array( $this, 'init' ) );
+	}
 
-        $this->includes();
-        $this->hooks();
-    }
+	public function init() {
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			add_action( 'admin_notices', array( $this, 'woocommerce_missing_notice' ) );
+			return;
+		}
 
-    private function includes()
-    {
-        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-admin.php';
-        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-frontend.php';
-        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-pricing.php';
-        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-ajax.php';
-        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-global-settings.php';
-        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-wholesale-menu.php';
-        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/helper/class-helper.php';
-        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-shows-message.php';
-        require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-registration.php';
-    }
+		$this->includes();
+		$this->hooks();
+	}
 
-    private function hooks()
-    {
-        new WHTPRole_Pricing_Admin();
-        new WHTPRole_Pricing_Frontend();
-        new WHTPRole_Pricing_Engine();
-        new WHTPRole_Pricing_Ajax();
-        new WHTPRole_Pricing_Show_Message();
-        new WHTPRole_Wholesale_Menu();
-        new WHTPRole_Registration();
-    }
+	private function includes() {
+		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-admin.php';
+		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-frontend.php';
+		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-pricing.php';
+		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-ajax.php';
+		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-global-settings.php';
+		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-wholesale-menu.php';
+		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/helper/class-helper.php';
+		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-shows-message.php';
+		require_once WHTPROLE_PRICING_PLUGIN_PATH . 'includes/class-registration.php';
+	}
 
-    public function activate()
-    {
-        $this->create_tables();
-        flush_rewrite_rules();
-    }
+	private function hooks() {
+		new WHTPRole_Pricing_Admin();
+		new WHTPRole_Pricing_Frontend();
+		new WHTPRole_Pricing_Engine();
+		new WHTPRole_Pricing_Ajax();
+		new WHTPRole_Pricing_Show_Message();
+		new WHTPRole_Wholesale_Menu();
+		new WHTPRole_Registration();
+	}
 
-    public function deactivate()
-    {
-        flush_rewrite_rules();
-    }
+	public function activate() {
+		$this->create_tables();
+		flush_rewrite_rules();
+	}
 
-    private function create_tables()
-    {
-        global $wpdb;
+	public function deactivate() {
+		flush_rewrite_rules();
+	}
 
-        $table_name = $wpdb->prefix . 'whtprole_pricing';
-        $charset_collate = $wpdb->get_charset_collate();
+	private function create_tables() {
+		global $wpdb;
 
-        $sql = "CREATE TABLE $table_name (
+		$table_name      = $wpdb->prefix . 'whtprole_pricing';
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             product_id bigint(20) NOT NULL,
             role_name varchar(100) NOT NULL,
@@ -127,37 +128,34 @@ class WHTPRole_Based_Pricing
             KEY role_name (role_name)
         ) $charset_collate;";
 
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-        dbDelta($sql);
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		dbDelta( $sql );
 
-        update_option('whtprole_role_pricing_db_version', WHTPROLE_PRICING_VERSION);
-    }
+		update_option( 'whtprole_role_pricing_db_version', WHTPROLE_PRICING_VERSION );
+	}
 
-    public function woocommerce_missing_notice()
-    {
-        echo '<div class="error"><p><strong>' . esc_html__('WooCommerce Role-Based Pricing', 'wholesale-tiered-pricing-for-woocommerce') . '</strong> '
-            . esc_html__('requires WooCommerce to be installed and active.', 'wholesale-tiered-pricing-for-woocommerce') . '</p></div>';
-    }
+	public function woocommerce_missing_notice() {
+		echo '<div class="error"><p><strong>' . esc_html__( 'WooCommerce Role-Based Pricing', 'wholesale-tiered-pricing-for-woocommerce' ) . '</strong> '
+			. esc_html__( 'requires WooCommerce to be installed and active.', 'wholesale-tiered-pricing-for-woocommerce' ) . '</p></div>';
+	}
 }
 
-function whtprole_pricing_init()
-{
-    return WHTPRole_Based_Pricing::get_instance();
+function whtprole_pricing_init() {
+	return WHTPRole_Based_Pricing::get_instance();
 }
 
 //get role=================================
-add_action('wp_ajax_whtprole_get_user_roles', 'whtprole_get_wp_user_roles');
-function whtprole_get_wp_user_roles()
-{
-    check_ajax_referer('wholesale-tiered-pricing-for-woocommerce-ajax', 'nonce');
+add_action( 'wp_ajax_whtprole_get_user_roles', 'whtprole_get_wp_user_roles' );
+function whtprole_get_wp_user_roles() {
+	check_ajax_referer( 'wholesale-tiered-pricing-for-woocommerce-ajax', 'nonce' );
 
-    if (!current_user_can('manage_woocommerce')) {
-        wp_send_json_error(array('message' => 'Unauthorized'), 403);
-        exit;
-    }
+	if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+		exit;
+	}
 
-    $roles = wp_roles()->get_names();
-    wp_send_json_success($roles);
+	$roles = wp_roles()->get_names();
+	wp_send_json_success( $roles );
 }
 
 whtprole_pricing_init();
