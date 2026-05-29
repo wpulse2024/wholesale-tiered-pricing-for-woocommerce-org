@@ -122,4 +122,71 @@ class HelperTest extends TestCase
             WHTPRole_Pricing_Helper::rule_applies_to_user(['wholesale', 'retailer'], 'retailer')
         );
     }
+
+    // --- calculate_price ---
+
+    public function test_fixed_discount_subtracts_tier_price_from_base(): void
+    {
+        $rule = ['tiered_pricing' => [
+            ['min_qty' => 1, 'max_qty' => '', 'price' => '10', 'discount_type' => 'fixed'],
+        ]];
+        $this->assertSame(90.0, WHTPRole_Pricing_Helper::calculate_price(100.0, $rule, 1));
+    }
+
+    public function test_percentage_discount_applies_percent_off_base(): void
+    {
+        $rule = ['tiered_pricing' => [
+            ['min_qty' => 1, 'max_qty' => '', 'price' => '20', 'discount_type' => 'percentage'],
+        ]];
+        $this->assertSame(80.0, WHTPRole_Pricing_Helper::calculate_price(100.0, $rule, 1));
+    }
+
+    public function test_quantity_below_min_qty_gets_no_discount(): void
+    {
+        $rule = ['tiered_pricing' => [
+            ['min_qty' => 5, 'max_qty' => '', 'price' => '10', 'discount_type' => 'fixed'],
+        ]];
+        $this->assertSame(100.0, WHTPRole_Pricing_Helper::calculate_price(100.0, $rule, 3));
+    }
+
+    public function test_highest_matching_tier_is_selected(): void
+    {
+        $rule = ['tiered_pricing' => [
+            ['min_qty' => 1,  'max_qty' => '4',  'price' => '5',  'discount_type' => 'fixed'],
+            ['min_qty' => 5,  'max_qty' => '9',  'price' => '10', 'discount_type' => 'fixed'],
+            ['min_qty' => 10, 'max_qty' => '',   'price' => '20', 'discount_type' => 'fixed'],
+        ]];
+        $this->assertSame(80.0, WHTPRole_Pricing_Helper::calculate_price(100.0, $rule, 10));
+    }
+
+    public function test_quantity_exceeding_max_qty_falls_through_to_no_match(): void
+    {
+        $rule = ['tiered_pricing' => [
+            ['min_qty' => 1, 'max_qty' => '4', 'price' => '5',  'discount_type' => 'fixed'],
+            ['min_qty' => 5, 'max_qty' => '9', 'price' => '15', 'discount_type' => 'fixed'],
+        ]];
+        $this->assertSame(100.0, WHTPRole_Pricing_Helper::calculate_price(100.0, $rule, 10));
+    }
+
+    public function test_zero_base_price_returns_unchanged(): void
+    {
+        $rule = ['tiered_pricing' => [
+            ['min_qty' => 1, 'max_qty' => '', 'price' => '10', 'discount_type' => 'fixed'],
+        ]];
+        $this->assertSame(0.0, WHTPRole_Pricing_Helper::calculate_price(0.0, $rule, 5));
+    }
+
+    public function test_fixed_discount_cannot_produce_negative_price(): void
+    {
+        $rule = ['tiered_pricing' => [
+            ['min_qty' => 1, 'max_qty' => '', 'price' => '200', 'discount_type' => 'fixed'],
+        ]];
+        $this->assertSame(0.0, WHTPRole_Pricing_Helper::calculate_price(100.0, $rule, 1));
+    }
+
+    public function test_empty_tiered_pricing_returns_base_price(): void
+    {
+        $rule = ['tiered_pricing' => []];
+        $this->assertSame(50.0, WHTPRole_Pricing_Helper::calculate_price(50.0, $rule, 5));
+    }
 }
