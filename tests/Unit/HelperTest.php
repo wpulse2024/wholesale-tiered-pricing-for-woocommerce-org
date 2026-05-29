@@ -189,4 +189,91 @@ class HelperTest extends TestCase
         $rule = ['tiered_pricing' => []];
         $this->assertSame(50.0, WHTPRole_Pricing_Helper::calculate_price(50.0, $rule, 5));
     }
+
+    // --- calculationDiscount ---
+
+    public function test_calculation_discount_fixed_type(): void
+    {
+        $helper = new WHTPRole_Pricing_Helper();
+        $result = $helper->calculationDiscount(100.0, ['discount_type' => 'fixed', 'price' => '20']);
+        $this->assertSame(80.0, $result['price']);
+        $this->assertSame(20.0, $result['savings']);
+        $this->assertSame(20.0, $result['savings_percent']);
+    }
+
+    public function test_calculation_discount_percentage_type(): void
+    {
+        $helper = new WHTPRole_Pricing_Helper();
+        $result = $helper->calculationDiscount(100.0, ['discount_type' => 'percentage', 'price' => '25']);
+        $this->assertSame(75.0, $result['price']);
+        $this->assertSame(25.0, $result['savings']);
+        $this->assertSame(25.0, $result['savings_percent']);
+    }
+
+    public function test_calculation_discount_unknown_type_uses_direct_price(): void
+    {
+        $helper = new WHTPRole_Pricing_Helper();
+        $result = $helper->calculationDiscount(100.0, ['discount_type' => 'direct', 'price' => '60']);
+        $this->assertSame(60.0, $result['price']);
+        $this->assertSame(40.0, $result['savings']);
+    }
+
+    public function test_calculation_discount_price_cannot_go_negative(): void
+    {
+        $helper = new WHTPRole_Pricing_Helper();
+        $result = $helper->calculationDiscount(10.0, ['discount_type' => 'fixed', 'price' => '50']);
+        $this->assertEquals(0, $result['price']);
+        $this->assertSame(50.0, $result['savings']);
+    }
+
+    // --- tier_applies_to_variation ---
+
+    public function test_null_variation_field_applies_to_all(): void
+    {
+        $this->assertTrue(
+            WHTPRole_Pricing_Helper::tier_applies_to_variation(['variation' => null], 42)
+        );
+    }
+
+    public function test_empty_string_variation_field_applies_to_all(): void
+    {
+        $this->assertTrue(
+            WHTPRole_Pricing_Helper::tier_applies_to_variation(['variation' => ''], 42)
+        );
+    }
+
+    public function test_specific_variation_id_matches(): void
+    {
+        $this->assertTrue(
+            WHTPRole_Pricing_Helper::tier_applies_to_variation(['variation' => '42'], 42)
+        );
+    }
+
+    public function test_specific_variation_id_no_match(): void
+    {
+        $this->assertFalse(
+            WHTPRole_Pricing_Helper::tier_applies_to_variation(['variation' => '99'], 42)
+        );
+    }
+
+    public function test_legacy_empty_variations_array_applies_to_all(): void
+    {
+        $this->assertTrue(
+            WHTPRole_Pricing_Helper::tier_applies_to_variation(['variations' => []], 42)
+        );
+    }
+
+    public function test_legacy_all_keyword_applies_to_all(): void
+    {
+        $this->assertTrue(
+            WHTPRole_Pricing_Helper::tier_applies_to_variation(['variations' => ['all']], 42)
+        );
+    }
+
+    public function test_no_variation_key_at_all_applies_to_all(): void
+    {
+        $this->assertTrue(
+            WHTPRole_Pricing_Helper::tier_applies_to_variation(['min_qty' => 1, 'price' => '10'], 42)
+        );
+    }
 }
